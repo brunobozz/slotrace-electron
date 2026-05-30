@@ -33,6 +33,8 @@ window.localeStrings.es = {
       cancel_button: "Cancelar",
       driver_caps_label: "PILOTO",
       laps_label: "Vueltas",
+      best_laps_label: "Mejores Vueltas",
+      best_laps_abbr: "M. Vueltas",
       edit_button: "Editar",
       delete_button: "Eliminar",
       no_nickname: "Sin apodo",

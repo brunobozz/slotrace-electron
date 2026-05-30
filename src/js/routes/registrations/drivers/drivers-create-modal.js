@@ -140,7 +140,8 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
               nickname: nicknameVal,
               photo: this.driverPhotoBase64 || '',
               gps: 0,
-              laps: 0
+              laps: 0,
+              best_laps: 0
             };
             driversList.push(newDriver);
           }
@@ -238,7 +239,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
                 </div>
                 
                 <!-- Modal Actions -->
-                <div class="d-flex justify-content-end gap-2 border-top border-secondary-subtle pt-3">
+                <div class="d-flex justify-content-end gap-2 pt-3">
                   <button type="button" class="btn btn-secondary px-4 py-2.5 fw-semibold" data-bs-dismiss="modal">${window.t('registrations.modal.cancel_button')}</button>
                   <button type="submit" id="btn-submit-driver" class="btn btn-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2">
                     <i class="mdi mdi-content-save-outline fs-5"></i>

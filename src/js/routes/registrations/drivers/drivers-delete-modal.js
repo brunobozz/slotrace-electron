@@ -92,7 +92,7 @@ class SlotRaceRegistrationsDriversDeleteModal extends HTMLElement {
               </p>
             </div>
             
-            <div class="d-flex justify-content-end gap-2 border-top border-secondary-subtle p-3">
+            <div class="d-flex justify-content-end gap-2 p-3">
               <button type="button" class="btn btn-secondary px-3 py-2 fw-semibold btn-sm" data-bs-dismiss="modal">
                 ${window.t('registrations.modal.cancel_button')}
               </button>

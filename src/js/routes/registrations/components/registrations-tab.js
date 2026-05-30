@@ -29,7 +29,7 @@ class SlotRaceRegistrationsTab extends HTMLElement {
         </li>
         <li class="nav-item" role="presentation">
           <a class="nav-link d-flex align-items-center gap-2" id="subnav-tracks" href="#registrations/tracks" role="tab">
-            <i class="mdi mdi-flag-checkered fs-5"></i>
+            <i class="mdi mdi-go-kart-track fs-5"></i>
             <span>${window.t('registrations.tracks')}</span>
           </a>
         </li>

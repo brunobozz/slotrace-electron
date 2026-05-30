@@ -33,6 +33,8 @@ window.localeStrings.pt = {
       cancel_button: "Cancelar",
       driver_caps_label: "PILOTO",
       laps_label: "Voltas",
+      best_laps_label: "Melhores Voltas",
+      best_laps_abbr: "M. Voltas",
       edit_button: "Editar",
       delete_button: "Excluir",
       no_nickname: "Sem apelido",

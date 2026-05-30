@@ -33,6 +33,8 @@ window.localeStrings.en = {
       cancel_button: "Cancel",
       driver_caps_label: "DRIVER",
       laps_label: "Laps",
+      best_laps_label: "Best Laps",
+      best_laps_abbr: "B. Laps",
       edit_button: "Edit",
       delete_button: "Delete",
       no_nickname: "No nickname",
