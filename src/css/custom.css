@@ -1,0 +1,171 @@
+/* Estilos Customizados para o SlotRace Control */
+
+:root {
+  /* Override Bootstrap Primary Color with vibrant brand danger red */
+  --bs-primary: #dc3545;
+  --bs-primary-rgb: 220, 53, 69;
+  
+  /* Hover and active states for primary color button overrides */
+  --bs-primary-hover: #bd2130;
+  --bs-primary-active: #b21f2d;
+  
+  /* Link colors */
+  --bs-link-color: #dc3545;
+  --bs-link-hover-color: #ea868f;
+  
+  /* Focus highlights */
+  --bs-focus-ring-color: rgba(220, 53, 69, 0.25);
+  
+  /* Bootstrap theme overrides for light/dark components */
+  --bs-primary-bg-subtle: rgba(220, 53, 69, 0.1);
+  --bs-primary-border-subtle: rgba(220, 53, 69, 0.2);
+}
+
+/* Nav Pills custom active background */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: var(--bs-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Nav Tabs active filled background in main color */
+.nav-tabs .nav-link.active {
+  background-color: var(--bs-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--bs-primary) !important;
+}
+
+/* Ensure default buttons, links, and forms use the brand primary red */
+.btn-primary {
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-bg: var(--bs-primary-hover);
+  --bs-btn-hover-border-color: var(--bs-primary-hover);
+  --bs-btn-active-bg: var(--bs-primary-active);
+  --bs-btn-active-border-color: var(--bs-primary-active);
+  --bs-btn-focus-shadow-rgb: 220, 53, 69;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+/* Customização leve da barra de rolagem */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+  background: #181818;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+[data-bs-theme="light"] ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+[data-bs-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+[data-bs-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* Custom Form Controls for premium look in both themes */
+.form-control, .form-select {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+[data-bs-theme="dark"] .form-control, 
+[data-bs-theme="dark"] .form-select {
+  background-color: #1e1e1e !important;
+  border-color: #2b2b2b !important;
+  color: #f5f5f5 !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus, 
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: #222222 !important;
+  border-color: var(--bs-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15) !important;
+}
+
+[data-bs-theme="light"] .form-control, 
+[data-bs-theme="light"] .form-select {
+  background-color: #ffffff !important;
+  border-color: #dee2e6 !important;
+  color: #212529 !important;
+}
+
+[data-bs-theme="light"] .form-control:focus, 
+[data-bs-theme="light"] .form-select:focus {
+  background-color: #ffffff !important;
+  border-color: var(--bs-primary) !important;
+  color: #212529 !important;
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15) !important;
+}
+
+/* Badge de status offline com micro-animação de pulso */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #0dfd87;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  box-shadow: 0 0 8px #0dfd87;
+}
+
+.offline-dot {
+  background-color: #ffc107;
+  box-shadow: 0 0 8px #ffc107;
+}
+
+/* Layout do Painel Principal */
+.dashboard-container {
+  min-height: calc(100vh - 56px); /* 100vh menos a altura da navbar */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Hover micro-animations for grid cards */
+.transition-hover {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.transition-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Card action buttons hover effects */
+.hover-scale-btn {
+  transition: transform 0.15s ease-in-out, opacity 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hover-scale-btn:hover {
+  transform: scale(1.2);
+  opacity: 0.85;
+}
+

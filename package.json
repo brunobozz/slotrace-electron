@@ -1,0 +1,23 @@
+{
+  "name": "slotrace-electron",
+  "version": "1.0.0",
+  "description": "SlotRace Control Panel - offline application using Electron and Bootstrap 5",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "slotrace",
+    "electron",
+    "offline",
+    "bootstrap"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47"
+  }
+}
