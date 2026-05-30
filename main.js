@@ -42,6 +42,27 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
 
+  // Live Reload: Watch the 'src' directory recursively and reload on changes
+  const fsSync = require('fs');
+  const srcPath = path.join(__dirname, 'src');
+  
+  let reloadTimeout;
+  fsSync.watch(srcPath, { recursive: true }, (eventType, filename) => {
+    if (filename) {
+      clearTimeout(reloadTimeout);
+      reloadTimeout = setTimeout(() => {
+        try {
+          if (!mainWindow.isDestroyed()) {
+            console.log(`[Watcher] File modified: ${filename}. Reloading application...`);
+            mainWindow.webContents.reloadIgnoringCache();
+          }
+        } catch (err) {
+          console.error('[Watcher] Failed to reload window:', err);
+        }
+      }, 100); // 100ms debounce to prevent multiple triggers
+    }
+  });
+
   // Open DevTools if desired for debugging
   // mainWindow.webContents.openDevTools();
 }

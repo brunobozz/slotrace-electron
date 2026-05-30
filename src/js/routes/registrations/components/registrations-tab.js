@@ -16,21 +16,21 @@ class SlotRaceRegistrationsTab extends HTMLElement {
     this.innerHTML = `
       <ul class="nav nav-tabs border-secondary-subtle mb-4" id="registrations-tabs" role="tablist">
         <li class="nav-item" role="presentation">
-          <a class="nav-link" id="subnav-drivers" href="#registrations/drivers" role="tab">
+          <a class="nav-link d-flex align-items-center gap-2" id="subnav-drivers" href="#registrations/drivers" role="tab">
             <i class="mdi mdi-account-multiple fs-5"></i>
-            ${window.t('registrations.drivers')}
+            <span>${window.t('registrations.drivers')}</span>
           </a>
         </li>
         <li class="nav-item" role="presentation">
-          <a class="nav-link" id="subnav-cars" href="#registrations/cars" role="tab">
+          <a class="nav-link d-flex align-items-center gap-2" id="subnav-cars" href="#registrations/cars" role="tab">
             <i class="mdi mdi-car-sports fs-5"></i>
-            ${window.t('registrations.cars')}
+            <span>${window.t('registrations.cars')}</span>
           </a>
         </li>
         <li class="nav-item" role="presentation">
-          <a class="nav-link" id="subnav-tracks" href="#registrations/tracks" role="tab">
+          <a class="nav-link d-flex align-items-center gap-2" id="subnav-tracks" href="#registrations/tracks" role="tab">
             <i class="mdi mdi-flag-checkered fs-5"></i>
-            ${window.t('registrations.tracks')}
+            <span>${window.t('registrations.tracks')}</span>
           </a>
         </li>
       </ul>

@@ -64,8 +64,31 @@ window.applyMainColor = function(hexColor) {
 
 // Dynamic Dark/Light Theme Engine
 window.applyTheme = function(theme) {
-  const activeTheme = theme === 'light' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-bs-theme', activeTheme);
+  const themeLink = document.getElementById('theme-stylesheet');
+  let stylesheetPath = '';
+  
+  if (theme === 'tailwind_dark') {
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
+    document.documentElement.setAttribute('data-theme-style', 'tailwind');
+    stylesheetPath = 'css/themes/tailwind-dark.css';
+  } else if (theme === 'tailwind_light') {
+    document.documentElement.setAttribute('data-bs-theme', 'light');
+    document.documentElement.setAttribute('data-theme-style', 'tailwind');
+    stylesheetPath = 'css/themes/tailwind-light.css';
+  } else if (theme === 'light') {
+    document.documentElement.setAttribute('data-bs-theme', 'light');
+    document.documentElement.removeAttribute('data-theme-style');
+    stylesheetPath = 'css/themes/bootstrap-light.css';
+  } else {
+    // Default to dark theme
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
+    document.documentElement.removeAttribute('data-theme-style');
+    stylesheetPath = 'css/themes/bootstrap-dark.css';
+  }
+  
+  if (themeLink) {
+    themeLink.setAttribute('href', stylesheetPath);
+  }
 };
 
 // Global Translation (i18n) Engine

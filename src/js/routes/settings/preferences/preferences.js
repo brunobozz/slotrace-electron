@@ -69,8 +69,10 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         <div class="mb-4">
           <label for="select-theme" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.theme_label')}</label>
           <select class="form-select p-2.5" id="select-theme" required>
-            <option value="dark">${window.t('settings.preferences.theme_dark')}</option>
-            <option value="light">${window.t('settings.preferences.theme_light')}</option>
+            <option value="dark">${window.t('settings.preferences.theme_bootstrap_dark') || 'Bootstrap Dark'}</option>
+            <option value="light">${window.t('settings.preferences.theme_bootstrap_light') || 'Bootstrap Light'}</option>
+            <option value="tailwind_dark">${window.t('settings.preferences.theme_tailwind_dark') || 'Tailwind Dark'}</option>
+            <option value="tailwind_light">${window.t('settings.preferences.theme_tailwind_light') || 'Tailwind Light'}</option>
           </select>
           <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.theme_help')}</span>
         </div>

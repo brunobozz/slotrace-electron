@@ -15,17 +15,17 @@ class SlotRaceSettingsMenu extends HTMLElement {
   render() {
     this.innerHTML = `
       <div class="nav flex-column nav-pills" id="v-pills-settings-menu" role="tablist" aria-orientation="vertical">
-        <a class="nav-link" id="subnav-informations" href="#settings/informations">
+        <a class="nav-link d-flex align-items-center gap-2" id="subnav-informations" href="#settings/informations">
           <i class="mdi mdi-information-outline fs-5"></i>
-          ${window.t('settings.menu.informations')}
+          <span>${window.t('settings.menu.informations')}</span>
         </a>
-        <a class="nav-link" id="subnav-preferences" href="#settings/preferences">
+        <a class="nav-link d-flex align-items-center gap-2" id="subnav-preferences" href="#settings/preferences">
           <i class="mdi mdi-tune fs-5"></i>
-          ${window.t('settings.menu.preferences')}
+          <span>${window.t('settings.menu.preferences')}</span>
         </a>
-        <a class="nav-link" id="subnav-connections" href="#settings/connections">
+        <a class="nav-link d-flex align-items-center gap-2" id="subnav-connections" href="#settings/connections">
           <i class="mdi mdi-lan-connect fs-5"></i>
-          ${window.t('settings.menu.connections')}
+          <span>${window.t('settings.menu.connections')}</span>
         </a>
       </div>
     `;

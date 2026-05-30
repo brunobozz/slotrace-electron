@@ -77,6 +77,10 @@ window.localeStrings.en = {
       theme_help: "Select between Dark and Light mode.",
       theme_dark: "Dark",
       theme_light: "Light",
+      theme_bootstrap_dark: "Bootstrap Dark",
+      theme_bootstrap_light: "Bootstrap Light",
+      theme_tailwind_dark: "Tailwind Dark",
+      theme_tailwind_light: "Tailwind Light",
       language_label: "Language",
       language_help: "Select your preferred application language.",
       save_button: "Save Preferences"

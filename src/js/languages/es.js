@@ -77,6 +77,10 @@ window.localeStrings.es = {
       theme_help: "Seleccione entre el modo Claro y Oscuro.",
       theme_dark: "Oscuro",
       theme_light: "Claro",
+      theme_bootstrap_dark: "Bootstrap Oscuro",
+      theme_bootstrap_light: "Bootstrap Claro",
+      theme_tailwind_dark: "Tailwind Oscuro",
+      theme_tailwind_light: "Tailwind Claro",
       language_label: "Idioma",
       language_help: "Seleccione su idioma preferido para la aplicación.",
       save_button: "Guardar Preferencias"
