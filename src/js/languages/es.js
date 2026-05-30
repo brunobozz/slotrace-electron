@@ -35,7 +35,13 @@ window.localeStrings.es = {
       laps_label: "Vueltas",
       edit_button: "Editar",
       delete_button: "Eliminar",
-      no_nickname: "Sin apodo"
+      no_nickname: "Sin apodo",
+      delete_title: "Eliminar Piloto",
+      delete_confirm_prefix: "¿Realmente desea eliminar al piloto ",
+      delete_confirm_suffix: "? Esta acción no se puede deshacer.",
+      delete_button_confirm: "Eliminar",
+      edit_driver_title: "Editar Piloto",
+      save_changes_button: "Guardar Cambios"
     },
     drivers_registry: "Registro de Pilotos",
     drivers_desc: "Gestione los pilotos registrados localmente en el sistema.",

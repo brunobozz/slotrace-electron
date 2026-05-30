@@ -35,7 +35,13 @@ window.localeStrings.pt = {
       laps_label: "Voltas",
       edit_button: "Editar",
       delete_button: "Excluir",
-      no_nickname: "Sem apelido"
+      no_nickname: "Sem apelido",
+      delete_title: "Excluir Piloto",
+      delete_confirm_prefix: "Deseja realmente excluir o piloto ",
+      delete_confirm_suffix: "? Esta ação não poderá ser desfeita.",
+      delete_button_confirm: "Excluir",
+      edit_driver_title: "Editar Piloto",
+      save_changes_button: "Salvar Alterações"
     },
     drivers_registry: "Cadastro de Pilotos",
     drivers_desc: "Gerencie os pilotos cadastrados localmente no sistema.",

@@ -103,10 +103,10 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
                 
                 <!-- Actions Right -->
                 <div class="d-flex align-items-center gap-2">
-                  <span class="fs-5 hover-scale-btn" style="cursor: pointer; color: var(--bs-primary);" title="${window.t('registrations.modal.edit_button') || 'Editar'}">
+                  <span class="fs-5 hover-scale-btn btn-edit-driver" style="cursor: pointer; color: var(--bs-primary);" data-id="${driver.id}" title="${window.t('registrations.modal.edit_button') || 'Editar'}">
                     <i class="mdi mdi-pencil-outline"></i>
                   </span>
-                  <span class="fs-5 hover-scale-btn text-danger ms-1" style="cursor: pointer;" title="${window.t('registrations.modal.delete_button') || 'Excluir'}">
+                  <span class="fs-5 hover-scale-btn text-danger ms-1 btn-delete-driver" style="cursor: pointer;" data-id="${driver.id}" data-name="${name}" title="${window.t('registrations.modal.delete_button') || 'Excluir'}">
                     <i class="mdi mdi-trash-can-outline"></i>
                   </span>
                 </div>
@@ -123,6 +123,30 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
         ${cardsHtml}
       </div>
     `;
+
+    // Bind delete confirmation modal request events
+    this.querySelectorAll('.btn-delete-driver').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        window.dispatchEvent(new CustomEvent('requestDeleteDriver', {
+          detail: { id, name }
+        }));
+      });
+    });
+
+    // Bind edit request events
+    this.querySelectorAll('.btn-edit-driver').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const driver = this.drivers.find(d => d.id === id);
+        if (driver) {
+          window.dispatchEvent(new CustomEvent('requestEditDriver', {
+            detail: { driver }
+          }));
+        }
+      });
+    });
   }
 }
 

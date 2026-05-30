@@ -35,7 +35,13 @@ window.localeStrings.en = {
       laps_label: "Laps",
       edit_button: "Edit",
       delete_button: "Delete",
-      no_nickname: "No nickname"
+      no_nickname: "No nickname",
+      delete_title: "Delete Driver",
+      delete_confirm_prefix: "Are you sure you want to delete the driver ",
+      delete_confirm_suffix: "? This action cannot be undone.",
+      delete_button_confirm: "Delete",
+      edit_driver_title: "Edit Driver",
+      save_changes_button: "Save Changes"
     },
     drivers_registry: "Drivers Registry",
     drivers_desc: "Manage the racers registered locally in the system.",
