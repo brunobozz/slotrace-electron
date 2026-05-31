@@ -34,10 +34,7 @@ window.applyMainColor = function(hexColor) {
       --bs-primary-border-subtle: rgba(${r}, ${g}, ${b}, 0.2) !important;
     }
     
-    .text-danger {
-      color: ${hex} !important;
-    }
-    
+
     .nav-pills .nav-link.active,
     .nav-pills .show > .nav-link {
       background-color: var(--bs-primary) !important;

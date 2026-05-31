@@ -20,7 +20,7 @@ class SlotRaceDashboard extends HTMLElement {
             <div class="p-5 rounded-4 bg-body-tertiary border border-secondary-subtle shadow-lg fade-in">
               <div class="mb-4">
                 <!-- MDI Speedometer Icon -->
-                <div class="d-inline-flex p-3 bg-danger bg-opacity-10 text-danger rounded-circle mb-3">
+                <div class="d-inline-flex p-3 bg-primary bg-opacity-10 text-primary rounded-circle mb-3">
                   <i class="mdi mdi-speedometer" style="font-size: 48px; line-height: 1;"></i>
                 </div>
                 <h1 class="h2 fw-bold text-body-emphasis mb-2">${window.t('dashboard.title')}</h1>

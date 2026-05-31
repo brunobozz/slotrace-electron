@@ -56,7 +56,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       const submitBtnEl = this.querySelector('#btn-submit-track');
 
       if (titleEl) {
-        titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-danger fs-4"></i> ${window.t('registrations.tracks_modal.edit_track_title') || 'Edit Track'}`;
+        titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-primary fs-4"></i> ${window.t('registrations.tracks_modal.edit_track_title') || 'Edit Track'}`;
       }
       if (submitBtnEl) {
         submitBtnEl.innerHTML = `<i class="mdi mdi-content-save-outline fs-5"></i> ${window.t('registrations.tracks_modal.save_changes_button') || 'Save Changes'}`;
@@ -219,7 +219,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
         const titleEl = this.querySelector('#modal-new-track-title');
         const submitBtnEl = this.querySelector('#btn-submit-track');
         if (titleEl) {
-          titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-danger fs-4"></i> ${window.t('registrations.tracks_modal.new_track_title') || 'New Track'}`;
+          titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-primary fs-4"></i> ${window.t('registrations.tracks_modal.new_track_title') || 'New Track'}`;
         }
         if (submitBtnEl) {
           submitBtnEl.innerHTML = `<i class="mdi mdi-check-circle-outline fs-5"></i> ${window.t('registrations.tracks_modal.save_button') || 'Save Track'}`;
@@ -439,7 +439,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-new-track-title">
-                <i class="mdi mdi-flag-checkered text-danger fs-4"></i>
+                <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
                 ${window.t('registrations.tracks_modal.new_track_title') || 'New Track'}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -527,7 +527,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
           <div class="modal-content border-secondary-subtle">
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-crop-track-image-title" style="font-size: 1.1rem;">
-                <i class="mdi mdi-crop text-danger fs-4"></i>
+                <i class="mdi mdi-crop text-primary fs-4"></i>
                 ${window.t('registrations.tracks_modal.crop_title') || 'Crop Track Photo'}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

@@ -4,7 +4,7 @@ class SlotRaceNavbar extends HTMLElement {
       <nav class="navbar navbar-expand-lg border-bottom border-secondary-subtle bg-body-tertiary">
         <div class="container-fluid px-4 position-relative">
           <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-            <span class="fs-4 fw-bold text-uppercase text-danger">Slot<span class="text-body-emphasis">Race</span></span>
+            <span class="fs-4 fw-bold text-uppercase text-primary">Slot<span class="text-body-emphasis">Race</span></span>
           </a>
           
           <!-- Center Local Name -->

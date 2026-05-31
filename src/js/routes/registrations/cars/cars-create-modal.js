@@ -51,7 +51,7 @@ class SlotRaceRegistrationsCarsCreateModal extends HTMLElement {
         const submitBtnEl = this.querySelector('#btn-submit-car');
 
         if (titleEl) {
-          titleEl.innerHTML = `<i class="mdi mdi-car-cog text-danger fs-4"></i> ${window.t('registrations.cars_modal.edit_car_title') || 'Edit Car'}`;
+          titleEl.innerHTML = `<i class="mdi mdi-car-cog text-primary fs-4"></i> ${window.t('registrations.cars_modal.edit_car_title') || 'Edit Car'}`;
         }
         if (submitBtnEl) {
           submitBtnEl.innerHTML = `<i class="mdi mdi-content-save-outline fs-5"></i> ${window.t('registrations.cars_modal.save_changes_button') || 'Save Changes'}`;
@@ -239,7 +239,7 @@ class SlotRaceRegistrationsCarsCreateModal extends HTMLElement {
         const titleEl = this.querySelector('#modal-new-car-title');
         const submitBtnEl = this.querySelector('#btn-submit-car');
         if (titleEl) {
-          titleEl.innerHTML = `<i class="mdi mdi-car text-danger fs-4"></i> ${window.t('registrations.cars_modal.new_car_title') || 'New Car'}`;
+          titleEl.innerHTML = `<i class="mdi mdi-car text-primary fs-4"></i> ${window.t('registrations.cars_modal.new_car_title') || 'New Car'}`;
         }
         if (submitBtnEl) {
           submitBtnEl.innerHTML = `<i class="mdi mdi-check-circle-outline fs-5"></i> ${window.t('registrations.cars_modal.save_button') || 'Save Car'}`;
@@ -459,7 +459,7 @@ class SlotRaceRegistrationsCarsCreateModal extends HTMLElement {
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-new-car-title">
-                <i class="mdi mdi-car text-danger fs-4"></i>
+                <i class="mdi mdi-car text-primary fs-4"></i>
                 ${window.t('registrations.cars_modal.new_car_title') || 'New Car'}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -539,7 +539,7 @@ class SlotRaceRegistrationsCarsCreateModal extends HTMLElement {
           <div class="modal-content border-secondary-subtle">
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-crop-car-image-title" style="font-size: 1.1rem;">
-                <i class="mdi mdi-crop text-danger fs-4"></i>
+                <i class="mdi mdi-crop text-primary fs-4"></i>
                 ${window.t('registrations.cars_modal.crop_title') || 'Crop Car Photo'}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

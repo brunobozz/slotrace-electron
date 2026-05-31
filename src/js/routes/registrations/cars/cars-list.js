@@ -86,116 +86,22 @@ class SlotRaceRegistrationsCarsList extends HTMLElement {
       return;
     }
 
-    let cardsHtml = "";
-    filtered.forEach((car) => {
-      const name = car.name || "";
-      const manufacturer = car.manufacturer || car.brand || "";
-      const scale = car.scale || "";
-      const photoUrl = car.photo || "";
-
-      const ownerDriver = this.drivers.find((d) => d.id === car.ownerId);
-      const ownerName = ownerDriver
-        ? ownerDriver.nickname || ownerDriver.name
-        : "";
-
-      cardsHtml += `
-        <div class="col-12 col-md-12 col-lg-6 col-xxl-4 mb-4 fade-in">
-          <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover">
-            <div class="card-body p-3 d-flex flex-column">
-              
-              <!-- 16:9 Landscape Car Image -->
-              <div class="rounded-3 border border-secondary-subtle shadow-sm overflow-hidden bg-body-secondary mb-3 w-100 position-relative" style="aspect-ratio: 16/9;">
-                ${
-                  photoUrl
-                    ? `
-                  <img src="${photoUrl}" class="w-100 h-100 object-fit-cover">
-                `
-                    : `
-                  <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                    <i class="mdi mdi-car-sports text-secondary" style="font-size: 56px; line-height: 1;"></i>
-                  </div>
-                `
-                }
-              </div>
-              
-              <!-- Upper row: Model name & Scale badge side-by-side -->
-              <div class="d-flex align-items-center justify-content-between mb-2 gap-2">
-                <h4 class="fw-bold text-body-emphasis mb-0 text-truncate text-start" title="${name}" style="font-size: 1.25rem; line-height: 1.2;">
-                  ${name}
-                </h4>
-                ${
-                  scale
-                    ? `
-                  <div class="badge border border-secondary-subtle text-secondary px-2 py-1 flex-shrink-0" style="font-size: 0.75rem; font-weight: 600; background: rgba(0, 0, 0, 0.15);">
-                    ${scale}
-                  </div>
-                `
-                    : ""
-                }
-              </div>
-              
-              <!-- Thin divider line -->
-              <hr class="my-2 border-secondary-subtle opacity-25">
-              
-              <!-- Bottom Row: Metadata details + Edit/Delete actions -->
-              <div class="d-flex align-items-end justify-content-between mt-auto pt-1">
-                <div class="text-start overflow-hidden">
-                  <div class="small text-secondary text-truncate" style="font-size: 0.8rem;" title="${manufacturer || "-"}">
-                    ${window.t("registrations.cars_modal.manufacturer_label") || "Fabricante"}: <strong class="text-body-emphasis">${manufacturer || "-"}</strong>
-                  </div>
-                  <div class="small text-secondary mt-1 text-truncate" style="font-size: 0.8rem;" title="${ownerName || window.t("registrations.cars_modal.no_owner") || "Sem proprietário"}">
-                    ${window.t("registrations.cars_modal.owner_label") || "Proprietário"}: <strong style="color: var(--bs-primary); font-weight: bold;">${ownerName || window.t("registrations.cars_modal.no_owner") || "Sem proprietário"}</strong>
-                  </div>
-                </div>
-                
-                <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                  <span class="fs-5 hover-scale-btn btn-edit-car" style="cursor: pointer; color: var(--bs-primary);" data-id="${car.id}" title="${window.t("registrations.cars_modal.edit_button") || "Editar"}">
-                    <i class="mdi mdi-pencil-outline"></i>
-                  </span>
-                  <span class="fs-5 hover-scale-btn text-danger ms-1 btn-delete-car" style="cursor: pointer;" data-id="${car.id}" data-name="${name}" title="${window.t("registrations.cars_modal.delete_button") || "Excluir"}">
-                    <i class="mdi mdi-trash-can-outline"></i>
-                  </span>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
     this.innerHTML = `
-      <div class="row">
-        ${cardsHtml}
-      </div>
+      <div class="row" id="cars-grid-container"></div>
     `;
 
-    // Bind delete confirmation request events
-    this.querySelectorAll(".btn-delete-car").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id");
-        const name = btn.getAttribute("data-name");
-        window.dispatchEvent(
-          new CustomEvent("requestDeleteCar", {
-            detail: { id, name },
-          }),
-        );
-      });
-    });
+    const container = this.querySelector('#cars-grid-container');
+    filtered.forEach(car => {
+      const col = document.createElement('div');
+      col.className = 'col-12 col-md-12 col-lg-6 col-xxl-4 mb-4 fade-in';
 
-    // Bind edit request events
-    this.querySelectorAll(".btn-edit-car").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id");
-        const car = this.cars.find((c) => c.id === id);
-        if (car) {
-          window.dispatchEvent(
-            new CustomEvent("requestEditCar", {
-              detail: { car },
-            }),
-          );
-        }
-      });
+      const card = document.createElement('slotrace-registrations-cars-card');
+      card.className = 'd-block h-100';
+      card.car = car;
+      card.drivers = this.drivers;
+
+      col.appendChild(card);
+      container.appendChild(col);
     });
   }
 }

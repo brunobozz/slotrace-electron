@@ -73,125 +73,21 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
       return;
     }
 
-    let cardsHtml = "";
-    filtered.forEach((driver) => {
-      const name = driver.name || "";
-      const nickname = driver.nickname || "";
-      const photoUrl = driver.photo || "";
-
-      const gpsCount = driver.gps !== undefined ? driver.gps : 0;
-      const lapsCount = driver.laps !== undefined ? driver.laps : 0;
-      const bestLapsCount =
-        driver.best_laps !== undefined ? driver.best_laps : 0;
-
-      cardsHtml += `
-        <div class="col-12 col-md-12 col-lg-6 col-xxl-4 mb-4 fade-in">
-          <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover">
-            <div class="card-body p-3 d-flex flex-column justify-content-between">
-              
-              <!-- Top Section: Avatar + Driver Info -->
-              <div class="d-flex align-items-center gap-3 mb-2">
-                <!-- Avatar Container -->
-                <div class="rounded-circle border border-secondary-subtle shadow-sm overflow-hidden d-flex align-items-center justify-content-center bg-body-secondary flex-shrink-0" style="width: 80px; height: 80px; border-width: 2px !important;">
-                  ${
-                    photoUrl
-                      ? `
-                    <img src="${photoUrl}" class="w-100 h-100 object-fit-cover">
-                  `
-                      : `
-                    <i class="mdi mdi-account text-secondary" style="font-size: 48px; line-height: 1;"></i>
-                  `
-                  }
-                </div>
-                
-                <!-- Info Section -->
-                <div class="text-start overflow-hidden">
-                  <div class="text-secondary fw-semibold small text-uppercase tracking-wider" style="font-size: 0.7rem; letter-spacing: 0.05em;">
-                    ${window.t("registrations.modal.driver_caps_label") || "PILOTO"}
-                  </div>
-                  <h4 class="fw-bold text-body-emphasis mb-1 text-truncate" title="${name}" style="font-size: 1.25rem;">${name}</h4>
-                  ${
-                    nickname
-                      ? `
-                    <div class="small text-truncate fw-semibold" style="color: var(--bs-primary);" title="${nickname}">
-                      ${window.t("registrations.modal.nickname_label") || "Apelido"}: ${nickname}
-                    </div>
-                  `
-                      : ""
-                  }
-                </div>
-              </div>
-              
-              <!-- Divider Line -->
-              <hr class="my-2 border-secondary-subtle opacity-25">
-              
-              <!-- Bottom Section: Stats + Action Icons -->
-              <div class="d-flex align-items-center justify-content-between mt-1">
-                <!-- Stats Left -->
-                <div class="d-flex align-items-center gap-3 text-secondary" style="font-size: 0.75rem;">
-                  <div class="d-flex align-items-center gap-1" title="GPs">
-                    <i class="mdi mdi-flag-checkered text-secondary" style="font-size: 0.85rem;"></i>
-                    <span>GPs: <strong class="text-body-emphasis" style="font-size: 0.75rem;">${gpsCount}</strong></span>
-                  </div>
-                  <div class="d-flex align-items-center gap-1" title="${window.t("registrations.modal.laps_label") || "Voltas"}">
-                    <i class="mdi mdi-reload text-secondary" style="font-size: 0.85rem;"></i>
-                    <span>${window.t("registrations.modal.laps_label") || "Voltas"}: <strong class="text-body-emphasis" style="font-size: 0.75rem;">${lapsCount}</strong></span>
-                  </div>
-                  <div class="d-flex align-items-center gap-1" title="${window.t("registrations.modal.best_laps_label") || "Melhores Voltas"}">
-                    <i class="mdi mdi-flash text-secondary" style="font-size: 0.85rem;"></i>
-                    <span>${window.t("registrations.modal.best_laps_abbr") || "M. Voltas"}: <strong class="text-body-emphasis" style="font-size: 0.75rem;">${bestLapsCount}</strong></span>
-                  </div>
-                </div>
-                
-                <!-- Actions Right -->
-                <div class="d-flex align-items-center gap-2">
-                  <span class="fs-5 hover-scale-btn btn-edit-driver" style="cursor: pointer; color: var(--bs-primary);" data-id="${driver.id}" title="${window.t("registrations.modal.edit_button") || "Editar"}">
-                    <i class="mdi mdi-pencil-outline"></i>
-                  </span>
-                  <span class="fs-5 hover-scale-btn text-danger ms-1 btn-delete-driver" style="cursor: pointer;" data-id="${driver.id}" data-name="${name}" title="${window.t("registrations.modal.delete_button") || "Excluir"}">
-                    <i class="mdi mdi-trash-can-outline"></i>
-                  </span>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
     this.innerHTML = `
-      <div class="row">
-        ${cardsHtml}
-      </div>
+      <div class="row" id="drivers-grid-container"></div>
     `;
 
-    // Bind delete confirmation modal request events
-    this.querySelectorAll(".btn-delete-driver").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id");
-        const name = btn.getAttribute("data-name");
-        window.dispatchEvent(
-          new CustomEvent("requestDeleteDriver", {
-            detail: { id, name },
-          }),
-        );
-      });
-    });
+    const container = this.querySelector("#drivers-grid-container");
+    filtered.forEach((driver) => {
+      const col = document.createElement("div");
+      col.className = "col-12 col-md-12 col-lg-6 col-xxl-4 mb-4 fade-in";
 
-    // Bind edit request events
-    this.querySelectorAll(".btn-edit-driver").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id");
-        const driver = this.drivers.find((d) => d.id === id);
-        if (driver) {
-          window.dispatchEvent(
-            new CustomEvent("requestEditDriver", {
-              detail: { driver },
-            }),
-          );
-        }
-      });
+      const card = document.createElement("slotrace-registrations-drivers-card");
+      card.className = "d-block h-100";
+      card.driver = driver;
+
+      col.appendChild(card);
+      container.appendChild(col);
     });
   }
 }

@@ -45,7 +45,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
       const submitBtnEl = this.querySelector('#btn-submit-driver');
       
       if (titleEl) {
-        titleEl.innerHTML = `<i class="mdi mdi-account-edit text-danger fs-4"></i> ${window.t('registrations.modal.edit_driver_title')}`;
+        titleEl.innerHTML = `<i class="mdi mdi-account-edit text-primary fs-4"></i> ${window.t('registrations.modal.edit_driver_title')}`;
       }
       if (submitBtnEl) {
         submitBtnEl.innerHTML = `<i class="mdi mdi-content-save-outline fs-5"></i> ${window.t('registrations.modal.save_changes_button')}`;
@@ -194,7 +194,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
         const titleEl = this.querySelector('#modal-new-driver-title');
         const submitBtnEl = this.querySelector('#btn-submit-driver');
         if (titleEl) {
-          titleEl.innerHTML = `<i class="mdi mdi-account-plus text-danger fs-4"></i> ${window.t('registrations.modal.new_driver_title')}`;
+          titleEl.innerHTML = `<i class="mdi mdi-account-plus text-primary fs-4"></i> ${window.t('registrations.modal.new_driver_title')}`;
         }
         if (submitBtnEl) {
           submitBtnEl.innerHTML = `<i class="mdi mdi-content-save-outline fs-5"></i> ${window.t('registrations.modal.save_button')}`;
@@ -402,7 +402,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-new-driver-title">
-                <i class="mdi mdi-account-plus text-danger fs-4"></i>
+                <i class="mdi mdi-account-plus text-primary fs-4"></i>
                 ${window.t('registrations.modal.new_driver_title')}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -466,7 +466,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
           <div class="modal-content border-secondary-subtle">
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-crop-image-title" style="font-size: 1.1rem;">
-                <i class="mdi mdi-crop text-danger fs-4"></i>
+                <i class="mdi mdi-crop text-primary fs-4"></i>
                 ${window.t('registrations.modal.crop_title') || "Recortar Foto"}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

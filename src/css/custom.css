@@ -15,6 +15,29 @@
   /* Bootstrap theme overrides for light/dark components */
   --bs-primary-bg-subtle: rgba(220, 53, 69, 0.1);
   --bs-primary-border-subtle: rgba(220, 53, 69, 0.2);
+  
+  /* Override Bootstrap Info Color with user requested #4298ff */
+  --bs-info: #4298ff;
+  --bs-info-rgb: 66, 152, 255;
+  --bs-info-text-emphasis: #4298ff;
+}
+
+/* Custom utility overrides to guarantee exact user hex in all themes and modes */
+.text-info {
+  color: #4298ff !important;
+}
+
+.bg-info {
+  background-color: #4298ff !important;
+}
+
+.btn-info {
+  --bs-btn-bg: #4298ff !important;
+  --bs-btn-border-color: #4298ff !important;
+  --bs-btn-hover-bg: #2785ff !important;
+  --bs-btn-hover-border-color: #2785ff !important;
+  --bs-btn-active-bg: #0c72ff !important;
+  --bs-btn-active-border-color: #0c72ff !important;
 }
 
 /* Nav Pills & Nav Tabs active filled backgrounds */
