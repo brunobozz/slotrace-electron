@@ -1,25 +1,21 @@
 class SlotRaceRegistrationsCars extends HTMLElement {
   connectedCallback() {
     this.render();
-    
-    this._langListener = () => this.render();
-    window.addEventListener('languageChanged', this._langListener);
-  }
-
-  disconnectedCallback() {
-    if (this._langListener) {
-      window.removeEventListener('languageChanged', this._langListener);
-    }
   }
 
   render() {
     this.innerHTML = `
-      <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
-          <i class="mdi mdi-plus-circle-outline fs-5"></i>
-          ${window.t('registrations.new_car')}
-        </button>
-      </div>
+      <!-- Toolbar Component (Search + Add) -->
+      <slotrace-registrations-cars-toolbar class="d-block mb-3"></slotrace-registrations-cars-toolbar>
+
+      <!-- Cars List Grid -->
+      <slotrace-registrations-cars-list class="mt-4 d-block"></slotrace-registrations-cars-list>
+
+      <!-- Delete Car Confirmation Modal -->
+      <slotrace-registrations-cars-delete-modal></slotrace-registrations-cars-delete-modal>
+
+      <!-- Car Creation Modal Component -->
+      <slotrace-registrations-cars-create-modal></slotrace-registrations-cars-create-modal>
     `;
   }
 }

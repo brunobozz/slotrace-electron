@@ -34,7 +34,7 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
     window.electronAPI.db
       .get("drivers")
       .then((drivers) => {
-        this.drivers = drivers || [];
+        this.drivers = (drivers || []).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
         this.render();
       })
       .catch((err) => {

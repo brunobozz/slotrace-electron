@@ -1,13 +1,13 @@
-class SlotRaceRegistrationsDriversToolbar extends HTMLElement {
+class SlotRaceRegistrationsCarsToolbar extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setupEvents();
 
     this._langListener = () => {
-      const searchVal = this.querySelector("#input-driver-search")?.value || "";
+      const searchVal = this.querySelector("#input-car-search")?.value || "";
       this.render();
       this.setupEvents();
-      const input = this.querySelector("#input-driver-search");
+      const input = this.querySelector("#input-car-search");
       if (input) {
         input.value = searchVal;
       }
@@ -29,21 +29,21 @@ class SlotRaceRegistrationsDriversToolbar extends HTMLElement {
           <span class="bg-transparent border-0 pe-1 ps-1">
             <i class="mdi mdi-magnify fs-5 text-white"></i>
           </span>
-          <input type="text" id="input-driver-search" class="form-control form-control-lg bg-transparent border-0 text-body-emphasis ps-1 pe-3 py-2 flex-grow-1" placeholder="${window.t("registrations.search_placeholder") || "Pesquisar piloto..."}" style="outline: none; box-shadow: none; border: 0px !important;">
+          <input type="text" id="input-car-search" class="form-control form-control-lg bg-transparent border-0 text-body-emphasis ps-1 pe-3 py-2 flex-grow-1" placeholder="${window.t("registrations.search_car_placeholder") || "Pesquisar carro..."}" style="outline: none; box-shadow: none; border: 0px !important;">
         </div>
 
         <!-- Action Button Right -->
-        <button id="btn-new-driver" class="btn btn-lg btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
+        <button id="btn-new-car" class="btn btn-lg btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
           <i class="mdi mdi-plus-circle-outline fs-5"></i>
-          ${window.t("registrations.new_driver") || "Novo Piloto"}
+          ${window.t("registrations.new_car") || "Novo Carro"}
         </button>
       </div>
     `;
   }
 
   setupEvents() {
-    const input = this.querySelector("#input-driver-search");
-    const btnNew = this.querySelector("#btn-new-driver");
+    const input = this.querySelector("#input-car-search");
+    const btnNew = this.querySelector("#btn-new-car");
 
     if (input) {
       let debounceTimeout;
@@ -51,7 +51,7 @@ class SlotRaceRegistrationsDriversToolbar extends HTMLElement {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
           window.dispatchEvent(
-            new CustomEvent("driverFilterChanged", {
+            new CustomEvent("carFilterChanged", {
               detail: { query: e.target.value },
             }),
           );
@@ -61,13 +61,13 @@ class SlotRaceRegistrationsDriversToolbar extends HTMLElement {
 
     if (btnNew) {
       btnNew.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("requestCreateDriver"));
+        window.dispatchEvent(new CustomEvent("requestCreateCar"));
       });
     }
   }
 }
 
 customElements.define(
-  "slotrace-registrations-drivers-toolbar",
-  SlotRaceRegistrationsDriversToolbar,
+  "slotrace-registrations-cars-toolbar",
+  SlotRaceRegistrationsCarsToolbar,
 );

@@ -92,9 +92,24 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
     const fileInput = this.querySelector('#input-driver-photo');
     const imgPreview = this.querySelector('#img-driver-preview');
     const iconPlaceholder = this.querySelector('#icon-driver-placeholder');
+    const cropModalEl = this.querySelector('#modal-crop-image');
     
     // Reset local cache reference
     this.driverPhotoBase64 = this.driverPhotoBase64 || '';
+
+    // Restore the main modal when the crop modal is closed to prevent double backdrops/overlap
+    if (cropModalEl) {
+      cropModalEl.addEventListener('hidden.bs.modal', () => {
+        const mainModalEl = this.querySelector('#modal-new-driver');
+        if (mainModalEl) {
+          let mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
+          if (!mainModalInstance) {
+            mainModalInstance = new bootstrap.Modal(mainModalEl);
+          }
+          mainModalInstance.show();
+        }
+      });
+    }
 
     // Handle profile photo selection and base64 preview rendering (delegates to dynamic crop modal)
     if (fileInput) {
@@ -203,6 +218,15 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
       this.offsetX = 0;
       this.offsetY = 0;
       
+      // Hide the main driver creation modal temporarily to avoid overlapping backdrops!
+      const mainModalEl = this.querySelector('#modal-new-driver');
+      if (mainModalEl) {
+        const mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
+        if (mainModalInstance) {
+          mainModalInstance.hide();
+        }
+      }
+
       const cropModalEl = this.querySelector('#modal-crop-image');
       if (cropModalEl) {
         let cropModalInstance = bootstrap.Modal.getInstance(cropModalEl);
