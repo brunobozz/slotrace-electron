@@ -489,7 +489,7 @@ class SlotRaceRegistrationsCarsCreateModal extends HTMLElement {
                 <div class="mb-3">
                   <label for="input-car-name" class="form-label fw-semibold text-secondary small">${window.t('registrations.cars_modal.name_label') || 'Model Name'}</label>
                   <input type="text" class="form-control p-2" id="input-car-name" placeholder="${window.t('registrations.cars_modal.name_placeholder') || 'Enter model name'}" required>
-                  <div class="invalid-feedback">Please enter a valid car model name.</div>
+                  <div class="invalid-feedback">${window.t('registrations.cars_modal.validation_name') || 'Please enter a valid car model name.'}</div>
                 </div>
                 
                 <!-- Manufacturer and Scale inputs in a single row -->

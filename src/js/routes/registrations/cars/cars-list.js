@@ -118,15 +118,15 @@ class SlotRaceRegistrationsCarsList extends HTMLElement {
                 }
               </div>
               
-              <!-- Upper row: Category + Scale pill -->
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <h4 class="fw-bold text-body-emphasis text-truncate text-start" title="${name}" style="font-size: 1.25rem; line-height: 1.2;">
+              <!-- Upper row: Model name & Scale badge side-by-side -->
+              <div class="d-flex align-items-center justify-content-between mb-2 gap-2">
+                <h4 class="fw-bold text-body-emphasis mb-0 text-truncate text-start" title="${name}" style="font-size: 1.25rem; line-height: 1.2;">
                   ${name}
                 </h4>
                 ${
                   scale
                     ? `
-                  <div class="badge border border-secondary-subtle text-secondary px-2 py-1" style="font-size: 0.75rem; font-weight: 600; background: rgba(0, 0, 0, 0.15);">
+                  <div class="badge border border-secondary-subtle text-secondary px-2 py-1 flex-shrink-0" style="font-size: 0.75rem; font-weight: 600; background: rgba(0, 0, 0, 0.15);">
                     ${scale}
                   </div>
                 `

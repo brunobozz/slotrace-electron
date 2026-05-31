@@ -119,6 +119,10 @@ window.t = function(key) {
   return value;
 };
 
+// Active sub-route session memory
+let lastSettingsSubRoute = 'informations';
+let lastRegistrationsSubRoute = 'drivers';
+
 function handleRoute() {
   // Get current hash, defaulting to #dashboard
   const hash = window.location.hash || '#dashboard';
@@ -128,15 +132,23 @@ function handleRoute() {
   const mainRoute = parts[0] || 'dashboard';
   const subRoute = parts[1] || null;
   
+  // Save sub-routes for session memory
+  if (mainRoute === 'settings' && subRoute) {
+    lastSettingsSubRoute = subRoute;
+  }
+  if (mainRoute === 'registrations' && subRoute) {
+    lastRegistrationsSubRoute = subRoute;
+  }
+
   // Redirect to default child route if registrations is accessed without sub-route
   if (mainRoute === 'registrations' && !subRoute) {
-    window.location.hash = '#registrations/drivers';
+    window.location.hash = `#registrations/${lastRegistrationsSubRoute}`;
     return;
   }
   
   // Redirect to default child route if settings is accessed without sub-route
   if (mainRoute === 'settings' && !subRoute) {
-    window.location.hash = '#settings/informations';
+    window.location.hash = `#settings/${lastSettingsSubRoute}`;
     return;
   }
   

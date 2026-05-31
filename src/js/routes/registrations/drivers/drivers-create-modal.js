@@ -435,7 +435,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
                 <div class="mb-3">
                   <label for="input-driver-name" class="form-label fw-semibold text-secondary small">${window.t('registrations.modal.name_label')}</label>
                   <input type="text" class="form-control p-2.5" id="input-driver-name" placeholder="${window.t('registrations.modal.name_placeholder')}" required>
-                  <div class="invalid-feedback">Please enter a valid driver name.</div>
+                  <div class="invalid-feedback">${window.t('registrations.modal.validation_name') || 'Please enter a valid driver name.'}</div>
                 </div>
                 
                 <!-- Driver Nickname input -->
