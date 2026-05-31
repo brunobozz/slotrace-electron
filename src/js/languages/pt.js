@@ -21,6 +21,8 @@ window.localeStrings.pt = {
     new_car: "Novo Carro",
     new_track: "Nova Pista",
     no_drivers_listed: "Nenhum piloto cadastrado ainda.",
+    search_placeholder: "Pesquisar piloto...",
+    no_drivers_found: "Nenhum piloto encontrado para esta pesquisa.",
     modal: {
       new_driver_title: "Novo Piloto",
       name_label: "Nome",
@@ -93,5 +95,8 @@ window.localeStrings.pt = {
     feedback: {
       saved: "Salvo!"
     }
+  },
+  footer: {
+    developed_by: "Desenvolvido por"
   }
 };

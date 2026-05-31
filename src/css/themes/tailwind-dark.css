@@ -160,7 +160,7 @@ body {
   line-height: 1.25rem !important;
   font-family: inherit;
   transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease-in-out !important;
-  background-color: #09090b !important;
+  background-color: #111111 !important;
   color: #f4f4f5 !important;
 }
 
@@ -168,7 +168,7 @@ body {
 .form-select:focus {
   background-color: #0f0f11 !important;
   border-color: var(--bs-primary) !important;
-  box-shadow: 0 0 0 2px var(--bs-body-bg), 0 0 0 4px var(--bs-primary) !important; /* Perfect Tailwind ring offset */
+  box-shadow: none !important; /* Perfect Tailwind ring offset */
 }
 
 /* Scrollbars customization for Tailwind */

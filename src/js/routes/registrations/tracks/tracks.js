@@ -15,7 +15,7 @@ class SlotRaceRegistrationsTracks extends HTMLElement {
   render() {
     this.innerHTML = `
       <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2">
+        <button class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
           <i class="mdi mdi-plus-circle-outline fs-5"></i>
           ${window.t('registrations.new_track')}
         </button>

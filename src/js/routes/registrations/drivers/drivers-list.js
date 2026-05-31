@@ -1,15 +1,21 @@
 class SlotRaceRegistrationsDriversList extends HTMLElement {
   connectedCallback() {
     this.drivers = [];
+    this.filterQuery = "";
 
     // Load drivers on connect
     this.loadDrivers();
 
     this._langListener = () => this.render();
     this._addedListener = () => this.loadDrivers();
+    this._filterListener = (e) => {
+      this.filterQuery = e.detail.query;
+      this.render();
+    };
 
     window.addEventListener("languageChanged", this._langListener);
     window.addEventListener("driverAdded", this._addedListener);
+    window.addEventListener("driverFilterChanged", this._filterListener);
   }
 
   disconnectedCallback() {
@@ -18,6 +24,9 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
     }
     if (this._addedListener) {
       window.removeEventListener("driverAdded", this._addedListener);
+    }
+    if (this._filterListener) {
+      window.removeEventListener("driverFilterChanged", this._filterListener);
     }
   }
 
@@ -36,7 +45,7 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
   render() {
     if (this.drivers.length === 0) {
       this.innerHTML = `
-        <div class="alert alert-dark bg-body-secondary border-secondary-subtle py-4 text-center fade-in">
+        <div class="py-5 text-center fade-in">
           <i class="mdi mdi-account-multiple-outline text-secondary fs-2 mb-3 d-block"></i>
           <h6 class="fw-bold text-body-emphasis mb-0">${window.t("registrations.no_drivers_listed")}</h6>
         </div>
@@ -44,8 +53,28 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
       return;
     }
 
+    let filtered = this.drivers;
+    if (this.filterQuery && this.filterQuery.trim()) {
+      const q = this.filterQuery.toLowerCase().trim();
+      filtered = this.drivers.filter((driver) => {
+        const name = (driver.name || "").toLowerCase();
+        const nickname = (driver.nickname || "").toLowerCase();
+        return name.includes(q) || nickname.includes(q);
+      });
+    }
+
+    if (filtered.length === 0) {
+      this.innerHTML = `
+        <div class="py-5 text-center fade-in">
+          <i class="mdi mdi-magnify-close text-secondary fs-1 mb-3 d-block text-center"></i>
+          <h5 class="fw-bold text-body-emphasis mb-0 text-center">${window.t("registrations.no_drivers_found")}</h5>
+        </div>
+      `;
+      return;
+    }
+
     let cardsHtml = "";
-    this.drivers.forEach((driver) => {
+    filtered.forEach((driver) => {
       const name = driver.name || "";
       const nickname = driver.nickname || "";
       const photoUrl = driver.photo || "";

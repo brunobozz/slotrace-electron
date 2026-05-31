@@ -21,6 +21,8 @@ window.localeStrings.en = {
     new_car: "New Car",
     new_track: "New Track",
     no_drivers_listed: "No drivers registered yet.",
+    search_placeholder: "Search driver...",
+    no_drivers_found: "No pilots match your search.",
     modal: {
       new_driver_title: "New Driver",
       name_label: "Name",
@@ -93,5 +95,8 @@ window.localeStrings.en = {
     feedback: {
       saved: "Saved!"
     }
+  },
+  footer: {
+    developed_by: "Developed by"
   }
 };

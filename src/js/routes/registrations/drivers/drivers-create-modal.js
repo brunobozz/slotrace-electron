@@ -54,8 +54,13 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
       this.show();
     };
     
+    this._createRequestListener = () => {
+      this.show();
+    };
+    
     window.addEventListener('languageChanged', this._langListener);
     window.addEventListener('requestEditDriver', this._editRequestListener);
+    window.addEventListener('requestCreateDriver', this._createRequestListener);
   }
 
   disconnectedCallback() {
@@ -64,6 +69,9 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
     }
     if (this._editRequestListener) {
       window.removeEventListener('requestEditDriver', this._editRequestListener);
+    }
+    if (this._createRequestListener) {
+      window.removeEventListener('requestCreateDriver', this._createRequestListener);
     }
   }
 
@@ -414,8 +422,8 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
                 
                 <!-- Modal Actions -->
                 <div class="d-flex justify-content-end gap-2 pt-3">
-                  <button type="button" class="btn btn-secondary px-4 py-2.5 fw-semibold" data-bs-dismiss="modal">${window.t('registrations.modal.cancel_button')}</button>
-                  <button type="submit" id="btn-submit-driver" class="btn btn-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-secondary px-3 fw-semibold" data-bs-dismiss="modal">${window.t('registrations.modal.cancel_button')}</button>
+                  <button type="submit" id="btn-submit-driver" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
                     <i class="mdi mdi-content-save-outline fs-5"></i>
                     ${window.t('registrations.modal.save_button')}
                   </button>

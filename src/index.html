@@ -1,67 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-bs-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SlotRace Control</title>
-  <!-- Local Bootstrap 5 -->
-  <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css">
-  <!-- Material Design Icons Local -->
-  <link rel="stylesheet" href="vendor/mdi/css/materialdesignicons.min.css">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/custom.css">
-  <link id="theme-stylesheet" rel="stylesheet" href="css/themes/bootstrap-dark.css">
-  <!-- Translations (Offline Languages) -->
-  <script src="js/languages/en.js" defer></script>
-  <script src="js/languages/pt.js" defer></script>
-  <script src="js/languages/es.js" defer></script>
-  <!-- Application Controller -->
-  <script src="js/app.js" defer></script>
-  <!-- JS Components -->
-  <script src="js/components/navbar.js" defer></script>
-  <script src="js/components/navbar-menu.js" defer></script>
-  <script src="js/components/header.js" defer></script>
-  <!-- JS Routes / Views -->
-  <script src="js/routes/dashboard/dashboard.js" defer></script>
-  <script src="js/routes/registrations/registrations.js" defer></script>
-  <script src="js/routes/registrations/components/registrations-tab.js" defer></script>
-  <script src="js/routes/registrations/drivers/drivers.js" defer></script>
-  <script src="js/routes/registrations/drivers/drivers-create-modal.js" defer></script>
-  <script src="js/routes/registrations/drivers/drivers-list.js" defer></script>
-  <script src="js/routes/registrations/drivers/drivers-delete-modal.js" defer></script>
-  <script src="js/routes/registrations/cars/cars.js" defer></script>
-  <script src="js/routes/registrations/tracks/tracks.js" defer></script>
-  <script src="js/routes/settings/settings.js" defer></script>
-  <script src="js/routes/settings/components/settings-menu.js" defer></script>
-  <script src="js/routes/settings/components/settings-header.js" defer></script>
-  <script src="js/routes/settings/informations/informations.js" defer></script>
-  <script src="js/routes/settings/preferences/preferences.js" defer></script>
-  <script src="js/routes/settings/connections/connections.js" defer></script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SlotRace Control</title>
+    <!-- Local Bootstrap 5 -->
+    <link rel="stylesheet" href="vendor/bootstrap/bootstrap.min.css" />
+    <!-- Material Design Icons Local -->
+    <link rel="stylesheet" href="vendor/mdi/css/materialdesignicons.min.css" />
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/custom.css" />
+    <link
+      id="theme-stylesheet"
+      rel="stylesheet"
+      href="css/themes/bootstrap-dark.css"
+    />
+    <!-- Translations (Offline Languages) -->
+    <script src="js/languages/en.js" defer></script>
+    <script src="js/languages/pt.js" defer></script>
+    <script src="js/languages/es.js" defer></script>
+    <!-- Application Controller -->
+    <script src="js/app.js" defer></script>
+    <!-- JS Components -->
+    <script src="js/components/navbar.js" defer></script>
+    <script src="js/components/navbar-menu.js" defer></script>
+    <script src="js/components/header.js" defer></script>
+    <script src="js/components/footer.js" defer></script>
+    <!-- JS Routes / Views -->
+    <script src="js/routes/dashboard/dashboard.js" defer></script>
+    <script src="js/routes/registrations/registrations.js" defer></script>
+    <script
+      src="js/routes/registrations/components/registrations-tab.js"
+      defer
+    ></script>
+    <script src="js/routes/registrations/drivers/drivers.js" defer></script>
+    <script
+      src="js/routes/registrations/drivers/drivers-toolbar.js"
+      defer
+    ></script>
+    <script
+      src="js/routes/registrations/drivers/drivers-create-modal.js"
+      defer
+    ></script>
+    <script
+      src="js/routes/registrations/drivers/drivers-list.js"
+      defer
+    ></script>
+    <script
+      src="js/routes/registrations/drivers/drivers-delete-modal.js"
+      defer
+    ></script>
+    <script src="js/routes/registrations/cars/cars.js" defer></script>
+    <script src="js/routes/registrations/tracks/tracks.js" defer></script>
+    <script src="js/routes/settings/settings.js" defer></script>
+    <script src="js/routes/settings/components/settings-menu.js" defer></script>
+    <script
+      src="js/routes/settings/components/settings-header.js"
+      defer
+    ></script>
+    <script
+      src="js/routes/settings/informations/informations.js"
+      defer
+    ></script>
+    <script src="js/routes/settings/preferences/preferences.js" defer></script>
+    <script src="js/routes/settings/connections/connections.js" defer></script>
+  </head>
+  <body>
+    <!-- Modular Navbar -->
+    <slotrace-navbar></slotrace-navbar>
 
-  <!-- Modular Navbar -->
-  <slotrace-navbar></slotrace-navbar>
+    <!-- SPA Views -->
+    <main class="container-fluid px-4 flex-grow-1">
+      <!-- Dashboard View -->
+      <div id="view-dashboard" class="view-section">
+        <slotrace-dashboard></slotrace-dashboard>
+      </div>
 
-  <!-- SPA Views -->
-  <main class="container-fluid px-4">
-    <!-- Dashboard View -->
-    <div id="view-dashboard" class="view-section">
-      <slotrace-dashboard></slotrace-dashboard>
-    </div>
-    
-    <!-- Registrations View -->
-    <div id="view-registrations" class="view-section d-none">
-      <slotrace-registrations></slotrace-registrations>
-    </div>
-    
-    <!-- Settings View -->
-    <div id="view-settings" class="view-section d-none">
-      <slotrace-settings></slotrace-settings>
-    </div>
-  </main>
+      <!-- Registrations View -->
+      <div id="view-registrations" class="view-section d-none">
+        <slotrace-registrations></slotrace-registrations>
+      </div>
 
-  <!-- Local Bootstrap 5 JS -->
-  <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
-</body>
+      <!-- Settings View -->
+      <div id="view-settings" class="view-section d-none">
+        <slotrace-settings></slotrace-settings>
+      </div>
+    </main>
+
+    <!-- Modular Footer -->
+    <slotrace-footer class="d-block"></slotrace-footer>
+
+    <!-- Local Bootstrap 5 JS -->
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

@@ -45,11 +45,23 @@ class SlotRaceSettingsInformations extends HTMLElement {
           <div class="invalid-feedback">${window.t('settings.informations.validation_error')}</div>
         </div>
         
-        <button type="submit" id="btn-save-location" class="btn btn-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2">
+        <button type="submit" id="btn-save-location" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
           <i class="mdi mdi-content-save-outline fs-5"></i>
           ${window.t('settings.informations.save_button')}
         </button>
       </form>
+
+      <!-- App Metadata / Version Details -->
+      <div class="mt-5 pt-3 border-top border-secondary-subtle fade-in">
+        <div class="d-flex align-items-center gap-2 text-secondary mb-1" style="font-size: 0.8rem;">
+          <i class="mdi mdi-developer-board"></i>
+          <span>SlotRace Control Panel</span>
+        </div>
+        <div class="text-body-secondary small" style="font-size: 0.75rem;">
+          <div>Versão / Version: <strong class="text-body-emphasis">v${window.electronAPI.appVersion || '0.0.1'}</strong></div>
+          <div>Ambiente / Environment: <strong class="text-body-emphasis">Offline Desktop (Electron)</strong></div>
+        </div>
+      </div>
     `;
 
     // Re-bind form submission and validation

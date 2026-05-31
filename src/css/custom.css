@@ -45,6 +45,9 @@ body {
   overflow-x: hidden;
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Scrollbars customization */
@@ -104,4 +107,13 @@ body {
 .hover-scale-btn:hover {
   transform: scale(1.2);
   opacity: 0.85;
+}
+
+/* Custom embedded search container with focus border & ring shadow */
+.search-wrapper-cardless {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.search-wrapper-cardless:focus-within {
+  border-color: var(--bs-primary) !important;
 }

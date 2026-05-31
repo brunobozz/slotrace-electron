@@ -85,7 +85,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
           </div>
         </div>
         
-        <button type="submit" id="btn-save-preferences" class="btn btn-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2">
+        <button type="submit" id="btn-save-preferences" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
           <i class="mdi mdi-content-save-outline fs-5"></i>
           ${window.t('settings.preferences.save_button')}
         </button>

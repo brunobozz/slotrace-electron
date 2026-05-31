@@ -2,13 +2,30 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 
-const dbPath = path.join(app.getPath('userData'), 'database.json');
+// Set user-facing and directory application name explicitly to SlotRace
+app.name = 'SlotRace';
 
-// Initialize database with default structure if it does not exist
+const dbPath = path.join(app.getPath('userData'), 'database.json');
+const oldDbPath = path.join(app.getPath('appData'), 'slotrace-electron', 'database.json');
+
+// Initialize database with default structure if it does not exist (migrating from old folder if available)
 async function initDatabase() {
   try {
     await fs.access(dbPath);
   } catch (err) {
+    // New database does not exist. Check if we can migrate from old database!
+    try {
+      await fs.access(oldDbPath);
+      // Old database exists! Copy it over to the new path.
+      await fs.mkdir(path.dirname(dbPath), { recursive: true });
+      const oldData = await fs.readFile(oldDbPath, 'utf8');
+      await fs.writeFile(dbPath, oldData, 'utf8');
+      console.log('[Migration] Database successfully migrated from slotrace-electron to SlotRace!');
+      return;
+    } catch (migrateErr) {
+      // Old database doesn't exist, proceed with default initialization
+    }
+
     const defaultData = {
       settings: {
         local_name: ""
@@ -94,6 +111,11 @@ app.whenReady().then(async () => {
       console.error('Error writing database key:', key, err);
       return false;
     }
+  });
+
+  // Provide synchronous application version safely to preload script
+  ipcMain.on('get-app-version-sync', (event) => {
+    event.returnValue = app.getVersion();
   });
 
   app.on('activate', () => {
