@@ -88,11 +88,7 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
                       ${window.t("registrations.modal.nickname_label") || "Apelido"}: ${nickname}
                     </div>
                   `
-                      : `
-                    <div class="small text-truncate text-secondary opacity-50" style="font-style: italic;">
-                      ${window.t("registrations.modal.no_nickname") || "Sem apelido"}
-                    </div>
-                  `
+                      : ""
                   }
                 </div>
               </div>
@@ -103,18 +99,18 @@ class SlotRaceRegistrationsDriversList extends HTMLElement {
               <!-- Bottom Section: Stats + Action Icons -->
               <div class="d-flex align-items-center justify-content-between mt-1">
                 <!-- Stats Left -->
-                <div class="d-flex align-items-center gap-3 small">
-                  <div class="d-flex align-items-center gap-1.5" title="GPs">
-                    <i class="mdi mdi-flag-checkered text-body-emphasis fs-5 me-1"></i>
-                    <span class="text-body-emphasis">GPs: <strong class="text-body-emphasis fs-6">${gpsCount}</strong></span>
+                <div class="d-flex align-items-center gap-3 text-secondary" style="font-size: 0.75rem;">
+                  <div class="d-flex align-items-center gap-1" title="GPs">
+                    <i class="mdi mdi-flag-checkered text-secondary" style="font-size: 0.85rem;"></i>
+                    <span>GPs: <strong class="text-body-emphasis" style="font-size: 0.75rem;">${gpsCount}</strong></span>
                   </div>
-                  <div class="d-flex align-items-center gap-1.5" title="${window.t("registrations.modal.laps_label") || "Voltas"}">
-                    <i class="mdi mdi-reload text-body-emphasis fs-5 me-1"></i>
-                    <span class="text-body-emphasis">${window.t("registrations.modal.laps_label") || "Voltas"}: <strong class="text-body-emphasis fs-6">${lapsCount}</strong></span>
+                  <div class="d-flex align-items-center gap-1" title="${window.t("registrations.modal.laps_label") || "Voltas"}">
+                    <i class="mdi mdi-reload text-secondary" style="font-size: 0.85rem;"></i>
+                    <span>${window.t("registrations.modal.laps_label") || "Voltas"}: <strong class="text-body-emphasis" style="font-size: 0.75rem;">${lapsCount}</strong></span>
                   </div>
-                  <div class="d-flex align-items-center gap-1.5" title="${window.t("registrations.modal.best_laps_label") || "Melhores Voltas"}">
-                    <i class="mdi mdi-flash text-body-emphasis fs-5 me-1"></i>
-                    <span class="text-body-emphasis">${window.t("registrations.modal.best_laps_abbr") || "M. Voltas"}: <strong class="text-body-emphasis fs-6">${bestLapsCount}</strong></span>
+                  <div class="d-flex align-items-center gap-1" title="${window.t("registrations.modal.best_laps_label") || "Melhores Voltas"}">
+                    <i class="mdi mdi-flash text-secondary" style="font-size: 0.85rem;"></i>
+                    <span>${window.t("registrations.modal.best_laps_abbr") || "M. Voltas"}: <strong class="text-body-emphasis" style="font-size: 0.75rem;">${bestLapsCount}</strong></span>
                   </div>
                 </div>
                 

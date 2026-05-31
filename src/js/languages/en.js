@@ -43,7 +43,10 @@ window.localeStrings.en = {
       delete_confirm_suffix: "? This action cannot be undone.",
       delete_button_confirm: "Delete",
       edit_driver_title: "Edit Driver",
-      save_changes_button: "Save Changes"
+      save_changes_button: "Save Changes",
+      crop_title: "Crop Profile Photo",
+      crop_help: "Drag to pan and use the slider to zoom",
+      crop_button: "Apply Crop"
     },
     drivers_registry: "Drivers Registry",
     drivers_desc: "Manage the racers registered locally in the system.",

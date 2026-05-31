@@ -43,7 +43,10 @@ window.localeStrings.pt = {
       delete_confirm_suffix: "? Esta ação não poderá ser desfeita.",
       delete_button_confirm: "Excluir",
       edit_driver_title: "Editar Piloto",
-      save_changes_button: "Salvar Alterações"
+      save_changes_button: "Salvar Alterações",
+      crop_title: "Recortar Foto do Piloto",
+      crop_help: "Arraste a imagem para mover e use o controle deslizante para ampliar",
+      crop_button: "Aplicar Recorte"
     },
     drivers_registry: "Cadastro de Pilotos",
     drivers_desc: "Gerencie os pilotos cadastrados localmente no sistema.",
