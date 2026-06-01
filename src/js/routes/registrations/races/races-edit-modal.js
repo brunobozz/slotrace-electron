@@ -17,13 +17,15 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       const { race } = e.detail;
       this.race = race;
 
-      // Load tracks and drivers from the DB first, then populate the dropdowns
+      // Load tracks, drivers, and cars from the DB first, then populate the dropdowns
       Promise.all([
         window.electronAPI.db.get('tracks'),
-        window.electronAPI.db.get('drivers')
-      ]).then(([tracks, drivers]) => {
+        window.electronAPI.db.get('drivers'),
+        window.electronAPI.db.get('cars')
+      ]).then(([tracks, drivers, cars]) => {
         this.tracks = tracks || [];
         this.drivers = drivers || [];
+        this.cars = cars || [];
 
         this.populateDropdowns();
 
@@ -57,11 +59,11 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     };
 
     this._pilotSelectedListener = (e) => {
-      const { driverId } = e.detail;
+      const { driverId, carId } = e.detail;
       if (!this.race) return;
       if (!this.race.pilots) this.race.pilots = [];
       
-      this.race.pilots.push(driverId);
+      this.race.pilots.push({ id: driverId, carId: carId || null });
       
       this.populatePilots();
 
@@ -129,10 +131,14 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     // Render all current pilots in the race as horizontal capsule pills
     racePilots.forEach(pilot => {
       const pilotId = typeof pilot === 'object' ? pilot.id : pilot;
+      const carId = typeof pilot === 'object' ? pilot.carId : null;
+
       const driverObj = this.drivers.find(d => d.id === pilotId);
+      const carObj = carId && this.cars ? this.cars.find(c => c.id === carId) : null;
       
       const name = driverObj ? (driverObj.nickname || driverObj.name) : (pilot.nickname || pilot.name || pilot);
       const photoUrl = driverObj ? driverObj.photo : (pilot.photo || '');
+      const carName = carObj ? carObj.name : '';
 
       // Create pill capsule using shared SlotRaceDriverPill component
       const pill = document.createElement('slotrace-driver-pill');
@@ -140,6 +146,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         pilotId: pilotId,
         name: name,
         photoUrl: photoUrl,
+        carName: carName,
         onRemove: () => {
           const confirmModalEl = this.querySelector('#modal-confirm-remove-pilot');
           if (confirmModalEl) {
@@ -213,7 +220,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         qualiTableComponent.classList.add('d-none');
       } else {
         qualiTableComponent.classList.remove('d-none');
-        qualiTableComponent.setParams(this.race, this.drivers);
+        qualiTableComponent.setParams(this.race, this.drivers, this.cars);
       }
     }
   }

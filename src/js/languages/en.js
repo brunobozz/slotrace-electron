@@ -47,6 +47,7 @@ window.localeStrings.en = {
       save_button: "Save Driver",
       cancel_button: "Cancel",
       driver_caps_label: "DRIVER",
+      car_caps_label: "CAR",
       laps_label: "Laps",
       diff_label: "DIFFERENCE",
       best_laps_label: "Best Laps",

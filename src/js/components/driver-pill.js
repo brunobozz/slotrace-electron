@@ -1,15 +1,18 @@
 class SlotRaceDriverPill extends HTMLElement {
-  connectedCallback() {
+  constructor() {
+    super();
     this.pilotId = null;
     this.name = '';
     this.photoUrl = '';
+    this.carName = '';
     this.onRemove = null;
   }
 
-  setParams({ pilotId, name, photoUrl, onRemove }) {
+  setParams({ pilotId, name, photoUrl, carName, onRemove }) {
     this.pilotId = pilotId;
     this.name = name;
     this.photoUrl = photoUrl;
+    this.carName = carName;
     this.onRemove = onRemove;
     this.render();
   }
@@ -39,10 +42,17 @@ class SlotRaceDriverPill extends HTMLElement {
         `}
       </div>
       
-      <!-- Driver Nickname text -->
-      <span class="fw-bold text-body-emphasis small ms-2 me-2" style="font-size: 0.85rem; letter-spacing: 0.02em; white-space: nowrap; user-select: none;">
-        ${this.name}
-      </span>
+      <!-- Driver Nickname and Car text -->
+      <div class="d-flex flex-column justify-content-center ms-2 me-2" style="user-select: none; line-height: 1.25;">
+        <span class="fw-bold text-body-emphasis small" style="font-size: 0.85rem; letter-spacing: 0.02em; white-space: nowrap;">
+          ${this.name}
+        </span>
+        ${this.carName ? `
+          <span class="text-secondary fw-semibold" style="font-size: 0.68rem; white-space: nowrap; opacity: 0.85; letter-spacing: 0.01em;">
+            ${this.carName}
+          </span>
+        ` : ''}
+      </div>
       
       <!-- Absolute positioned Red X circle badge in top right (hidden by default, appears on hover) -->
       <span class="position-absolute badge rounded-circle bg-dark border border-secondary-subtle d-flex align-items-center justify-content-center btn-remove-race-pilot delete-badge" style="width: 20px; height: 20px; cursor: pointer; padding: 0; font-size: 0.65rem; z-index: 3; top: -5px; right: -5px; transition: opacity 0.15s ease-in-out; opacity: 0; pointer-events: none;" title="Remover piloto">

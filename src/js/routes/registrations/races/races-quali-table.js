@@ -2,6 +2,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
   connectedCallback() {
     this.race = null;
     this.drivers = [];
+    this.cars = [];
     this.expandedPilotIds = new Set();
 
     this._langListener = () => {
@@ -20,9 +21,10 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
     }
   }
 
-  setParams(race, drivers) {
+  setParams(race, drivers, cars) {
     this.race = race;
     this.drivers = drivers;
+    this.cars = cars || [];
     this.render();
     this.populateQualiTable();
   }
@@ -77,12 +79,13 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
           <table class="table table-borderless align-middle mb-0 text-center" style="background: transparent;">
             <thead class="bg-body-secondary border-bottom border-secondary-subtle text-secondary small text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">
               <tr>
-                <th class="text-start" style="width: 10%;">POS</th>
-                <th class="text-start" style="width: 25%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
-                <th style="width: 12%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
-                <th style="width: 15%;">QUAL VOLTA</th>
-                <th class="text-end" style="width: 18%;">${window.t('registrations.modal.diff_label') || 'DIFERENÇA'}</th>
-                <th class="text-end" style="width: 15%;">MELHOR</th>
+                <th class="text-start" style="width: 8%;">POS</th>
+                <th class="text-start" style="width: 20%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
+                <th class="text-start" style="width: 20%;">${window.t('registrations.modal.car_caps_label') || 'Carro'}</th>
+                <th style="width: 10%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
+                <th style="width: 12%;">QUAL VOLTA</th>
+                <th class="text-end" style="width: 13%;">${window.t('registrations.modal.diff_label') || 'DIFERENÇA'}</th>
+                <th class="text-end" style="width: 12%;">MELHOR</th>
                 <th style="width: 5%;"></th>
               </tr>
             </thead>
@@ -163,6 +166,14 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       const name = driverObj ? (driverObj.nickname || driverObj.name) : item.pilotId;
       const photoUrl = driverObj ? driverObj.photo : '';
 
+      // Find the pilot object in race.pilots to get the carId
+      const racePilotObj = racePilots.find(p => (typeof p === 'object' ? p.id : p) === item.pilotId);
+      const carId = racePilotObj && typeof racePilotObj === 'object' ? racePilotObj.carId : null;
+      const carObj = carId && this.cars ? this.cars.find(c => c.id === carId) : null;
+      
+      const carName = carObj ? carObj.name : '';
+      const carPhotoUrl = carObj ? carObj.photo : '';
+
       let positionHtml = '';
 
       if (index === 0) {
@@ -191,17 +202,35 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
         <td class="align-middle text-start">${positionHtml}</td>
         <td class="align-middle text-start">
           <div class="d-flex align-items-center gap-2.5">
-            <div class="rounded-circle overflow-hidden bg-body-secondary flex-shrink-0 border border-secondary-subtle" style="width: 32px; height: 32px;">
+            <div class="rounded-circle overflow-hidden bg-body-secondary flex-shrink-0 border border-secondary-subtle" style="width: 40px; height: 40px;">
               ${photoUrl ? `
                 <img src="${photoUrl}" class="w-100 h-100 object-fit-cover">
               ` : `
                 <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
-                  <i class="mdi mdi-account text-secondary fs-5"></i>
+                  <i class="mdi mdi-account text-secondary fs-4"></i>
                 </div>
               `}
             </div>
             <span class="fw-bold text-body-emphasis small ms-2" style="font-size: 0.85rem;">${name}</span>
           </div>
+        </td>
+        <td class="align-middle text-start">
+          ${carObj ? `
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded overflow-hidden bg-body-secondary flex-shrink-0 border border-secondary-subtle" style="width: 48px; height: 32px;">
+                ${carPhotoUrl ? `
+                  <img src="${carPhotoUrl}" class="w-100 h-100 object-fit-cover">
+                ` : `
+                  <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
+                    <i class="mdi mdi-car text-secondary fs-6"></i>
+                  </div>
+                `}
+              </div>
+              <span class="text-body-emphasis small fw-medium text-truncate" style="font-size: 0.8rem; max-width: 130px;" title="${carName}">${carName}</span>
+            </div>
+          ` : `
+            <span class="text-secondary label-quali-car-none" style="font-size: 1.05rem; font-family: inherit; margin-left: 20px;">-</span>
+          `}
         </td>
         <td class="align-middle">
           <span class="fw-semibold text-body-emphasis label-quali-laps" style="font-size: 0.95rem;">${item.laps}</span>
@@ -226,7 +255,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       accordionRow.id = `laps-row-${item.pilotId}`;
       accordionRow.className = `laps-accordion-row ${isExpanded ? '' : 'd-none'}`;
       accordionRow.innerHTML = `
-        <td colspan="7" class="p-3 text-start">
+        <td colspan="8" class="p-3 text-start">
           <slotrace-registrations-races-session-laps id="session-laps-${item.pilotId}"></slotrace-registrations-races-session-laps>
         </td>
       `;

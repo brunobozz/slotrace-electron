@@ -47,6 +47,7 @@ window.localeStrings.es = {
       save_button: "Guardar Piloto",
       cancel_button: "Cancelar",
       driver_caps_label: "PILOTO",
+      car_caps_label: "COCHE",
       laps_label: "Vueltas",
       diff_label: "DIFERENCIA",
       best_laps_label: "Mejores Vueltas",
