@@ -4,6 +4,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     this.tracks = [];
     this.drivers = [];
     this.expandedPilotIds = new Set();
+    this.initialRaceSnapshot = null;
 
     this.render();
     this.setupEvents();
@@ -11,11 +12,15 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     this._langListener = () => {
       this.render();
       this.setupEvents();
+      if (this.initialRaceSnapshot) {
+        this.checkPendingChanges();
+      }
     };
 
     this._editRequestListener = (e) => {
       const { race } = e.detail;
-      this.race = race;
+      // Deep clone the race object to avoid mutating the list's in-memory model unless saved
+      this.race = JSON.parse(JSON.stringify(race));
 
       // Load tracks, drivers, and cars from the DB first, then populate the dropdowns
       Promise.all([
@@ -32,23 +37,27 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         // Populate type field
         const typeSelect = this.querySelector('#select-race-edit-type');
         if (typeSelect) {
-          typeSelect.value = race.type || 'grand_prix';
+          typeSelect.value = this.race.type || 'grand_prix';
         }
 
         // Populate name field
         const nameInput = this.querySelector('#input-race-edit-name');
         if (nameInput) {
-          nameInput.value = race.name || '';
+          nameInput.value = this.race.name || '';
         }
 
         // Populate date field
         const dateInput = this.querySelector('#input-race-edit-date');
         if (dateInput) {
-          const d = race.date ? new Date(race.date) : new Date();
+          const d = this.race.date ? new Date(this.race.date) : new Date();
           const pad = (num) => String(num).padStart(2, '0');
           const dateVal = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
           dateInput.value = dateVal;
         }
+
+        // Initialize the initial snapshot after all modal fields have been populated
+        this.initialRaceSnapshot = this.getCurrentStateSnapshot();
+        this.checkPendingChanges();
 
         // Show the Bootstrap modal
         const modalEl = this.querySelector('#modal-edit-race');
@@ -77,11 +86,18 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       window.dispatchEvent(new CustomEvent('racePilotsUpdated', {
         detail: { pilots: this.race.pilots }
       }));
+
+      this.checkPendingChanges();
+    };
+
+    this._qualiUpdatedListener = () => {
+      this.checkPendingChanges();
     };
 
     window.addEventListener('languageChanged', this._langListener);
     window.addEventListener('requestEditRaceName', this._editRequestListener);
     window.addEventListener('racePilotSelected', this._pilotSelectedListener);
+    window.addEventListener('raceQualiUpdated', this._qualiUpdatedListener);
   }
 
   disconnectedCallback() {
@@ -93,6 +109,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     }
     if (this._pilotSelectedListener) {
       window.removeEventListener('racePilotSelected', this._pilotSelectedListener);
+    }
+    if (this._qualiUpdatedListener) {
+      window.removeEventListener('raceQualiUpdated', this._qualiUpdatedListener);
     }
   }
 
@@ -187,6 +206,8 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   detail: { pilots: this.race.pilots }
                 }));
 
+                this.checkPendingChanges();
+
                 confirmModalInstance.hide();
               });
             }
@@ -239,6 +260,40 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     const trackSelect = this.querySelector('#select-race-edit-track');
 
     if (form && modalEl) {
+      // Prevent form submission on Enter keypress
+      form.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+        }
+      });
+
+      // Bind input/change listeners to detect changes to inputs
+      form.addEventListener('input', () => this.checkPendingChanges());
+      form.addEventListener('change', () => this.checkPendingChanges());
+
+      // Close button on header
+      const closeBtn = this.querySelector('#btn-close-edit-race');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          this.handleCloseAttempt();
+        });
+      }
+
+      // Discard changes confirmation button
+      const discardBtn = this.querySelector('#btn-confirm-discard-changes');
+      if (discardBtn) {
+        discardBtn.addEventListener('click', () => {
+          const confirmCloseModalEl = this.querySelector('#modal-confirm-close-edit');
+          if (confirmCloseModalEl) {
+            const confirmCloseInstance = bootstrap.Modal.getInstance(confirmCloseModalEl);
+            if (confirmCloseInstance) {
+              confirmCloseInstance.hide();
+            }
+          }
+          this.closeEditModal();
+        });
+      }
+
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!this.race) return;
@@ -304,6 +359,83 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     }
   }
 
+  getCurrentStateSnapshot() {
+    if (!this.race) return '';
+
+    const typeSelect = this.querySelector('#select-race-edit-type');
+    const selectedType = typeSelect ? typeSelect.value : 'grand_prix';
+
+    const nameInput = this.querySelector('#input-race-edit-name');
+    const newName = nameInput ? nameInput.value.trim() : '';
+
+    const trackSelect = this.querySelector('#select-race-edit-track');
+    const selectedTrackId = trackSelect ? trackSelect.value : '';
+
+    const dateInput = this.querySelector('#input-race-edit-date');
+    let selectedDateISO = this.race.date || new Date().toISOString();
+    if (dateInput && dateInput.value) {
+      try {
+        const origDate = this.race.date ? new Date(this.race.date) : new Date();
+        const [year, month, day] = dateInput.value.split('-').map(Number);
+        origDate.setFullYear(year);
+        origDate.setMonth(month - 1);
+        origDate.setDate(day);
+        selectedDateISO = origDate.toISOString();
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    const pilots = this.race.pilots || [];
+    const quali = this.race.quali || [];
+
+    return JSON.stringify({
+      name: newName,
+      type: selectedType,
+      trackId: selectedTrackId,
+      date: selectedDateISO,
+      pilots: pilots,
+      quali: quali
+    });
+  }
+
+  checkPendingChanges() {
+    const submitBtn = this.querySelector('#btn-submit-edit-race');
+    if (!submitBtn) return;
+
+    const currentSnapshot = this.getCurrentStateSnapshot();
+    const hasChanges = currentSnapshot !== this.initialRaceSnapshot;
+    submitBtn.disabled = !hasChanges;
+  }
+
+  handleCloseAttempt() {
+    const currentSnapshot = this.getCurrentStateSnapshot();
+    const hasChanges = currentSnapshot !== this.initialRaceSnapshot;
+
+    if (hasChanges) {
+      const confirmCloseModalEl = this.querySelector('#modal-confirm-close-edit');
+      if (confirmCloseModalEl) {
+        let confirmCloseModalInstance = bootstrap.Modal.getInstance(confirmCloseModalEl);
+        if (!confirmCloseModalInstance) {
+          confirmCloseModalInstance = new bootstrap.Modal(confirmCloseModalEl);
+        }
+        confirmCloseModalInstance.show();
+      }
+    } else {
+      this.closeEditModal();
+    }
+  }
+
+  closeEditModal() {
+    const modalEl = this.querySelector('#modal-edit-race');
+    if (modalEl) {
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
+  }
+
   render() {
     this.innerHTML = `
       <style>
@@ -321,7 +453,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
       </style>
 
-      <div class="modal fade" id="modal-edit-race" tabindex="-1" aria-labelledby="modal-edit-race-title" aria-hidden="true">
+      <div class="modal fade" id="modal-edit-race" tabindex="-1" aria-labelledby="modal-edit-race-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-xl">
           <div class="modal-content border-secondary-subtle">
             
@@ -330,7 +462,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
                 ${window.t('registrations.races_modal.edit_title') || 'Editar Corrida'}
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" id="btn-close-edit-race" aria-label="Close"></button>
             </div>
             
             <form id="form-edit-race">
@@ -391,9 +523,6 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
               </div>
               
               <div class="d-flex justify-content-end gap-2 p-3 border-top border-secondary-subtle">
-                <button type="button" class="btn btn-secondary px-3 fw-semibold" data-bs-dismiss="modal">
-                  ${window.t('registrations.modal.cancel_button') || 'Cancelar'}
-                </button>
                 <button type="submit" id="btn-submit-edit-race" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
                   <i class="mdi mdi-content-save-outline fs-5"></i>
                   ${window.t('registrations.races_modal.save_button') || 'Salvar Alterações'}
@@ -424,6 +553,30 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
             <div class="modal-footer border-secondary-subtle py-2">
               <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
               <button type="button" id="btn-confirm-remove-pilot-action" class="btn btn-sm btn-danger fw-semibold px-3">Remover</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmation Modal for Closing Edit Modal with Unsaved Changes -->
+      <div class="modal fade" id="modal-confirm-close-edit" tabindex="-1" aria-labelledby="modal-confirm-close-edit-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+          <div class="modal-content border-warning-subtle">
+            <div class="modal-header bg-warning bg-opacity-10 border-warning-subtle py-2.5">
+              <h6 class="modal-title fw-bold text-warning d-flex align-items-center gap-2" id="modal-confirm-close-edit-title" style="font-size: 0.95rem;">
+                <i class="mdi mdi-alert-circle-outline fs-5"></i>
+                Descartar Alterações?
+              </h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start py-3">
+              <p class="mb-0 text-body-emphasis small">
+                Você possui alterações pendentes nesta corrida. Tem certeza de que deseja fechar o modal? Todas as modificações não salvas serão permanentemente perdidas.
+              </p>
+            </div>
+            <div class="modal-footer border-secondary-subtle py-2">
+              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Continuar Editando</button>
+              <button type="button" id="btn-confirm-discard-changes" class="btn btn-sm btn-warning text-dark fw-semibold px-3">Descartar</button>
             </div>
           </div>
         </div>

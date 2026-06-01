@@ -71,10 +71,15 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       </style>
 
       <div class="col-12 text-start">
-        <h6 class="fw-bold text-body-emphasis mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
-          <i class="mdi mdi-table-large text-primary fs-5"></i>
-          Classificação
-        </h6>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="fw-bold text-body-emphasis mb-0 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+            <i class="mdi mdi-table-large text-primary fs-5"></i>
+            Classificação
+          </h6>
+          <button type="button" id="btn-clear-quali" class="btn btn-sm text-danger px-2 py-1 shadow-sm d-flex align-items-center justify-content-center" title="Zerar classificação" style="height: 30px; width: 30px; outline: none; box-shadow: none;">
+            <i class="mdi mdi-trash-can-outline fs-5"></i>
+          </button>
+        </div>
         <div class="table-responsive border border-secondary-subtle rounded-3 overflow-hidden shadow-sm bg-body-tertiary">
           <table class="table table-borderless align-middle mb-0 text-center" style="background: transparent;">
             <thead class="bg-body-secondary border-bottom border-secondary-subtle text-secondary small text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">
@@ -93,6 +98,30 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
               <!-- Table rows rendered dynamically -->
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Confirmation Modal for Clearing Standings -->
+      <div class="modal fade" id="modal-confirm-clear-quali" tabindex="-1" aria-labelledby="modal-confirm-clear-quali-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+          <div class="modal-content border-danger-subtle">
+            <div class="modal-header bg-danger bg-opacity-10 border-danger-subtle py-2.5">
+              <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="modal-confirm-clear-quali-title" style="font-size: 0.95rem;">
+                <i class="mdi mdi-alert-circle-outline fs-5"></i>
+                Confirmar Limpeza de Classificação
+              </h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start py-3">
+              <p class="mb-0 text-body-emphasis small">
+                Tem certeza de que deseja zerar todas as voltas e tempos de todos os pilotos nesta corrida? Esta ação é irreversível e excluirá permanentemente todos os registros de telemetria desta classificação.
+              </p>
+            </div>
+            <div class="modal-footer border-secondary-subtle py-2">
+              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" id="btn-confirm-clear-quali-action" class="btn btn-sm btn-danger fw-semibold px-3">Zerar Tudo</button>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -344,6 +373,9 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
             updateDiffStyles(true);
           }
         }
+
+        // Notify parent modal of quali/laps updates
+        window.dispatchEvent(new CustomEvent('raceQualiUpdated'));
       };
 
       const sessionLapsEl = accordionRow.querySelector(`#session-laps-${item.pilotId}`);
@@ -378,6 +410,46 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       tableBody.appendChild(row);
       tableBody.appendChild(accordionRow);
     });
+
+    // Setup Clear Quali Button listener
+    const clearBtn = this.querySelector('#btn-clear-quali');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        const confirmModalEl = this.querySelector('#modal-confirm-clear-quali');
+        if (confirmModalEl) {
+          let confirmModalInstance = bootstrap.Modal.getInstance(confirmModalEl);
+          if (!confirmModalInstance) {
+            confirmModalInstance = new bootstrap.Modal(confirmModalEl);
+          }
+          confirmModalInstance.show();
+
+          const actionBtn = confirmModalEl.querySelector('#btn-confirm-clear-quali-action');
+          if (actionBtn) {
+            const newActionBtn = actionBtn.cloneNode(true);
+            actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
+
+            newActionBtn.addEventListener('click', () => {
+              // Clear quali metrics for all pilots
+              this.race.quali = this.race.quali.map(q => ({
+                ...q,
+                laps: 0,
+                bestLapIndex: 0,
+                bestLapTime: 0,
+                lapTimes: []
+              }));
+
+              // Re-render table
+              this.populateQualiTable();
+
+              // Notify parent modal of quali/laps updates
+              window.dispatchEvent(new CustomEvent('raceQualiUpdated'));
+
+              confirmModalInstance.hide();
+            });
+          }
+        }
+      });
+    }
   }
 }
 
