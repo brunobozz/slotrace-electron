@@ -18,9 +18,19 @@ window.localeStrings.en = {
     drivers: "Drivers",
     cars: "Cars",
     tracks: "Tracks",
+    races: "Races",
+    load_race: "Load Race",
     new_driver: "New Driver",
     new_car: "New Car",
     new_track: "New Track",
+    new_race: "New Race",
+    default_track: "Default Track",
+    no_pilots_participated: "No drivers participated in this race yet.",
+    edit_race: "Rename Race",
+    delete_race: "Delete Race",
+    rename_race_prompt: "Enter the new name for this race:",
+    confirm_delete_race: "Are you sure you want to delete this race from history?",
+    search_race_placeholder: "Search race...",
     no_drivers_listed: "No drivers registered yet.",
     search_placeholder: "Search driver...",
     no_drivers_found: "No pilots match your search.",
@@ -133,6 +143,11 @@ window.localeStrings.en = {
       validation_name: "Please enter a valid track name.",
       validation_lanes: "Please enter a valid lane count.",
       lane_label: "Lane"
+    },
+    races_modal: {
+      delete_title: "Delete Race",
+      delete_confirm_prefix: "Are you sure you want to delete the race ",
+      delete_confirm_suffix: "? This action cannot be undone and will remove the record from history."
     }
   },
   settings: {
@@ -246,6 +261,7 @@ window.localeStrings.en = {
     },
     results: {
       title: "Race Results",
+      history_badge: "History",
       podium_title: "Grand Prix Podium",
       leaderboard_title: "Detailed Results",
       save_btn: "Save Race",

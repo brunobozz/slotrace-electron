@@ -54,13 +54,39 @@ class SlotRaceRaceResults extends HTMLElement {
           finalZone: s.finalZone,
           bestLap: s.bestLap,
           avgLap: s.avgLap
-        }))
+        })),
+        // Serialize full setup, qualifying, and telemetry session states
+        qualifyLane: this._session.qualifyLane || null,
+        qualificationStandings: this._session.qualificationStandings || [],
+        startingGrid: this._session.startingGrid || [],
+        deck: this._session.deck || [],
+        qualifyingOrder: this._session.qualifyingOrder || [],
+        pilotLaps: this._session.pilotLaps || {},
+        activePilotIndex: this._session.activePilotIndex || -1,
+        isRunStarted: this._session.isRunStarted || false,
+        resultsData: this._session.resultsData || null,
+        currentHeat: this._session.currentHeat || 1,
+        isPaused: true,
+        isInterval: this._session.isInterval || false,
+        isHeatStarted: this._session.isHeatStarted || false,
+        timeLeft: this._session.timeLeft || 0,
+        activeLanes: this._session.activeLanes || null,
+        deckState: this._session.deckState || null,
+        pilotStats: this._session.pilotStats || null,
+        laneLastLapTime: this._session.laneLastLapTime || null,
+        laneRunStarted: this._session.laneRunStarted || null,
+        heatTime: this._session.heatTime || 180,
+        intervalTime: this._session.intervalTime || 10,
+        cutoffTime: this._session.cutoffTime || 3.0,
+        pilots: this._session.pilots || [],
+        track: this._session.track || null
       };
 
       racesList.push(newRace);
       return window.electronAPI.db.set('races', racesList);
     }).then(success => {
       if (success) {
+        window.dispatchEvent(new CustomEvent('raceListChanged'));
         const alertDiv = this.querySelector('#save-alert-container');
         if (alertDiv) {
           alertDiv.innerHTML = `
@@ -97,11 +123,16 @@ class SlotRaceRaceResults extends HTMLElement {
 
           <!-- Podium Area -->
           <div class="card border-secondary-subtle bg-body-tertiary shadow-sm mb-4">
-            <div class="card-header border-secondary-subtle bg-body-secondary py-2.5 px-3 text-center">
+            <div class="card-header border-secondary-subtle bg-body-secondary py-2.5 px-3 text-center position-relative">
               <h5 class="fw-bold text-body-emphasis mb-0 d-flex align-items-center justify-content-center gap-2">
                 <i class="mdi mdi-trophy text-warning fs-4"></i>
                 ${window.t('race.results.podium_title') || 'GP Podium Standings'}
               </h5>
+              ${this._session.isHistoryView ? `
+                <span class="position-absolute end-0 top-50 translate-middle-y me-3 badge border border-primary-subtle text-primary bg-primary bg-opacity-10 px-2.5 py-1 small fw-bold font-monospace" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                  <i class="mdi mdi-history me-1"></i> ${window.t('race.results.history_badge') || 'Histórico'}
+                </span>
+              ` : ''}
             </div>
             
             <div class="card-body p-4 pt-5 pb-4">
@@ -215,10 +246,12 @@ class SlotRaceRaceResults extends HTMLElement {
               <i class="mdi mdi-plus-circle-outline fs-5"></i>
               ${window.t('race.results.new_race_btn') || 'Nova Corrida'}
             </button>
-            <button id="btn-save-race" class="btn btn-primary px-4 py-2.5 fw-bold d-flex align-items-center gap-2">
-              <i class="mdi mdi-content-save-outline fs-5"></i>
-              ${window.t('race.results.save_btn') || 'Salvar Corrida'}
-            </button>
+            ${this._session.isHistoryView ? '' : `
+              <button id="btn-save-race" class="btn btn-primary px-4 py-2.5 fw-bold d-flex align-items-center gap-2">
+                <i class="mdi mdi-content-save-outline fs-5"></i>
+                ${window.t('race.results.save_btn') || 'Salvar Corrida'}
+              </button>
+            `}
           </div>
 
         </div>

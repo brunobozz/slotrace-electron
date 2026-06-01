@@ -96,6 +96,167 @@ class SlotRaceRace extends HTMLElement {
     // Dynamic resets will be handled by other explicit triggers in future updates.
   }
 
+  loadSavedRace(race) {
+    // Perform robust cleanup before loading new data
+    const activeTelemetry = this.querySelector('slotrace-race-telemetry');
+    if (activeTelemetry && typeof activeTelemetry.cleanup === 'function') {
+      activeTelemetry.cleanup();
+    }
+    const activeQualifying = this.querySelector('slotrace-race-qualifying');
+    if (activeQualifying && typeof activeQualifying.cleanup === 'function') {
+      activeQualifying.cleanup();
+    }
+
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    const standings = (race.standings || []).map(s => ({
+      pilot: {
+        id: s.pilotId,
+        name: s.pilotName,
+        nickname: s.pilotNickname || ''
+      },
+      totalLaps: s.totalLaps,
+      finalZone: s.finalZone,
+      bestLap: s.bestLap,
+      avgLap: s.avgLap
+    }));
+
+    this.session = {
+      id: race.id,
+      state: 'results',
+      raceName: race.name,
+      track: race.track || {
+        id: race.trackId,
+        name: race.trackName
+      },
+      pilots: race.pilots || standings.map(s => s.pilot),
+      heatTime: race.heatTime || 180,
+      intervalTime: race.intervalTime || 10,
+      cutoffTime: race.cutoffTime || 3.0,
+      qualifyLane: race.qualifyLane || null,
+      qualificationStandings: race.qualificationStandings || [],
+      startingGrid: race.startingGrid || [],
+      deck: race.deck || [],
+      resultsData: race.resultsData || {
+        standings: standings
+      },
+      qualifyingOrder: race.qualifyingOrder || [],
+      activePilotIndex: race.activePilotIndex !== undefined ? race.activePilotIndex : -1,
+      pilotLaps: race.pilotLaps || {},
+      isRunStarted: race.isRunStarted !== undefined ? race.isRunStarted : false,
+      date: race.date,
+      isHistoryView: true,
+      // Telemetry variables
+      currentHeat: race.currentHeat || 1,
+      isPaused: true,
+      isInterval: race.isInterval || false,
+      isHeatStarted: race.isHeatStarted || false,
+      timeLeft: race.timeLeft !== undefined ? race.timeLeft : (race.heatTime || 180),
+      activeLanes: race.activeLanes || null,
+      deckState: race.deckState || null,
+      pilotStats: race.pilotStats || null,
+      laneLastLapTime: race.laneLastLapTime || null,
+      laneRunStarted: race.laneRunStarted || null
+    };
+
+    this.visitedStates = new Set(['setup', 'qualifying', 'telemetry', 'results']);
+    this.render();
+  }
+
+  saveCurrentRace() {
+    const raceId = this.session.id || Date.now().toString();
+    this.session.id = raceId;
+
+    window.electronAPI.db.get('races').then(races => {
+      const racesList = races || [];
+      const existingIndex = racesList.findIndex(r => r.id === raceId);
+      
+      const newRace = {
+        id: raceId,
+        name: this.session.raceName,
+        trackName: this.session.track ? this.session.track.name : (window.t("registrations.default_track") || "Pista Padrão"),
+        trackId: this.session.track ? this.session.track.id : "",
+        date: this.session.date || new Date().toLocaleDateString(),
+        standings: (this.session.resultsData && this.session.resultsData.standings) 
+          ? this.session.resultsData.standings.map(s => ({
+              pilotId: s.pilot.id,
+              pilotName: s.pilot.name,
+              pilotNickname: s.pilot.nickname || '',
+              totalLaps: s.totalLaps,
+              finalZone: s.finalZone,
+              bestLap: s.bestLap,
+              avgLap: s.avgLap
+            }))
+          : [],
+        qualifyLane: this.session.qualifyLane || null,
+        qualificationStandings: this.session.qualificationStandings || [],
+        startingGrid: this.session.startingGrid || [],
+        deck: this.session.deck || [],
+        qualifyingOrder: this.session.qualifyingOrder || [],
+        pilotLaps: this.session.pilotLaps || {},
+        activePilotIndex: this.session.activePilotIndex || -1,
+        isRunStarted: this.session.isRunStarted || false,
+        resultsData: this.session.resultsData || null,
+        currentHeat: this.session.currentHeat || 1,
+        isPaused: true,
+        isInterval: this.session.isInterval || false,
+        isHeatStarted: this.session.isHeatStarted || false,
+        timeLeft: this.session.timeLeft || 0,
+        activeLanes: this.session.activeLanes || null,
+        deckState: this.session.deckState || null,
+        pilotStats: this.session.pilotStats || null,
+        laneLastLapTime: this.session.laneLastLapTime || null,
+        laneRunStarted: this.session.laneRunStarted || null,
+        heatTime: this.session.heatTime || 180,
+        intervalTime: this.session.intervalTime || 10,
+        cutoffTime: this.session.cutoffTime || 3.0,
+        pilots: this.session.pilots || [],
+        track: this.session.track || null
+      };
+
+      if (existingIndex >= 0) {
+        racesList[existingIndex] = newRace;
+      } else {
+        racesList.push(newRace);
+      }
+
+      return window.electronAPI.db.set('races', racesList);
+    }).then(success => {
+      if (success) {
+        window.dispatchEvent(new CustomEvent('raceListChanged'));
+        this.showSaveBanner();
+      }
+    }).catch(err => {
+      console.error('Failed to save current race state:', err);
+    });
+  }
+
+  showSaveBanner() {
+    const existing = this.querySelector('#header-save-success-banner');
+    if (existing) existing.remove();
+
+    const banner = document.createElement('div');
+    banner.id = 'header-save-success-banner';
+    banner.className = 'alert alert-success border-success-subtle bg-success bg-opacity-10 py-2.5 px-3 small mb-3 text-success-emphasis text-center fw-semibold fade-in';
+    banner.innerHTML = `
+      <i class="mdi mdi-check-decagram-outline me-1"></i> ${window.t('race.results.save_success') || 'Corrida salva no histórico com sucesso!'}
+    `;
+
+    const stepperCard = this.querySelector('.card.mb-4');
+    if (stepperCard) {
+      stepperCard.parentNode.insertBefore(banner, stepperCard);
+    }
+
+    setTimeout(() => {
+      banner.classList.add('fade-out');
+      setTimeout(() => banner.remove(), 300);
+    }, 3000);
+  }
+
   resetSession() {
     // Explicitly clean up any active timers/listeners in sub-components before removing them
     const activeTelemetry = this.querySelector('slotrace-race-telemetry');
@@ -194,20 +355,32 @@ class SlotRaceRace extends HTMLElement {
     const container = document.createElement('div');
     container.className = 'container-fluid px-0 py-3';
 
-    // Renders the header dynamically based on state
-    let stateDesc = window.t('race.desc') || 'Race management and live telemetry.';
-    if (this.session.state === 'qualifying') {
-      stateDesc = window.t('race.qualifying.title') || 'Qualifying Session';
-    } else if (this.session.state === 'telemetry') {
-      stateDesc = window.t('race.telemetry.title') || 'Race Telemetry';
-    } else if (this.session.state === 'results') {
-      stateDesc = window.t('race.results.title') || 'Race Results';
+    const headerRow = document.createElement('div');
+    headerRow.className = 'd-flex justify-content-between align-items-center mb-3 mt-1 pb-2 border-bottom border-secondary-subtle border-opacity-25';
+    
+    let titleText = window.t('navbar.race') || 'Race';
+    if (this.session.isHistoryView) {
+      titleText = `${titleText} (${window.t('race.results.history_badge') || 'Histórico'})`;
     }
 
-    const header = document.createElement('slotrace-header');
-    header.setAttribute('title', window.t('navbar.race') || 'Race');
-    header.setAttribute('description', stateDesc);
-    container.appendChild(header);
+    headerRow.innerHTML = `
+      <div class="d-flex align-items-center gap-2">
+        <i class="mdi mdi-flag-checkered text-primary fs-3"></i>
+        <h3 class="fw-bold text-body-emphasis mb-0" style="font-size: 1.6rem; letter-spacing: -0.5px;">${titleText}</h3>
+      </div>
+      <button id="btn-header-save-race" class="btn btn-primary px-3 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm transition-hover">
+        <i class="mdi mdi-content-save-outline fs-5"></i>
+        <span>${window.t('race.results.save_btn') || 'Salvar Corrida'}</span>
+      </button>
+    `;
+    container.appendChild(headerRow);
+
+    const saveBtn = headerRow.querySelector('#btn-header-save-race');
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        this.saveCurrentRace();
+      };
+    }
 
     // Build the Stepper progress bar
     const stepperCard = document.createElement('div');

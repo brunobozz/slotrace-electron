@@ -18,9 +18,19 @@ window.localeStrings.es = {
     drivers: "Pilotos",
     cars: "Coches",
     tracks: "Pistas",
+    races: "Carreras",
+    load_race: "Cargar Carrera",
     new_driver: "Nuevo Piloto",
     new_car: "Nuevo Coche",
     new_track: "Nueva Pista",
+    new_race: "Nueva Carrera",
+    default_track: "Pista Estándar",
+    no_pilots_participated: "Ningún piloto participó en esta carrera aún.",
+    edit_race: "Renombrar Carrera",
+    delete_race: "Eliminar Carrera",
+    rename_race_prompt: "Introduzca el nuevo nombre de esta carrera:",
+    confirm_delete_race: "¿Está seguro de que desea eliminar esta carrera del historial?",
+    search_race_placeholder: "Buscar carrera...",
     no_drivers_listed: "Ningún piloto registrado aún.",
     search_placeholder: "Buscar piloto...",
     no_drivers_found: "Ningún piloto encontrado para esta búsqueda.",
@@ -133,6 +143,11 @@ window.localeStrings.es = {
       validation_name: "Por favor, introduzca un nombre de trazado válido.",
       validation_lanes: "Por favor, introduzca el número de carriles.",
       lane_label: "Carril"
+    },
+    races_modal: {
+      delete_title: "Eliminar Carrera",
+      delete_confirm_prefix: "¿Está seguro de que desea eliminar la carrera ",
+      delete_confirm_suffix: "? Esta acción no se puede deshacer y eliminará el registro del historial."
     }
   },
   settings: {
@@ -246,6 +261,7 @@ window.localeStrings.es = {
     },
     results: {
       title: "Resultados de la Carrera",
+      history_badge: "Historial",
       podium_title: "Podio del Gran Premio",
       leaderboard_title: "Resultados Detallados",
       save_btn: "Guardar Carrera",
