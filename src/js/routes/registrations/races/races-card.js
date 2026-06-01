@@ -61,24 +61,24 @@ class SlotRaceRegistrationsRacesCard extends HTMLElement {
               <i class="mdi mdi-go-kart-track text-secondary opacity-50" style="font-size: 56px; line-height: 1;"></i>
             </div>
           `}
+          
+          <!-- Gradient overlay on image footer for Race and Track names -->
+          <div class="position-absolute bottom-0 start-0 w-100 p-3 text-start d-flex flex-column justify-content-end" style="background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%); min-height: 60%;">
+            <h4 class="fw-bold text-white mb-1 text-truncate" title="${name}" style="font-size: 1.15rem; line-height: 1.2; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+              ${name}
+            </h4>
+            <div class="d-flex align-items-center gap-1 text-white-50 small text-truncate" title="${trackName}">
+              <i class="mdi mdi-go-kart-track fs-5 text-primary"></i>
+              <span class="text-truncate fw-medium text-white" style="opacity: 0.85;">${trackName}</span>
+            </div>
+          </div>
         </div>
 
         <div class="card-body p-3 d-flex flex-column justify-content-between">
           
-          <!-- Race Name & Track -->
-          <div class="text-start mb-3">
-            <h4 class="fw-bold text-body-emphasis mb-1 text-truncate" title="${name}" style="font-size: 1.2rem; line-height: 1.2;">
-              ${name}
-            </h4>
-            <div class="d-flex align-items-center gap-1.5 text-secondary small mt-1.5 text-truncate" title="${trackName}">
-              <i class="mdi mdi-go-kart-track fs-5 text-primary"></i>
-              <span class="text-truncate fw-medium">${trackName}</span>
-            </div>
-          </div>
-          
           <!-- Winner / Status Section -->
-          <div class="bg-body-secondary bg-opacity-50 border border-secondary-subtle border-opacity-10 rounded p-2.5 mb-2 text-start">
-            ${winnerName ? `
+          ${winnerName ? `
+            <div class="bg-body-secondary bg-opacity-50 border border-secondary-subtle border-opacity-10 rounded p-2.5 mb-2 text-start">
               <div class="d-flex align-items-center gap-2">
                 <div class="bg-warning bg-opacity-10 rounded-circle p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; border: 1px solid rgba(255,193,7,0.25);">
                   <i class="mdi mdi-trophy text-warning fs-5"></i>
@@ -88,13 +88,8 @@ class SlotRaceRegistrationsRacesCard extends HTMLElement {
                   <div class="fw-bold text-body-emphasis text-truncate" style="font-size: 0.95rem;">${winnerName}</div>
                 </div>
               </div>
-            ` : `
-              <div class="d-flex align-items-center gap-2 text-secondary py-1">
-                <i class="mdi mdi-account-multiple-outline fs-5"></i>
-                <span class="small fw-normal lh-sm">${window.t('registrations.no_pilots_participated') || 'Nenhum piloto participou desta corrida ainda.'}</span>
-              </div>
-            `}
-          </div>
+            </div>
+          ` : ''}
 
           <!-- Divider Line -->
           <hr class="my-2 border-secondary-subtle opacity-25">

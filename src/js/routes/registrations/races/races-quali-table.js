@@ -177,10 +177,8 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
 
       const currentBest = parseFloat(item.bestLapTime) || 0;
       let diffHtml = '';
-      if (currentBest === 0 || leaderTime === 0) {
-        diffHtml = `<span class="text-secondary label-quali-diff" style="font-size: 1.05rem; font-family: monospace;">-</span>`;
-      } else if (index === 0) {
-        diffHtml = `<span class="text-secondary label-quali-diff" style="font-size: 1.05rem; font-family: monospace;">-</span>`;
+      if (currentBest === 0 || leaderTime === 0 || index === 0) {
+        diffHtml = `<span class="text-secondary label-quali-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
       } else {
         const diff = currentBest - leaderTime;
         diffHtml = `<span class="diff-time-has fw-semibold label-quali-diff" style="font-size: 1.05rem; font-family: monospace;">+${diff.toFixed(3)}</span>`;
@@ -209,13 +207,13 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
           <span class="fw-semibold text-body-emphasis label-quali-laps" style="font-size: 0.95rem;">${item.laps}</span>
         </td>
         <td class="align-middle">
-          <span class="fw-semibold text-body-emphasis label-quali-best-index" style="font-size: 0.95rem;">${item.bestLapIndex || '-'}</span>
+          <span class="label-quali-best-index" style="font-family: inherit;">${item.bestLapIndex || '-'}</span>
         </td>
         <td class="align-middle text-end">
           ${diffHtml}
         </td>
         <td class="align-middle text-end">
-          <span class="fw-bold label-quali-best-time px-2 ${item.bestLapTime ? (index === 0 ? 'best-time-leader' : 'best-time-others') : 'best-time-none'}" style="font-size: 1.05rem; font-family: monospace;">${item.bestLapTime ? parseFloat(item.bestLapTime).toFixed(3) : '-'}</span>
+          <span class="label-quali-best-time px-2" style="font-size: 1.05rem;">${item.bestLapTime ? parseFloat(item.bestLapTime).toFixed(3) : '-'}</span>
         </td>
         <td class="align-middle text-center">
           <button type="button" class="btn btn-sm btn-link text-secondary btn-toggle-laps p-1" data-pilot-id="${item.pilotId}" title="Ver tempos de voltas" style="outline: none; box-shadow: none;">
@@ -239,6 +237,44 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       const labelBestTime = row.querySelector('.label-quali-best-time');
       const labelDiff = row.querySelector('.label-quali-diff');
 
+      const updateBestIndexStyles = (hasValue) => {
+        if (!labelBestIndex) return;
+        if (hasValue) {
+          labelBestIndex.className = 'fw-semibold text-body-emphasis label-quali-best-index';
+          labelBestIndex.style.fontSize = '0.95rem';
+        } else {
+          labelBestIndex.className = 'text-secondary label-quali-best-index';
+          labelBestIndex.style.fontSize = '1.05rem';
+        }
+      };
+
+      const updateBestTimeStyles = (hasValue) => {
+        if (!labelBestTime) return;
+        if (hasValue) {
+          labelBestTime.className = `label-quali-best-time px-2 ${index === 0 ? 'fw-bold best-time-leader' : 'fw-bold best-time-others'}`;
+          labelBestTime.style.fontFamily = 'monospace';
+        } else {
+          labelBestTime.className = 'text-secondary best-time-none label-quali-best-time px-2';
+          labelBestTime.style.fontFamily = 'inherit';
+        }
+      };
+
+      const updateDiffStyles = (hasValue) => {
+        if (!labelDiff) return;
+        if (hasValue) {
+          labelDiff.className = 'diff-time-has fw-semibold label-quali-diff';
+          labelDiff.style.fontFamily = 'monospace';
+        } else {
+          labelDiff.className = 'text-secondary label-quali-diff';
+          labelDiff.style.fontFamily = 'inherit';
+        }
+      };
+
+      // Apply initial styling dynamically to ensure exact consistency
+      updateBestIndexStyles(!!item.bestLapIndex);
+      updateBestTimeStyles(!!item.bestLapTime);
+      updateDiffStyles(parseFloat(item.bestLapTime) > 0 && leaderTime > 0 && index > 0);
+
       const recalculateQualiMetrics = (record) => {
         record.laps = record.lapTimes.length;
         
@@ -260,17 +296,23 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
 
         // Update main labels in real-time
         if (labelLaps) labelLaps.textContent = record.laps;
-        if (labelBestIndex) labelBestIndex.textContent = record.bestLapIndex || '-';
+        if (labelBestIndex) {
+          labelBestIndex.textContent = record.bestLapIndex || '-';
+          updateBestIndexStyles(!!record.bestLapIndex);
+        }
         if (labelBestTime) {
           labelBestTime.textContent = record.bestLapTime ? parseFloat(record.bestLapTime).toFixed(3) : '-';
+          updateBestTimeStyles(!!record.bestLapTime);
         }
         if (labelDiff) {
           const currentBest = parseFloat(record.bestLapTime) || 0;
           if (currentBest === 0 || leaderTime === 0 || index === 0) {
             labelDiff.textContent = '-';
+            updateDiffStyles(false);
           } else {
             const diff = currentBest - leaderTime;
             labelDiff.textContent = diff >= 0 ? `+${diff.toFixed(3)}` : `+0.000`;
+            updateDiffStyles(true);
           }
         }
       };
