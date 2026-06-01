@@ -53,6 +53,11 @@ class SlotRaceRegistrations extends HTMLElement {
             <div id="subview-tracks" class="subview-section d-none fade-in">
               <slotrace-registrations-tracks></slotrace-registrations-tracks>
             </div>
+
+            <!-- Races Sub-view -->
+            <div id="subview-races" class="subview-section d-none fade-in">
+              <slotrace-registrations-races></slotrace-registrations-races>
+            </div>
           </div>
         </div>
       </div>
