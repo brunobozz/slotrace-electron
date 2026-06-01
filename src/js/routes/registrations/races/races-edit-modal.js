@@ -29,6 +29,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
         this.populateDropdowns();
 
+        // Populate type field
+        const typeSelect = this.querySelector('#select-race-edit-type');
+        if (typeSelect) {
+          typeSelect.value = race.type || 'grand_prix';
+        }
+
         // Populate name field
         const nameInput = this.querySelector('#input-race-edit-name');
         if (nameInput) {
@@ -237,6 +243,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         e.preventDefault();
         if (!this.race) return;
 
+        const typeSelect = this.querySelector('#select-race-edit-type');
+        const selectedType = typeSelect ? typeSelect.value : 'grand_prix';
+
         const nameInput = this.querySelector('#input-race-edit-name');
         const selectedTrackId = trackSelect ? trackSelect.value : '';
         const dateInput = this.querySelector('#input-race-edit-date');
@@ -269,6 +278,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
               return {
                 ...r,
                 name: newName || r.name,
+                type: selectedType,
                 trackId: selectedTrackId,
                 trackName: selectedTrackName,
                 date: selectedDateISO,
@@ -325,18 +335,28 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
             
             <form id="form-edit-race">
               <div class="modal-body text-start py-4 fs-6">
-                <!-- 3 Inputs in 1 Row: Nome (col-5), Pista (col-5), Data (col-2) -->
+                <!-- 4 Inputs in 1 Row: Tipo (col-3), Nome (col-4), Pista (col-3), Data (col-2) -->
                 <div class="row g-3">
-                  <!-- Nome col-5 -->
-                  <div class="col-5">
+                  <!-- Tipo col-3 -->
+                  <div class="col-3">
+                    <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
+                      Tipo de Corrida
+                    </label>
+                    <select id="select-race-edit-type" class="form-select">
+                      <option value="grand_prix">Grande Prêmio</option>
+                    </select>
+                  </div>
+
+                  <!-- Nome col-4 -->
+                  <div class="col-4">
                     <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
                       ${window.t('registrations.modal.name_label') || 'Nome'}
                     </label>
                     <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t('registrations.new_race') || 'Nome da Corrida'}">
                   </div>
 
-                  <!-- Pista col-5 -->
-                  <div class="col-5">
+                  <!-- Pista col-3 -->
+                  <div class="col-3">
                     <label for="select-race-edit-track" class="form-label fw-semibold text-secondary small">
                       ${window.t('registrations.races_modal.track_label') || 'Pista Utilizada'}
                     </label>

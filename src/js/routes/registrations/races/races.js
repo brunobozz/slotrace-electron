@@ -51,7 +51,8 @@ class SlotRaceRegistrationsRaces extends HTMLElement {
           trackId: '',
           trackName: defaultTrack,
           winner: '',
-          pilots: []
+          pilots: [],
+          type: 'grand_prix'
         };
 
         // Prepend so it is listed first

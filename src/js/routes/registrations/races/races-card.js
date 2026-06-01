@@ -42,7 +42,9 @@ class SlotRaceRegistrationsRacesCard extends HTMLElement {
           <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-between px-3" style="background: linear-gradient(to right, rgba(17,17,17,0.9), rgba(17,17,17,0.4));">
             <div class="d-flex align-items-center gap-2">
               <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
-              <span class="text-secondary small fw-semibold" style="letter-spacing: 0.05em;">HISTÓRICO</span>
+              <span class="text-primary small fw-bold" style="letter-spacing: 0.05em; text-transform: uppercase;">
+                ${race.type === 'grand_prix' || !race.type ? 'Grande Prêmio' : race.type}
+              </span>
             </div>
             ${dateStr ? `
               <span class="badge border border-secondary-subtle text-secondary px-2 py-1" style="font-size: 0.7rem; background: rgba(0, 0, 0, 0.35);">

@@ -14,6 +14,16 @@ class SlotRaceRegistrationsTab extends HTMLElement {
 
   render() {
     this.innerHTML = `
+      <style>
+        .nav-tabs .nav-link:not(.active) {
+          color: #ffffff !important;
+          opacity: 0.75;
+          transition: opacity 0.15s ease-in-out;
+        }
+        .nav-tabs .nav-link:not(.active):hover {
+          opacity: 1;
+        }
+      </style>
       <ul class="nav nav-tabs nav-justified border-secondary-subtle mb-4" id="registrations-tabs" role="tablist">
         <li class="nav-item" role="presentation">
           <a class="nav-link d-flex align-items-center justify-content-center gap-2" id="subnav-drivers" href="#registrations/drivers" role="tab">
