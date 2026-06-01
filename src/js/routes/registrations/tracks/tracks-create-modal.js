@@ -31,7 +31,10 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
       if (nameInput) nameInput.value = track.name || '';
       if (scaleInput) scaleInput.value = track.scale || '';
-      if (lanesInput) lanesInput.value = track.lanes || '';
+      if (lanesInput) {
+        lanesInput.value = track.lanes || '';
+        this.generateLaneColorInputs(track.lanes, track.laneColors || []);
+      }
       if (lengthInput) lengthInput.value = track.length || '';
       if (powerbarsInput) powerbarsInput.value = track.powerbars || '';
 
@@ -123,6 +126,30 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       });
     }
 
+    // Handle lanes input changes to dynamically render color pickers
+    const lanesInput = this.querySelector('#input-track-lanes');
+    if (lanesInput) {
+      lanesInput.addEventListener('input', (e) => {
+        const count = parseInt(e.target.value) || 0;
+        const currentColors = [];
+        const container = this.querySelector('#lanes-colors-container');
+        if (container) {
+          const rows = container.querySelectorAll('.lane-color-row');
+          rows.forEach(row => {
+            const num = parseInt(row.getAttribute('data-lane-number'));
+            const colorInput = row.querySelector('input[type="color"]');
+            if (colorInput) {
+              currentColors.push({
+                number: num,
+                color: colorInput.value
+              });
+            }
+          });
+        }
+        this.generateLaneColorInputs(count, currentColors);
+      });
+    }
+
     // Handle photo selection and crop modal triggers
     if (fileInput) {
       fileInput.addEventListener('change', (e) => {
@@ -159,6 +186,23 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
         const lengthVal = lengthInput ? lengthInput.value.trim() : '';
         const powerbarsVal = powerbarsInput ? powerbarsInput.value.trim() : '';
 
+        // Collect lane colors with order objects
+        const laneColors = [];
+        const colorsContainer = this.querySelector('#lanes-colors-container');
+        if (colorsContainer) {
+          const rows = colorsContainer.querySelectorAll('.lane-color-row');
+          rows.forEach(row => {
+            const num = parseInt(row.getAttribute('data-lane-number'));
+            const colorInput = row.querySelector('input[type="color"]');
+            if (colorInput) {
+              laneColors.push({
+                number: num,
+                color: colorInput.value
+              });
+            }
+          });
+        }
+
         window.electronAPI.db.get('tracks').then(tracks => {
           const tracksList = tracks || [];
 
@@ -172,6 +216,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
               tracksList[trackIndex].length = lengthVal;
               tracksList[trackIndex].powerbars = powerbarsVal;
               tracksList[trackIndex].photo = this.trackPhotoBase64 || '';
+              tracksList[trackIndex].laneColors = laneColors;
               // Keep original record fields untouched
               tracksList[trackIndex].recordTime = this.editTrackRecordTime;
               tracksList[trackIndex].recordPilotId = this.editTrackRecordPilotId;
@@ -187,7 +232,8 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
               powerbars: powerbarsVal,
               recordTime: '',
               recordPilotId: '',
-              photo: this.trackPhotoBase64 || ''
+              photo: this.trackPhotoBase64 || '',
+              laneColors: laneColors
             };
             tracksList.push(newTrack);
           }
@@ -230,8 +276,153 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
           imgPreview.classList.add('d-none');
           iconPlaceholder.classList.remove('d-none');
         }
+
+        // Clean dynamic lanes container
+        const container = this.querySelector('#lanes-colors-container');
+        if (container) container.innerHTML = '';
       });
     }
+  }
+
+  generateLaneColorInputs(count, existingColors = []) {
+    const container = this.querySelector('#lanes-colors-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const num = parseInt(count) || 0;
+    if (num <= 0) return;
+
+    const defaultColors = [
+      '#dc3545', // Red
+      '#0d6efd', // Blue
+      '#ffffff', // White
+      '#ffc107', // Yellow
+      '#198754', // Green
+      '#fd7e14', // Orange
+      '#6f42c1', // Purple
+      '#0dcaf0'  // Cyan
+    ];
+
+    const laneWord = window.localeStrings[window.currentLanguage]?.registrations?.tracks_modal?.lane_label || 
+                     (window.currentLanguage === 'pt' ? 'Fenda' : (window.currentLanguage === 'es' ? 'Carril' : 'Lane'));
+
+    // Normalize existingColors to array of objects
+    let normalized = existingColors.map((item, idx) => {
+      if (item && typeof item === 'object') return item;
+      return { number: idx + 1, color: item || defaultColors[idx % defaultColors.length] };
+    });
+
+    // If count increased, pad with new items
+    if (normalized.length < num) {
+      let maxNum = 0;
+      normalized.forEach(item => {
+        if (item.number > maxNum) maxNum = item.number;
+      });
+      
+      const needed = num - normalized.length;
+      for (let k = 0; k < needed; k++) {
+        const nextNumber = maxNum + k + 1;
+        const colorValue = defaultColors[(nextNumber - 1) % defaultColors.length];
+        normalized.push({ number: nextNumber, color: colorValue });
+      }
+    } else if (normalized.length > num) {
+      normalized = normalized.slice(0, num);
+    }
+
+    normalized.forEach(item => {
+      const number = item.number;
+      const colorValue = item.color;
+
+      const row = document.createElement('div');
+      row.className = 'lane-color-row d-flex align-items-center justify-content-between py-1.5';
+      row.setAttribute('data-lane-number', number);
+      row.setAttribute('draggable', 'false');
+      
+      row.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <!-- Drag handle icon -->
+          <i class="mdi mdi-drag-vertical text-secondary drag-handle" style="cursor: move; font-size: 1.25rem;" title="Drag to reorder"></i>
+          
+          <label class="fw-semibold small mb-0" style="color: ${colorValue} !important; transition: color 0.15s ease;">
+            ${laneWord} ${number}
+          </label>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="small fw-semibold text-uppercase font-monospace me-1" style="font-size: 0.8rem; color: ${colorValue} !important; transition: color 0.15s ease;">${colorValue}</span>
+          
+          <!-- Custom 2-line color picker swatch representing guide rail/braids -->
+          <div class="custom-color-swatch position-relative d-flex align-items-center justify-content-center border border-secondary-subtle" style="width: 44px; height: 32px; background-color: #1a1a1a; border-radius: 6px; cursor: pointer;">
+            <span class="lane-line" style="width: 3px; height: 18px; background-color: ${colorValue}; margin-right: 3px; border-radius: 1px; transition: background-color 0.15s ease;"></span>
+            <span class="lane-line" style="width: 3px; height: 18px; background-color: ${colorValue}; border-radius: 1px; transition: background-color 0.15s ease;"></span>
+            <input type="color" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;" value="${colorValue}">
+          </div>
+        </div>
+      `;
+
+      const colorInput = row.querySelector('input[type="color"]');
+      const labelElement = row.querySelector('label');
+      const textPreview = row.querySelector('span');
+      const laneLines = row.querySelectorAll('.lane-line');
+      
+      if (colorInput && labelElement && textPreview) {
+        colorInput.addEventListener('input', (e) => {
+          const newColor = e.target.value;
+          textPreview.textContent = newColor.toUpperCase();
+          textPreview.style.setProperty('color', newColor, 'important');
+          labelElement.style.setProperty('color', newColor, 'important');
+          
+          laneLines.forEach(line => {
+            line.style.backgroundColor = newColor;
+          });
+        });
+      }
+
+      this.setupDragAndDrop(row);
+      container.appendChild(row);
+    });
+  }
+
+  setupDragAndDrop(row) {
+    const handle = row.querySelector('.drag-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', () => {
+        row.setAttribute('draggable', 'true');
+      });
+      handle.addEventListener('mouseup', () => {
+        row.setAttribute('draggable', 'false');
+      });
+      handle.addEventListener('mouseleave', () => {
+        row.setAttribute('draggable', 'false');
+      });
+    }
+
+    row.addEventListener('dragstart', (e) => {
+      row.classList.add('opacity-50');
+      this._draggedRow = row;
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    row.addEventListener('dragend', () => {
+      row.classList.remove('opacity-50');
+      row.setAttribute('draggable', 'false');
+      this._draggedRow = null;
+    });
+
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (!this._draggedRow || this._draggedRow === row) return;
+
+      const container = this.querySelector('#lanes-colors-container');
+      const children = Array.from(container.children);
+      const draggedIndex = children.indexOf(this._draggedRow);
+      const targetIndex = children.indexOf(row);
+
+      if (draggedIndex < targetIndex) {
+        container.insertBefore(this._draggedRow, row.nextSibling);
+      } else {
+        container.insertBefore(this._draggedRow, row);
+      }
+    });
   }
 
   initCropper(dataUrl) {
@@ -487,6 +678,9 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
                     <input type="text" class="form-control p-2" id="input-track-scale" value="1:32" placeholder="${window.t('registrations.tracks_modal.scale_placeholder') || 'Enter scale'}">
                   </div>
                 </div>
+
+                <!-- Lanes colors container -->
+                <div id="lanes-colors-container" class="mb-3"></div>
 
                 <!-- Length and Powerbars row -->
                 <div class="row mb-4">

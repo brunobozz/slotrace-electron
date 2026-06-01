@@ -14,7 +14,13 @@ class SlotRaceNavbarMenu extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item me-2 me-lg-3">
+          <a class="btn btn-primary btn-sm px-3 fw-semibold d-flex align-items-center gap-1" id="nav-race" href="#race">
+            <i class="mdi mdi-flag-checkered"></i>
+            ${window.t('navbar.race') || 'Race'}
+          </a>
+        </li>
         <li class="nav-item">
           <a class="nav-link" id="nav-dashboard" href="#dashboard">${window.t('navbar.dashboard')}</a>
         </li>
@@ -32,16 +38,20 @@ class SlotRaceNavbarMenu extends HTMLElement {
     const parts = hash.replace('#', '').split('/');
     const mainRoute = parts[0] || 'dashboard';
     
+    const navRace = this.querySelector('#nav-race');
     const navDashboard = this.querySelector('#nav-dashboard');
     const navRegistrations = this.querySelector('#nav-registrations');
     const navSettings = this.querySelector('#nav-settings');
     
-    if (navDashboard && navRegistrations && navSettings) {
+    if (navRace && navDashboard && navRegistrations && navSettings) {
+      navRace.classList.remove('active');
       navDashboard.classList.remove('active');
       navRegistrations.classList.remove('active');
       navSettings.classList.remove('active');
       
-      if (mainRoute === 'settings') {
+      if (mainRoute === 'race') {
+        navRace.classList.add('active');
+      } else if (mainRoute === 'settings') {
         navSettings.classList.add('active');
       } else if (mainRoute === 'registrations') {
         navRegistrations.classList.add('active');

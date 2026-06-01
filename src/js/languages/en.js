@@ -1,6 +1,7 @@
 window.localeStrings = window.localeStrings || {};
 window.localeStrings.en = {
   navbar: {
+    race: "Race",
     dashboard: "Dashboard",
     registrations: "Registrations",
     settings: "Settings"
@@ -129,9 +130,9 @@ window.localeStrings.en = {
       delete_button_confirm: "Delete",
       crop_title: "Crop Track Photo",
       crop_help: "Drag to pan and use the slider to zoom",
-      crop_button: "Apply Crop",
       validation_name: "Please enter a valid track name.",
-      validation_lanes: "Please enter a valid lane count."
+      validation_lanes: "Please enter a valid lane count.",
+      lane_label: "Lane"
     }
   },
   settings: {
@@ -169,5 +170,97 @@ window.localeStrings.en = {
   },
   footer: {
     developed_by: "Developed by"
+  },
+  race: {
+    desc: "Offline telemetry, rotations, and qualifying race management.",
+    setup: {
+      title: "Configure New Race",
+      name_label: "Race Name",
+      name_placeholder: "Ex: Interlagos Grand Prix, Slot Car Cup",
+      track_label: "Selected Track",
+      track_placeholder: "Select track...",
+      type_label: "Race Type",
+      heat_time_label: "Race Time (per lane - seconds)",
+      interval_time_label: "Interval Time (between heats - seconds)",
+      cutoff_time_label: "Cut-off Time (minimum lap time - seconds)",
+      pilots_label: "Participating Pilots",
+      no_pilots_registered: "No pilots registered in the database yet.",
+      pilots_selected: "pilot(s) selected",
+      lanes_warning: "Warning: The selected track has {lanes} lanes. You selected {pilots} pilots.",
+      deck_info: "{deck} pilots will start on the DECK (bench) and enter during rotation.",
+      qualifying_toggle: "Run Qualifying Session (Grid Definition)",
+      qualifying_lane_label: "Qualifying Lane",
+      start_qualifying: "Go to Qualifying",
+      start_race: "Start Direct Race",
+      validation_name: "Please enter the race name.",
+      validation_track: "Please select a track.",
+      validation_pilots: "Please select at least 1 pilot.",
+      validation_heat_time: "Invalid heat time.",
+      validation_interval_time: "Invalid interval time.",
+      validation_cutoff_time: "Invalid cut-off time."
+    },
+    qualifying: {
+      title: "Qualifying Session",
+      subtitle: "All pilots qualify on the same lane ({lane}), one by one. Shuffling determines the order.",
+      shuffle_btn: "Draw Order",
+      shuffled_alert: "Pilots qualifying order shuffled successfully!",
+      active_pilot: "Pilot on Lane",
+      next_pilot: "Next Pilot",
+      finish_btn: "Complete Qualifying and Go to Race",
+      manual_trigger_btn: "Simulate Lap (Space / Enter)",
+      live_laps: "Registered Laps",
+      leaderboard: "Overall Standings",
+      rank_col: "Pos",
+      pilot_col: "Pilot",
+      best_lap_col: "Best Lap",
+      laps_count_col: "Laps",
+      no_laps: "No laps registered yet.",
+      best_lap_abbr: "B. Lap"
+    },
+    telemetry: {
+      title: "Race Telemetry",
+      heat_label: "HEAT",
+      interval_label: "INTERVAL",
+      paused: "PAUSED",
+      running: "RUNNING",
+      start_btn: "Start",
+      pause_btn: "Pause",
+      next_heat_btn: "Next Heat",
+      reset_btn: "Abort Race",
+      reset_confirm: "Are you sure you want to abort the current race? All session data will be lost.",
+      deck_title: "DECK (Waiting Queue)",
+      first_to_enter: "1st to enter",
+      next_to_enter: "nd to enter",
+      leaderboard_title: "Real-time Leaderboard",
+      laps_abbr: "L",
+      best_lap_abbr: "Best",
+      avg_lap_abbr: "Avg",
+      lap_trigger_btn: "Trigger Lap",
+      modal_rotation_title: "End of Heat {heat} - Rotation",
+      modal_rotation_desc: "Pilot <strong>{pilot}</strong> finished their heat on this lane and will move to the DECK. Please enter the final track sector zone where their car stopped.",
+      modal_zone_label: "Stop Sector Zone",
+      modal_zone_placeholder: "Ex: 15, 42",
+      modal_zone_help: "Enter the physical sector zone so that this pilot starts from the exact same sector when they re-enter the track in a later heat.",
+      confirm_rotation: "Confirm Rotation",
+      validation_zone: "Please enter a valid zone number."
+    },
+    results: {
+      title: "Race Results",
+      podium_title: "Grand Prix Podium",
+      leaderboard_title: "Detailed Results",
+      save_btn: "Save Race",
+      new_race_btn: "New Race",
+      save_success: "Race saved to history successfully!",
+      modal_final_title: "End of Race - Final Sector Zones",
+      modal_final_desc: "Please enter the final sector zone where each active pilot stopped their car in the last heat:",
+      confirm_final: "Confirm Results",
+      pos_col: "Pos",
+      pilot_col: "Pilot",
+      laps_col: "Total Laps",
+      zone_col: "Final Zone",
+      best_lap_col: "Best Lap",
+      avg_lap_col: "Avg Lap",
+      score_col: "Result"
+    }
   }
 };

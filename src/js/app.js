@@ -169,18 +169,22 @@ function handleRoute() {
   }
 
   // Update active status in the Header Navbar Links
+  const navRace = document.getElementById('nav-race');
   const navDashboard = document.getElementById('nav-dashboard');
   const navRegistrations = document.getElementById('nav-registrations');
   const navSettings = document.getElementById('nav-settings');
 
   if (navDashboard && navRegistrations && navSettings) {
     // Reset all active classes
+    if (navRace) navRace.classList.remove('active');
     navDashboard.classList.remove('active');
     navRegistrations.classList.remove('active');
     navSettings.classList.remove('active');
     
     // Set active link based on current main route
-    if (mainRoute === 'settings') {
+    if (mainRoute === 'race') {
+      if (navRace) navRace.classList.add('active');
+    } else if (mainRoute === 'settings') {
       navSettings.classList.add('active');
     } else if (mainRoute === 'registrations') {
       navRegistrations.classList.add('active');
@@ -211,6 +215,11 @@ window.addEventListener('hashchange', handleRoute);
 
 // Initialize application on load
 window.addEventListener('DOMContentLoaded', () => {
+  // Disable focus trapping globally for Bootstrap modals to prevent input locking/freezes
+  if (window.bootstrap && bootstrap.Modal) {
+    bootstrap.Modal.Default.focus = false;
+  }
+
   // Restore saved primary color and dark/light theme on startup from Node.js database
   window.electronAPI.db.get('settings').then(settings => {
     if (settings) {

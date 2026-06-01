@@ -71,6 +71,48 @@ class SlotRaceRegistrationsTracksCard extends HTMLElement {
       recordHtml = `${recordPrefix}: <strong style="color: var(--bs-primary); font-weight: bold;">${track.recordTime}s${pilotSuffix}</strong>`;
     }
 
+    // Dynamic lane colors with robust fallback sequence
+    const defaultColors = [
+      '#dc3545', // Red
+      '#0d6efd', // Blue
+      '#ffffff', // White
+      '#ffc107', // Yellow
+      '#198754', // Green
+      '#fd7e14', // Orange
+      '#6f42c1', // Purple
+      '#0dcaf0'  // Cyan
+    ];
+    const numLanes = parseInt(track.lanes) || 0;
+    
+    // Normalize colors from database (backward compatible with string arrays and objects)
+    const normalizedColors = (track.laneColors || []).map((item, idx) => {
+      if (item && typeof item === 'object') return item;
+      return { number: idx + 1, color: item || defaultColors[idx % defaultColors.length] };
+    });
+
+    // If normalizedColors is empty or shorter, build standard list
+    if (normalizedColors.length === 0 && numLanes > 0) {
+      for (let i = 0; i < numLanes; i++) {
+        normalizedColors.push({
+          number: i + 1,
+          color: defaultColors[i % defaultColors.length]
+        });
+      }
+    }
+    
+    let laneColorsHtml = '';
+    if (numLanes > 0) {
+      laneColorsHtml = `
+        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap bg-body-secondary bg-opacity-50 rounded-pill px-3 py-1 border border-secondary-subtle" style="width: fit-content;">
+          ${normalizedColors.map(item => `
+            <div class="d-flex align-items-center" title="Lane ${item.number}: ${item.color}">
+              <span class="rounded-circle border border-white border-opacity-10 d-inline-block shadow-sm" style="width: 10px; height: 10px; background-color: ${item.color}; filter: drop-shadow(0 0 2px ${item.color}80);"></span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
     this.innerHTML = `
       <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover">
         <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -85,6 +127,9 @@ class SlotRaceRegistrationsTracksCard extends HTMLElement {
               </div>
             `}
           </div>
+          
+          <!-- Lane Colors Indicators -->
+          ${laneColorsHtml}
           
           <!-- Upper row: Track Name & Scale Badge side-by-side -->
           <div class="d-flex align-items-center justify-content-between mb-2 gap-2">

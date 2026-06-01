@@ -1,6 +1,7 @@
 window.localeStrings = window.localeStrings || {};
 window.localeStrings.es = {
   navbar: {
+    race: "Carrera",
     dashboard: "Panel",
     registrations: "Registros",
     settings: "Ajustes"
@@ -129,9 +130,9 @@ window.localeStrings.es = {
       delete_button_confirm: "Eliminar",
       crop_title: "Recortar Foto de la Pista",
       crop_help: "Arrastre la imagen para mover y use el control deslizante para ampliar",
-      crop_button: "Aplicar Recorte",
       validation_name: "Por favor, introduzca un nombre de trazado válido.",
-      validation_lanes: "Por favor, introduzca el número de carriles."
+      validation_lanes: "Por favor, introduzca el número de carriles.",
+      lane_label: "Carril"
     }
   },
   settings: {
@@ -169,5 +170,97 @@ window.localeStrings.es = {
   },
   footer: {
     developed_by: "Desarrollado por"
+  },
+  race: {
+    desc: "Gestión offline de telemetría, rotaciones y clasificación de carrera.",
+    setup: {
+      title: "Configurar Nueva Carrera",
+      name_label: "Nombre de la Carrera",
+      name_placeholder: "Ej: Gran Premio de Interlagos, Copa de Autorama",
+      track_label: "Pista Seleccionada",
+      track_placeholder: "Seleccione la pista...",
+      type_label: "Tipo de Carrera",
+      heat_time_label: "Tiempo de Carrera (por carril - segundos)",
+      interval_time_label: "Tiempo de Intervalo (entre mangas - segundos)",
+      cutoff_time_label: "Tiempo de Corte (tiempo de vuelta mínimo - segundos)",
+      pilots_label: "Pilotos Participantes",
+      no_pilots_registered: "Ningún piloto registrado en la base de datos aún.",
+      pilots_selected: "piloto(s) seleccionado(s)",
+      lanes_warning: "Atención: La pista seleccionada tiene {lanes} carriles. Seleccionó {pilots} pilotos.",
+      deck_info: "{deck} pilotos comenzarán en el DECK (banco de reserva) y entrarán durante la rotación.",
+      qualifying_toggle: "Realizar Sesión de Clasificación (Definición de Grid)",
+      qualifying_lane_label: "Carril de Clasificación",
+      start_qualifying: "Ir a Clasificación",
+      start_race: "Iniciar Carrera Directa",
+      validation_name: "Por favor, introduzca el nombre de la carrera.",
+      validation_track: "Por favor, seleccione una pista.",
+      validation_pilots: "Por favor, seleccione al menos 1 piloto.",
+      validation_heat_time: "Tiempo de manga inválido.",
+      validation_interval_time: "Tiempo de intervalo inválido.",
+      validation_cutoff_time: "Tiempo de corte inválido."
+    },
+    qualifying: {
+      title: "Sesión de Clasificación",
+      subtitle: "Todos los pilotos corren en el mismo carril ({lane}), uno por uno. El sorteo define el orden.",
+      shuffle_btn: "Sortear Orden",
+      shuffled_alert: "¡Orden de clasificación sorteado con éxito!",
+      active_pilot: "Piloto en Carril",
+      next_pilot: "Siguiente Piloto",
+      finish_btn: "Concluir Clasificación e Ir a Carrera",
+      manual_trigger_btn: "Simular Vuelta (Espacio / Enter)",
+      live_laps: "Vueltas Registradas",
+      leaderboard: "Clasificación General",
+      rank_col: "Pos",
+      pilot_col: "Piloto",
+      best_lap_col: "Mejor Vuelta",
+      laps_count_col: "Vueltas",
+      no_laps: "Ninguna vuelta registrada aún.",
+      best_lap_abbr: "M. Vuelta"
+    },
+    telemetry: {
+      title: "Telemetría de Carrera",
+      heat_label: "MANGA",
+      interval_label: "INTERVALO",
+      paused: "PAUSADO",
+      running: "EN CURSO",
+      start_btn: "Iniciar",
+      pause_btn: "Pausar",
+      next_heat_btn: "Siguiente Manga",
+      reset_btn: "Abortar Carrera",
+      reset_confirm: "¿Realmente desea abortar la carrera actual? Todos los datos de la sesión se perderán.",
+      deck_title: "DECK (Espera)",
+      first_to_enter: "1º en entrar",
+      next_to_enter: "º en entrar",
+      leaderboard_title: "Clasificación en Tiempo Real",
+      laps_abbr: "V",
+      best_lap_abbr: "Mejor",
+      avg_lap_abbr: "Prom",
+      lap_trigger_btn: "Registrar Vuelta",
+      modal_rotation_title: "Fin de la Manga {heat} - Rotación",
+      modal_rotation_desc: "El piloto <strong>{pilot}</strong> completó su participación en este carril e irá al DECK. Por favor, introduzca la zona final donde se detuvo su coche.",
+      modal_zone_label: "Zona de Parada (Sector físico)",
+      modal_zone_placeholder: "Ej: 15, 42",
+      modal_zone_help: "Introduzca la zona física para que el piloto comience desde el mismo sector cuando vuelva a entrar en la pista más adelante.",
+      confirm_rotation: "Confirmar Rotación",
+      validation_zone: "Introduzca un número de zona válido."
+    },
+    results: {
+      title: "Resultados de la Carrera",
+      podium_title: "Podio del Gran Premio",
+      leaderboard_title: "Resultados Detallados",
+      save_btn: "Guardar Carrera",
+      new_race_btn: "Nueva Carrera",
+      save_success: "¡Carrera guardada en el historial con éxito!",
+      modal_final_title: "Fin de la Carrera - Zonas Finales",
+      modal_final_desc: "Introduzca la zona física final donde los coches de cada piloto se detuvieron en la última manga:",
+      confirm_final: "Confirmar Resultados",
+      pos_col: "Pos",
+      pilot_col: "Piloto",
+      laps_col: "Vueltas Totales",
+      zone_col: "Zona Final",
+      best_lap_col: "Mejor Vuelta",
+      avg_lap_col: "Promedio",
+      score_col: "Resultado"
+    }
   }
 };

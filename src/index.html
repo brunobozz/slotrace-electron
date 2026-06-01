@@ -27,6 +27,11 @@
     <script src="js/components/header.js" defer></script>
     <script src="js/components/footer.js" defer></script>
     <!-- JS Routes / Views -->
+    <script src="js/routes/race/race.js" defer></script>
+    <script src="js/routes/race/race-setup.js" defer></script>
+    <script src="js/routes/race/race-qualifying.js" defer></script>
+    <script src="js/routes/race/race-telemetry.js" defer></script>
+    <script src="js/routes/race/race-results.js" defer></script>
     <script src="js/routes/dashboard/dashboard.js" defer></script>
     <script src="js/routes/registrations/registrations.js" defer></script>
     <script
@@ -85,6 +90,11 @@
 
     <!-- SPA Views -->
     <main class="container-fluid px-4 flex-grow-1">
+      <!-- Race View -->
+      <div id="view-race" class="view-section d-none">
+        <slotrace-race></slotrace-race>
+      </div>
+
       <!-- Dashboard View -->
       <div id="view-dashboard" class="view-section">
         <slotrace-dashboard></slotrace-dashboard>

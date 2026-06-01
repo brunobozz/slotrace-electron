@@ -1,6 +1,7 @@
 window.localeStrings = window.localeStrings || {};
 window.localeStrings.pt = {
   navbar: {
+    race: "Corrida",
     dashboard: "Painel",
     registrations: "Cadastros",
     settings: "Configurações"
@@ -129,9 +130,9 @@ window.localeStrings.pt = {
       delete_button_confirm: "Excluir",
       crop_title: "Recortar Foto da Pista",
       crop_help: "Arraste a imagem para mover e use o controle deslizante para ampliar",
-      crop_button: "Aplicar Recorte",
       validation_name: "Por favor, insira o nome da pista.",
-      validation_lanes: "Por favor, insira o número de fendas."
+      validation_lanes: "Por favor, insira o número de fendas.",
+      lane_label: "Fenda"
     }
   },
   settings: {
@@ -169,5 +170,97 @@ window.localeStrings.pt = {
   },
   footer: {
     developed_by: "Desenvolvido por"
+  },
+  race: {
+    desc: "Gerenciamento offline de telemetria, rodízios e classificação de corrida.",
+    setup: {
+      title: "Configurar Nova Corrida",
+      name_label: "Nome da Corrida",
+      name_placeholder: "Ex: Grande Prêmio de Interlagos, Copa de Autorama",
+      track_label: "Pista Selecionada",
+      track_placeholder: "Selecione a pista...",
+      type_label: "Tipo de Corrida",
+      heat_time_label: "Tempo de Corrida (por fenda - segundos)",
+      interval_time_label: "Tempo de Intervalo (entre baterias - segundos)",
+      cutoff_time_label: "Tempo de Corte (tempo de volta mínimo - segundos)",
+      pilots_label: "Pilotos Participantes",
+      no_pilots_registered: "Nenhum piloto cadastrado no sistema ainda.",
+      pilots_selected: "piloto(s) selecionado(s)",
+      lanes_warning: "Atenção: A pista selecionada possui {lanes} fendas. Você selecionou {pilots} pilotos.",
+      deck_info: "{deck} pilotos começarão no DECK (banco de reservas) e entrarão durante o rodízio.",
+      qualifying_toggle: "Realizar Qualificação (Definição de Grid)",
+      qualifying_lane_label: "Fenda da Qualificação",
+      start_qualifying: "Ir para Qualificação",
+      start_race: "Iniciar Corrida Direta",
+      validation_name: "Por favor, insira o nome da corrida.",
+      validation_track: "Por favor, selecione uma pista.",
+      validation_pilots: "Por favor, selecione pelo menos 1 piloto.",
+      validation_heat_time: "Tempo de bateria inválido.",
+      validation_interval_time: "Tempo de intervalo inválido.",
+      validation_cutoff_time: "Tempo de corte inválido."
+    },
+    qualifying: {
+      title: "Sessão de Qualificação",
+      subtitle: "Todos os pilotos correm na mesma fenda ({lane}), um por vez. O sorteio define a ordem.",
+      shuffle_btn: "Sortear Ordem",
+      shuffled_alert: "Ordem dos pilotos sorteada com sucesso!",
+      active_pilot: "Piloto na Fenda",
+      next_pilot: "Próximo Piloto",
+      finish_btn: "Concluir Qualificação e Ir Para Corrida",
+      manual_trigger_btn: "Simular Volta (Espaço / Enter)",
+      live_laps: "Voltas Registradas",
+      leaderboard: "Classificação Geral",
+      rank_col: "Pos",
+      pilot_col: "Piloto",
+      best_lap_col: "Melhor Volta",
+      laps_count_col: "Voltas",
+      no_laps: "Nenhuma volta registrada ainda.",
+      best_lap_abbr: "M. Volta"
+    },
+    telemetry: {
+      title: "Telemetria da Corrida",
+      heat_label: "BATERIA",
+      interval_label: "INTERVALO",
+      paused: "PAUSADO",
+      running: "EM ANDAMENTO",
+      start_btn: "Iniciar",
+      pause_btn: "Pausar",
+      next_heat_btn: "Próxima Bateria",
+      reset_btn: "Abortar Corrida",
+      reset_confirm: "Deseja realmente abortar a corrida atual? Os dados serão perdidos.",
+      deck_title: "DECK (Aguardando)",
+      first_to_enter: "1º a entrar",
+      next_to_enter: "º a entrar",
+      leaderboard_title: "Classificação em Tempo Real",
+      laps_abbr: "V",
+      best_lap_abbr: "Melhor",
+      avg_lap_abbr: "Média",
+      lap_trigger_btn: "Registrar Volta",
+      modal_rotation_title: "Fim da Bateria {heat} - Rodízio",
+      modal_rotation_desc: "O piloto <strong>{pilot}</strong> completou sua participação nesta fenda e irá para o DECK. Digite a zona final onde o carro dele parou na pista.",
+      modal_zone_label: "Zona de Parada (Setor físico)",
+      modal_zone_placeholder: "Ex: 15, 42",
+      modal_zone_help: "Insira a zona física para que o piloto reinicie a corrida na fenda de entrada a partir deste mesmo setor na próxima bateria.",
+      confirm_rotation: "Confirmar Rodízio",
+      validation_zone: "Insira um número de zona válido."
+    },
+    results: {
+      title: "Resultado da Corrida",
+      podium_title: "Pódio do Grande Prêmio",
+      leaderboard_title: "Resultado Detalhado",
+      save_btn: "Salvar Corrida",
+      new_race_btn: "Nova Corrida",
+      save_success: "Corrida salva no histórico com sucesso!",
+      modal_final_title: "Fim da Corrida - Zonas Finais",
+      modal_final_desc: "Insira a zona física final onde os carros de cada piloto pararam na última bateria:",
+      confirm_final: "Confirmar Resultados",
+      pos_col: "Pos",
+      pilot_col: "Piloto",
+      laps_col: "Voltas Totais",
+      zone_col: "Zona Final",
+      best_lap_col: "Melhor Volta",
+      avg_lap_col: "Média",
+      score_col: "Resultado"
+    }
   }
 };
