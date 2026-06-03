@@ -30,7 +30,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       
       const currentVal = inputEl ? inputEl.value : '#dc3545';
       const currentTheme = themeEl ? themeEl.value : 'dark';
-      const currentLang = langEl ? langEl.value : 'en';
+      const currentLang = langEl ? langEl.value : 'pt';
       
       this.render();
       
@@ -59,9 +59,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         <div class="mb-4">
           <label for="select-language" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.language_label')}</label>
           <select class="form-select p-2.5" id="select-language" required>
-            <option value="en">English</option>
             <option value="pt">Português</option>
-            <option value="es">Español</option>
           </select>
           <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.language_help')}</span>
         </div>
@@ -103,7 +101,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         e.preventDefault();
         const colorValue = input ? input.value : '#dc3545';
         const themeValue = themeSelect ? themeSelect.value : 'dark';
-        const langValue = langSelect ? langSelect.value : 'en';
+        const langValue = langSelect ? langSelect.value : 'pt';
         
         // Load current settings, update main_color, theme, and language, and save
         window.electronAPI.db.get('settings').then(settings => {

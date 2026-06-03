@@ -89,10 +89,10 @@ window.applyTheme = function(theme) {
 };
 
 // Global Translation (i18n) Engine
-window.currentLanguage = 'en'; // default
+window.currentLanguage = 'pt'; // default
 window.t = function(key) {
-  const lang = window.currentLanguage || 'en';
-  const strings = window.localeStrings[lang] || window.localeStrings['en'] || {};
+  const lang = window.currentLanguage || 'pt';
+  const strings = window.localeStrings[lang] || window.localeStrings['pt'] || {};
   
   const keys = key.split('.');
   let value = strings;
@@ -100,8 +100,8 @@ window.t = function(key) {
     if (value && value[k] !== undefined) {
       value = value[k];
     } else {
-      // Fallback to English
-      let fallbackValue = window.localeStrings['en'];
+      // Fallback to Portuguese
+      let fallbackValue = window.localeStrings['pt'];
       for (const fk of keys) {
         if (fallbackValue && fallbackValue[fk] !== undefined) {
           fallbackValue = fallbackValue[fk];
