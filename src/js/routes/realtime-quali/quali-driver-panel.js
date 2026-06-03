@@ -31,11 +31,12 @@ class QualiDriverPanel extends HTMLElement {
     }
   }
 
-  setData({ driver, qualiRecord, overallBestTime, lane }) {
+  setData({ driver, qualiRecord, overallBestTime, lane, laneColors }) {
     this._driver = driver || null;
     this._qualiRecord = qualiRecord || null;
     this._overallBestTime = overallBestTime || 0;
     this._lane = lane || 1;
+    this._laneColors = laneColors || null;
     this.render();
   }
 
@@ -81,7 +82,17 @@ class QualiDriverPanel extends HTMLElement {
       bestTimeColor = isRaceBest ? '#a855f7' : '#adff2f';
     }
 
-    const laneColor = getLaneColor(this._lane);
+    const defaultColors = {
+      1: '#ff3b30', // Red
+      2: '#007aff', // Blue
+      3: '#34c759', // Green
+      4: '#ffcc00', // Yellow
+      5: '#ff9500', // Orange
+      6: '#ffffff', // White
+      7: '#af52de', // Purple
+      8: '#8e8e93'  // Grey
+    };
+    const laneColor = (this._laneColors && this._laneColors[this._lane - 1]) || defaultColors[this._lane] || '#8e8e93';
 
     this.innerHTML = `
       <div class="quali-driver-panel d-flex flex-column justify-content-between h-100" style="background-color: #0f1115; padding: 0 2.5rem 1.5rem 2.5rem;">

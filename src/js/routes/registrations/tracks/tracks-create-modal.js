@@ -1,9 +1,10 @@
 class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
   connectedCallback() {
-    this.editTrackId = '';
-    this.trackPhotoBase64 = '';
-    this.editTrackRecordTime = '';
-    this.editTrackRecordPilotId = '';
+    this.editTrackId = "";
+    this.trackPhotoBase64 = "";
+    this.editTrackRecordTime = "";
+    this.editTrackRecordPilotId = "";
+    this.initialStateSnapshot = "";
 
     this.render();
     this.setupEvents();
@@ -16,80 +17,120 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     this._editRequestListener = (e) => {
       const { track } = e.detail;
       this.editTrackId = track.id;
-      this.editTrackRecordTime = track.recordTime || '';
-      this.editTrackRecordPilotId = track.recordPilotId || '';
+      this.editTrackRecordTime = track.recordTime || "";
+      this.editTrackRecordPilotId = track.recordPilotId || "";
 
       // Populate fields
-      const nameInput = this.querySelector('#input-track-name');
-      const scaleInput = this.querySelector('#input-track-scale');
-      const lanesInput = this.querySelector('#input-track-lanes');
-      const lengthInput = this.querySelector('#input-track-length');
-      const powerbarsInput = this.querySelector('#input-track-powerbars');
-      
-      const imgPreview = this.querySelector('#img-track-preview');
-      const iconPlaceholder = this.querySelector('#icon-track-placeholder');
+      const nameInput = this.querySelector("#input-track-name");
+      const scaleInput = this.querySelector("#input-track-scale");
+      const lanesInput = this.querySelector("#input-track-lanes");
+      const lengthInput = this.querySelector("#input-track-length");
+      const powerbarsInput = this.querySelector("#input-track-powerbars");
 
-      if (nameInput) nameInput.value = track.name || '';
-      if (scaleInput) scaleInput.value = track.scale || '';
-      if (lanesInput) lanesInput.value = track.lanes || '';
-      if (lengthInput) lengthInput.value = track.length || '';
-      if (powerbarsInput) powerbarsInput.value = track.powerbars || '';
+      const imgPreview = this.querySelector("#img-track-preview");
+      const iconPlaceholder = this.querySelector("#icon-track-placeholder");
+
+      if (nameInput) nameInput.value = track.name || "";
+      if (scaleInput) scaleInput.value = track.scale || "";
+      if (lanesInput) {
+        lanesInput.value = track.lanes || "";
+        this.renderLanesConfig(
+          parseInt(track.lanes) || 0,
+          track.laneColors || [],
+          track.laneRotation || [],
+        );
+      }
+      if (lengthInput) lengthInput.value = track.length || "";
+      if (powerbarsInput) powerbarsInput.value = track.powerbars || "";
 
       if (track.photo) {
         this.trackPhotoBase64 = track.photo;
         if (imgPreview && iconPlaceholder) {
           imgPreview.src = track.photo;
-          imgPreview.classList.remove('d-none');
-          iconPlaceholder.classList.add('d-none');
+          imgPreview.classList.remove("d-none");
+          iconPlaceholder.classList.add("d-none");
         }
       } else {
-        this.trackPhotoBase64 = '';
+        this.trackPhotoBase64 = "";
         if (imgPreview && iconPlaceholder) {
-          imgPreview.src = '';
-          imgPreview.classList.add('d-none');
-          iconPlaceholder.classList.remove('d-none');
+          imgPreview.src = "";
+          imgPreview.classList.add("d-none");
+          iconPlaceholder.classList.remove("d-none");
         }
       }
 
       // Update modal title and save button text dynamically!
-      const titleEl = this.querySelector('#modal-new-track-title');
-      const submitBtnEl = this.querySelector('#btn-submit-track');
+      const titleEl = this.querySelector("#modal-new-track-title");
+      const submitBtnEl = this.querySelector("#btn-submit-track");
 
       if (titleEl) {
-        titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-primary fs-4"></i> ${window.t('registrations.tracks_modal.edit_track_title') || 'Edit Track'}`;
+        titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-primary fs-4"></i> ${window.t("registrations.tracks_modal.edit_track_title") || "Edit Track"}`;
       }
       if (submitBtnEl) {
-        submitBtnEl.innerHTML = `<i class="mdi mdi-content-save-outline fs-5"></i> ${window.t('registrations.tracks_modal.save_changes_button') || 'Save Changes'}`;
+        submitBtnEl.innerHTML = `<i class="mdi mdi-content-save-outline fs-5"></i> ${window.t("registrations.tracks_modal.save_changes_button") || "Save Changes"}`;
       }
+
+      this.initialStateSnapshot = this.getCurrentStateSnapshot();
+      this.checkPendingChanges();
 
       this.show();
     };
 
     this._createRequestListener = () => {
-      this.editTrackRecordTime = '';
-      this.editTrackRecordPilotId = '';
+      this.editTrackId = "";
+      this.editTrackRecordTime = "";
+      this.editTrackRecordPilotId = "";
+      this.trackPhotoBase64 = "";
+
+      const form = this.querySelector("#form-new-track");
+      if (form) {
+        form.reset();
+        form.classList.remove("was-validated");
+      }
+
+      const imgPreview = this.querySelector("#img-track-preview");
+      const iconPlaceholder = this.querySelector("#icon-track-placeholder");
+      if (imgPreview && iconPlaceholder) {
+        imgPreview.src = "";
+        imgPreview.classList.add("d-none");
+        iconPlaceholder.classList.remove("d-none");
+      }
+
+      const lanesInput = this.querySelector("#input-track-lanes");
+      if (lanesInput) {
+        lanesInput.value = "1";
+      }
+
+      this.renderLanesConfig(1, [], []);
+
+      this.initialStateSnapshot = this.getCurrentStateSnapshot();
+      this.checkPendingChanges();
+
       this.show();
     };
 
-    window.addEventListener('languageChanged', this._langListener);
-    window.addEventListener('requestEditTrack', this._editRequestListener);
-    window.addEventListener('requestCreateTrack', this._createRequestListener);
+    window.addEventListener("languageChanged", this._langListener);
+    window.addEventListener("requestEditTrack", this._editRequestListener);
+    window.addEventListener("requestCreateTrack", this._createRequestListener);
   }
 
   disconnectedCallback() {
     if (this._langListener) {
-      window.removeEventListener('languageChanged', this._langListener);
+      window.removeEventListener("languageChanged", this._langListener);
     }
     if (this._editRequestListener) {
-      window.removeEventListener('requestEditTrack', this._editRequestListener);
+      window.removeEventListener("requestEditTrack", this._editRequestListener);
     }
     if (this._createRequestListener) {
-      window.removeEventListener('requestCreateTrack', this._createRequestListener);
+      window.removeEventListener(
+        "requestCreateTrack",
+        this._createRequestListener,
+      );
     }
   }
 
   show() {
-    const modalEl = this.querySelector('#modal-new-track');
+    const modalEl = this.querySelector("#modal-new-track");
     if (modalEl) {
       let modalInstance = bootstrap.Modal.getInstance(modalEl);
       if (!modalInstance) {
@@ -100,19 +141,31 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
   }
 
   setupEvents() {
-    const modalEl = this.querySelector('#modal-new-track');
-    const form = this.querySelector('#form-new-track');
-    const fileInput = this.querySelector('#input-track-photo');
-    const imgPreview = this.querySelector('#img-track-preview');
-    const iconPlaceholder = this.querySelector('#icon-track-placeholder');
-    const cropModalEl = this.querySelector('#modal-crop-track-image');
+    const modalEl = this.querySelector("#modal-new-track");
+    const form = this.querySelector("#form-new-track");
+    const fileInput = this.querySelector("#input-track-photo");
+    const imgPreview = this.querySelector("#img-track-preview");
+    const iconPlaceholder = this.querySelector("#icon-track-placeholder");
+    const cropModalEl = this.querySelector("#modal-crop-track-image");
+    const lanesInput = this.querySelector("#input-track-lanes");
 
-    this.trackPhotoBase64 = this.trackPhotoBase64 || '';
+    this.trackPhotoBase64 = this.trackPhotoBase64 || "";
+
+    // Handle lane count input changes to render config list
+    if (lanesInput) {
+      lanesInput.addEventListener("input", () => {
+        const count = parseInt(lanesInput.value) || 0;
+        const currentColors = this.getCurrentLaneColors();
+        const currentRotation = this.getCurrentLaneRotation();
+        this.renderLanesConfig(count, currentColors, currentRotation);
+        this.checkPendingChanges();
+      });
+    }
 
     // Restore the main modal when the crop modal is closed to prevent double backdrops/overlap
     if (cropModalEl) {
-      cropModalEl.addEventListener('hidden.bs.modal', () => {
-        const mainModalEl = this.querySelector('#modal-new-track');
+      cropModalEl.addEventListener("hidden.bs.modal", () => {
+        const mainModalEl = this.querySelector("#modal-new-track");
         if (mainModalEl) {
           let mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
           if (!mainModalInstance) {
@@ -125,13 +178,13 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
     // Handle photo selection and crop modal triggers
     if (fileInput) {
-      fileInput.addEventListener('change', (e) => {
+      fileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
           reader.onload = (event) => {
             this.initCropper(event.target.result);
-            fileInput.value = ''; // Reset
+            fileInput.value = ""; // Reset
           };
           reader.readAsDataURL(file);
         }
@@ -140,95 +193,153 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
     // Handle form submit and Node db save
     if (form && modalEl) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (!form.checkValidity()) {
-          form.classList.add('was-validated');
+          form.classList.add("was-validated");
           return;
         }
 
-        const nameInput = this.querySelector('#input-track-name');
-        const scaleInput = this.querySelector('#input-track-scale');
-        const lanesInput = this.querySelector('#input-track-lanes');
-        const lengthInput = this.querySelector('#input-track-length');
-        const powerbarsInput = this.querySelector('#input-track-powerbars');
+        const nameInput = this.querySelector("#input-track-name");
+        const scaleInput = this.querySelector("#input-track-scale");
+        const lanesInput = this.querySelector("#input-track-lanes");
+        const lengthInput = this.querySelector("#input-track-length");
+        const powerbarsInput = this.querySelector("#input-track-powerbars");
 
-        const nameVal = nameInput ? nameInput.value.trim() : '';
-        const scaleVal = scaleInput ? scaleInput.value.trim() : '';
-        const lanesVal = lanesInput ? lanesInput.value.trim() : '';
-        const lengthVal = lengthInput ? lengthInput.value.trim() : '';
-        const powerbarsVal = powerbarsInput ? powerbarsInput.value.trim() : '';
+        const nameVal = nameInput ? nameInput.value.trim() : "";
+        const scaleVal = scaleInput ? scaleInput.value.trim() : "";
+        const lanesVal = lanesInput ? lanesInput.value.trim() : "";
+        const lengthVal = lengthInput ? lengthInput.value.trim() : "";
+        const powerbarsVal = powerbarsInput ? powerbarsInput.value.trim() : "";
+        const laneColors = this.getCurrentLaneColors();
+        const laneRotation = this.getCurrentLaneRotation();
 
-        window.electronAPI.db.get('tracks').then(tracks => {
-          const tracksList = tracks || [];
+        window.electronAPI.db
+          .get("tracks")
+          .then((tracks) => {
+            const tracksList = tracks || [];
 
-          if (this.editTrackId) {
-            // Edit Mode
-            const trackIndex = tracksList.findIndex(t => t.id === this.editTrackId);
-            if (trackIndex !== -1) {
-              tracksList[trackIndex].name = nameVal;
-              tracksList[trackIndex].scale = scaleVal;
-              tracksList[trackIndex].lanes = lanesVal;
-              tracksList[trackIndex].length = lengthVal;
-              tracksList[trackIndex].powerbars = powerbarsVal;
-              tracksList[trackIndex].photo = this.trackPhotoBase64 || '';
-              // Keep original record fields untouched
-              tracksList[trackIndex].recordTime = this.editTrackRecordTime;
-              tracksList[trackIndex].recordPilotId = this.editTrackRecordPilotId;
+            if (this.editTrackId) {
+              // Edit Mode
+              const trackIndex = tracksList.findIndex(
+                (t) => t.id === this.editTrackId,
+              );
+              if (trackIndex !== -1) {
+                tracksList[trackIndex].name = nameVal;
+                tracksList[trackIndex].scale = scaleVal;
+                tracksList[trackIndex].lanes = lanesVal;
+                tracksList[trackIndex].length = lengthVal;
+                tracksList[trackIndex].powerbars = powerbarsVal;
+                tracksList[trackIndex].photo = this.trackPhotoBase64 || "";
+                tracksList[trackIndex].laneColors = laneColors;
+                tracksList[trackIndex].laneRotation = laneRotation;
+                // Keep original record fields untouched
+                tracksList[trackIndex].recordTime = this.editTrackRecordTime;
+                tracksList[trackIndex].recordPilotId =
+                  this.editTrackRecordPilotId;
+              }
+            } else {
+              // Create Mode
+              const newTrack = {
+                id: Date.now().toString(),
+                name: nameVal,
+                scale: scaleVal,
+                lanes: lanesVal,
+                length: lengthVal,
+                powerbars: powerbarsVal,
+                recordTime: "",
+                recordPilotId: "",
+                photo: this.trackPhotoBase64 || "",
+                laneColors: laneColors,
+                laneRotation: laneRotation,
+              };
+              tracksList.push(newTrack);
             }
-          } else {
-            // Create Mode
-            const newTrack = {
-              id: Date.now().toString(),
-              name: nameVal,
-              scale: scaleVal,
-              lanes: lanesVal,
-              length: lengthVal,
-              powerbars: powerbarsVal,
-              recordTime: '',
-              recordPilotId: '',
-              photo: this.trackPhotoBase64 || ''
-            };
-            tracksList.push(newTrack);
-          }
 
-          return window.electronAPI.db.set('tracks', tracksList);
-        }).then(success => {
-          if (success) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) {
-              modalInstance.hide();
+            return window.electronAPI.db.set("tracks", tracksList);
+          })
+          .then((success) => {
+            if (success) {
+              const modalInstance = bootstrap.Modal.getInstance(modalEl);
+              if (modalInstance) {
+                modalInstance.hide();
+              }
+              window.dispatchEvent(new CustomEvent("trackAdded"));
             }
-            window.dispatchEvent(new CustomEvent('trackAdded'));
-          }
-        }).catch(err => {
-          console.error('Failed to save track in database:', err);
-        });
+          })
+          .catch((err) => {
+            console.error("Failed to save track in database:", err);
+          });
       });
 
+      // Listen to form input and change events to update button disabled state
+      form.addEventListener("input", (e) => {
+        this.checkPendingChanges();
+        if (e.target && (e.target.classList.contains("lane-color-picker") || e.target.classList.contains("lane-rotation-select"))) {
+          this.updateSelectOptionColors();
+        }
+      });
+      form.addEventListener("change", (e) => {
+        this.checkPendingChanges();
+        if (e.target && (e.target.classList.contains("lane-color-picker") || e.target.classList.contains("lane-rotation-select"))) {
+          this.updateSelectOptionColors();
+        }
+      });
+
+
+
+      // Cancel button at bottom
+      const cancelBtn = this.querySelector("#btn-cancel-track");
+      if (cancelBtn) {
+        cancelBtn.addEventListener("click", () => {
+          this.handleCloseAttempt();
+        });
+      }
+
+      // Discard changes confirmation button inside the confirmation modal
+      const discardBtn = this.querySelector("#btn-confirm-discard-track-changes");
+      if (discardBtn) {
+        discardBtn.addEventListener("click", () => {
+          const confirmCloseModalEl = this.querySelector("#modal-confirm-cancel-track");
+          if (confirmCloseModalEl) {
+            const confirmCloseInstance = bootstrap.Modal.getInstance(confirmCloseModalEl);
+            if (confirmCloseInstance) {
+              confirmCloseInstance.hide();
+            }
+          }
+          this.closeModal();
+        });
+      }
+
       // Reset form and cache on modal hide
-      modalEl.addEventListener('hidden.bs.modal', () => {
+      modalEl.addEventListener("hidden.bs.modal", () => {
         form.reset();
-        form.classList.remove('was-validated');
-        this.trackPhotoBase64 = '';
-        this.editTrackId = '';
-        this.editTrackRecordTime = '';
-        this.editTrackRecordPilotId = '';
+        form.classList.remove("was-validated");
+        this.trackPhotoBase64 = "";
+        this.editTrackId = "";
+        this.editTrackRecordTime = "";
+        this.editTrackRecordPilotId = "";
+
+        // Hide lanes config row
+        const rowEl = this.querySelector("#custom-lanes-row");
+        if (rowEl) rowEl.classList.add("d-none");
+        const container = this.querySelector("#custom-lanes-container");
+        if (container) container.innerHTML = "";
 
         // Restore defaults (Create Mode)
-        const titleEl = this.querySelector('#modal-new-track-title');
-        const submitBtnEl = this.querySelector('#btn-submit-track');
+        const titleEl = this.querySelector("#modal-new-track-title");
+        const submitBtnEl = this.querySelector("#btn-submit-track");
         if (titleEl) {
-          titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-primary fs-4"></i> ${window.t('registrations.tracks_modal.new_track_title') || 'New Track'}`;
+          titleEl.innerHTML = `<i class="mdi mdi-flag-checkered text-primary fs-4"></i> ${window.t("registrations.tracks_modal.new_track_title") || "New Track"}`;
         }
         if (submitBtnEl) {
-          submitBtnEl.innerHTML = `<i class="mdi mdi-check-circle-outline fs-5"></i> ${window.t('registrations.tracks_modal.save_button') || 'Save Track'}`;
+          submitBtnEl.innerHTML = `<i class="mdi mdi-check-circle-outline fs-5"></i> ${window.t("registrations.tracks_modal.save_button") || "Save Track"}`;
         }
 
         if (imgPreview && iconPlaceholder) {
-          imgPreview.src = '';
-          imgPreview.classList.add('d-none');
-          iconPlaceholder.classList.remove('d-none');
+          imgPreview.src = "";
+          imgPreview.classList.add("d-none");
+          iconPlaceholder.classList.remove("d-none");
         }
       });
     }
@@ -244,7 +355,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       this.offsetY = 0;
 
       // Hide the main track creation modal temporarily to avoid overlapping backdrops!
-      const mainModalEl = this.querySelector('#modal-new-track');
+      const mainModalEl = this.querySelector("#modal-new-track");
       if (mainModalEl) {
         const mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
         if (mainModalInstance) {
@@ -252,7 +363,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
         }
       }
 
-      const cropModalEl = this.querySelector('#modal-crop-track-image');
+      const cropModalEl = this.querySelector("#modal-crop-track-image");
       if (cropModalEl) {
         let cropModalInstance = bootstrap.Modal.getInstance(cropModalEl);
         if (!cropModalInstance) {
@@ -265,22 +376,22 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
   }
 
   setupCropCanvas() {
-    const canvas = this.querySelector('#crop-track-canvas');
+    const canvas = this.querySelector("#crop-track-canvas");
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const zoomSlider = this.querySelector('#crop-track-zoom-slider');
-    const zoomValue = this.querySelector('#track-zoom-value');
-    const applyBtn = this.querySelector('#btn-apply-track-crop');
+    const ctx = canvas.getContext("2d");
+    const zoomSlider = this.querySelector("#crop-track-zoom-slider");
+    const zoomValue = this.querySelector("#track-zoom-value");
+    const applyBtn = this.querySelector("#btn-apply-track-crop");
 
     if (zoomSlider) zoomSlider.value = 1;
-    if (zoomValue) zoomValue.textContent = '1.0x';
+    if (zoomValue) zoomValue.textContent = "1.0x";
 
     const img = this.srcImage;
-    
+
     // Expanded 460x300 canvas size parameters
     const canvasW = 460;
     const canvasH = 300;
-    
+
     // Expanded 16:9 crop area aspect ratio parameters
     const cropW = 420;
     const cropH = 236;
@@ -322,8 +433,8 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
       ctx.save();
       // Draw dark semi-transparent mask outside crop area
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      
+      ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+
       // Top overlay
       ctx.fillRect(0, 0, canvasW, cropY);
       // Bottom overlay
@@ -334,7 +445,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       ctx.fillRect(cropX + cropW, cropY, canvasW - (cropX + cropW), cropH);
 
       // Red border outline
-      ctx.strokeStyle = '#dc3545';
+      ctx.strokeStyle = "#dc3545";
       ctx.lineWidth = 2;
       ctx.strokeRect(cropX, cropY, cropW, cropH);
       ctx.restore();
@@ -364,7 +475,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
     canvas.onpointerdown = (e) => {
       isDragging = true;
-      canvas.style.cursor = 'grabbing';
+      canvas.style.cursor = "grabbing";
       canvas.setPointerCapture(e.pointerId);
       startX = e.clientX - this.offsetX;
       startY = e.clientY - this.offsetY;
@@ -380,7 +491,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     const stopDragging = (e) => {
       if (isDragging) {
         isDragging = false;
-        canvas.style.cursor = 'grab';
+        canvas.style.cursor = "grab";
         try {
           canvas.releasePointerCapture(e.pointerId);
         } catch (err) {}
@@ -391,12 +502,12 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
     if (applyBtn) {
       applyBtn.onclick = () => {
-        const cropCanvas = document.createElement('canvas');
+        const cropCanvas = document.createElement("canvas");
         cropCanvas.width = 400;
         cropCanvas.height = 225; // Widescreen 16:9 ratio
-        const cropCtx = cropCanvas.getContext('2d');
+        const cropCtx = cropCanvas.getContext("2d");
 
-        cropCtx.fillStyle = '#09090b'; 
+        cropCtx.fillStyle = "#09090b";
         cropCtx.fillRect(0, 0, 400, 225);
 
         // Precise mapping from crop box to output canvas
@@ -410,17 +521,18 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
         cropCtx.drawImage(img, destX, destY, destW, destH);
 
-        this.trackPhotoBase64 = cropCanvas.toDataURL('image/jpeg', 0.85);
+        this.trackPhotoBase64 = cropCanvas.toDataURL("image/jpeg", 0.85);
+        this.checkPendingChanges();
 
-        const imgPreview = this.querySelector('#img-track-preview');
-        const iconPlaceholder = this.querySelector('#icon-track-placeholder');
+        const imgPreview = this.querySelector("#img-track-preview");
+        const iconPlaceholder = this.querySelector("#icon-track-placeholder");
         if (imgPreview && iconPlaceholder) {
           imgPreview.src = this.trackPhotoBase64;
-          imgPreview.classList.remove('d-none');
-          iconPlaceholder.classList.add('d-none');
+          imgPreview.classList.remove("d-none");
+          iconPlaceholder.classList.add("d-none");
         }
 
-        const cropModalEl = this.querySelector('#modal-crop-track-image');
+        const cropModalEl = this.querySelector("#modal-crop-track-image");
         if (cropModalEl) {
           const cropModalInstance = bootstrap.Modal.getInstance(cropModalEl);
           if (cropModalInstance) {
@@ -431,18 +543,202 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     }
   }
 
+  renderLanesConfig(count, laneColors, laneRotation) {
+    const container = this.querySelector("#custom-lanes-container");
+    const rowEl = this.querySelector("#custom-lanes-row");
+    if (!container || !rowEl) return;
+
+    if (!count || count < 1) {
+      rowEl.classList.add("d-none");
+      container.innerHTML = "";
+      return;
+    }
+
+    rowEl.classList.remove("d-none");
+
+    const currentColors = [];
+    const defaultColors = [
+      "#ff3b30", // Red
+      "#007aff", // Blue
+      "#34c759", // Green
+      "#ffcc00", // Yellow
+      "#ff9500", // Orange
+      "#ffffff", // White
+      "#af52de", // Purple
+      "#8e8e93", // Grey
+    ];
+
+    for (let i = 0; i < count; i++) {
+      if (laneColors && laneColors[i]) {
+        currentColors.push(laneColors[i]);
+      } else {
+        currentColors.push(defaultColors[i % defaultColors.length]);
+      }
+    }
+
+    container.innerHTML = "";
+    currentColors.forEach((colorHex, index) => {
+      const laneNum = index + 1;
+      const selectedRotation = (laneRotation && laneRotation[index]) ? laneRotation[index] : (((index + 1) % count) + 1);
+
+      const itemEl = document.createElement("tr");
+      itemEl.className = "lane-config-item";
+      itemEl.dataset.index = index;
+
+      // Generate select options
+      let selectOptions = "";
+      for (let j = 1; j <= count; j++) {
+        const optionColor = currentColors[j - 1] || "#ffffff";
+        const isSelected = j === selectedRotation ? "selected" : "";
+        selectOptions += `
+          <option value="${j}" style="color: ${optionColor}; background-color: #1c1f26; font-weight: bold;" ${isSelected}>
+            ${window.t("realtime_quali.toolbar.lane") || "Fenda"} ${j}
+          </option>
+        `;
+      }
+
+      itemEl.innerHTML = `
+        <td class="pt-1 pb-0 px-0 text-start fw-semibold text-secondary small align-middle" style="width: 60%;">
+          <div class="d-flex align-items-center gap-2">
+            <input type="color" class="form-control form-control-color lane-color-picker border-secondary-subtle bg-transparent p-0 d-inline-block" value="${colorHex}" style="width: 46px; height: 28px; cursor: pointer; box-shadow: none; border-radius: 4px;" title="${window.t("registrations.tracks_modal.pick_color") || "Pick Color"}">
+            <span>${window.t("realtime_quali.toolbar.lane") || "Lane"} ${laneNum}</span>
+          </div>
+        </td>
+        <td class="pt-1 pb-0 px-0 text-end align-middle" style="width: 40%;">
+          <select class="form-select form-select-sm lane-rotation-select bg-dark border-0 ms-auto text-end" style="width: 100px; font-weight: bold; border-radius: 4px; box-shadow: none; color: ${currentColors[selectedRotation - 1] || '#ffffff'};" title="Selecione a fenda para rodízio">
+            ${selectOptions}
+          </select>
+        </td>
+      `;
+
+      container.appendChild(itemEl);
+    });
+
+    this.updateSelectOptionColors();
+  }
+
+  getCurrentLaneColors() {
+    const items = this.querySelectorAll(
+      "#custom-lanes-container .lane-config-item",
+    );
+    const colors = [];
+    items.forEach((item) => {
+      const picker = item.querySelector(".lane-color-picker");
+      if (picker) {
+        colors.push(picker.value);
+      }
+    });
+    return colors;
+  }
+
+  getCurrentLaneRotation() {
+    const items = this.querySelectorAll(
+      "#custom-lanes-container .lane-config-item",
+    );
+    const rotation = [];
+    items.forEach((item) => {
+      const select = item.querySelector(".lane-rotation-select");
+      if (select) {
+        rotation.push(parseInt(select.value) || 1);
+      }
+    });
+    return rotation;
+  }
+
+  updateSelectOptionColors() {
+    const colors = this.getCurrentLaneColors();
+    const selects = this.querySelectorAll(".lane-rotation-select");
+    selects.forEach((select) => {
+      const options = select.querySelectorAll("option");
+      options.forEach((option) => {
+        const val = parseInt(option.value);
+        const color = colors[val - 1] || "#ffffff";
+        option.style.color = color;
+      });
+
+      // Update active selected option color on select wrapper
+      const activeVal = parseInt(select.value);
+      const activeColor = colors[activeVal - 1] || "#ffffff";
+      select.style.color = activeColor;
+    });
+  }
+
+  getCurrentStateSnapshot() {
+    const nameInput = this.querySelector("#input-track-name");
+    const scaleInput = this.querySelector("#input-track-scale");
+    const lanesInput = this.querySelector("#input-track-lanes");
+    const lengthInput = this.querySelector("#input-track-length");
+    const powerbarsInput = this.querySelector("#input-track-powerbars");
+
+    const nameVal = nameInput ? nameInput.value.trim() : "";
+    const scaleVal = scaleInput ? scaleInput.value.trim() : "";
+    const lanesVal = lanesInput ? lanesInput.value.trim() : "";
+    const lengthVal = lengthInput ? lengthInput.value.trim() : "";
+    const powerbarsVal = powerbarsInput ? powerbarsInput.value.trim() : "";
+    const laneColors = this.getCurrentLaneColors();
+    const laneRotation = this.getCurrentLaneRotation();
+
+    return JSON.stringify({
+      name: nameVal,
+      scale: scaleVal,
+      lanes: lanesVal,
+      length: lengthVal,
+      powerbars: powerbarsVal,
+      photo: this.trackPhotoBase64 || "",
+      laneColors: laneColors,
+      laneRotation: laneRotation
+    });
+  }
+
+  checkPendingChanges() {
+    const submitBtn = this.querySelector("#btn-submit-track");
+    if (!submitBtn) return;
+
+    const currentSnapshot = this.getCurrentStateSnapshot();
+    const hasChanges = currentSnapshot !== this.initialStateSnapshot;
+    submitBtn.disabled = !hasChanges;
+  }
+
+  handleCloseAttempt() {
+    const hasChanges = this.getCurrentStateSnapshot() !== this.initialStateSnapshot;
+    if (hasChanges) {
+      const confirmModalEl = this.querySelector("#modal-confirm-cancel-track");
+      if (confirmModalEl) {
+        let confirmModalInstance = bootstrap.Modal.getInstance(confirmModalEl);
+        if (!confirmModalInstance) {
+          confirmModalInstance = new bootstrap.Modal(confirmModalEl, {
+            backdrop: "static",
+            keyboard: false
+          });
+        }
+        confirmModalInstance.show();
+      }
+    } else {
+      this.closeModal();
+    }
+  }
+
+  closeModal() {
+    const modalEl = this.querySelector("#modal-new-track");
+    if (modalEl) {
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
+  }
+
   render() {
     this.innerHTML = `
-      <div class="modal fade" id="modal-new-track" tabindex="-1" aria-labelledby="modal-new-track-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+      <div class="modal fade" id="modal-new-track" tabindex="-1" aria-labelledby="modal-new-track-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content border-secondary-subtle">
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-new-track-title">
                 <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
-                ${window.t('registrations.tracks_modal.new_track_title') || 'New Track'}
+                ${window.t("registrations.tracks_modal.new_track_title") || "New Track"}
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
             <div class="modal-body">
@@ -456,61 +752,74 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
                       <i id="icon-track-placeholder" class="mdi mdi-flag-checkered text-secondary-50" style="font-size: 64px; line-height: 1;"></i>
                     </div>
                     
-                    <label for="input-track-photo" class="btn btn-sm btn-primary rounded-circle position-absolute p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px; cursor: pointer; border: 3px solid var(--bs-body-bg); bottom: -10px; right: -10px;" title="${window.t('registrations.tracks_modal.photo_label') || 'Track Photo'}">
+                    <label for="input-track-photo" class="btn btn-sm btn-primary rounded-circle position-absolute p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px; cursor: pointer; border: 3px solid var(--bs-body-bg); bottom: -10px; right: -10px;" title="${window.t("registrations.tracks_modal.photo_label") || "Track Photo"}">
                       <i class="mdi mdi-camera fs-6"></i>
                     </label>
                   </div>
                   
                   <input type="file" id="input-track-photo" class="d-none" accept="image/*">
-                  <div class="small text-secondary mt-3">${window.t('registrations.tracks_modal.photo_help') || 'Select a landscape photo for the track layout.'}</div>
+                  <div class="small text-secondary mt-3">${window.t("registrations.tracks_modal.photo_help") || "Select a landscape photo for the track layout."}</div>
                 </div>
                 
-                <!-- Track Name input -->
-                <div class="mb-3">
-                  <label for="input-track-name" class="form-label fw-semibold text-secondary small">${window.t('registrations.tracks_modal.name_label') || 'Track Name'}</label>
-                  <input type="text" class="form-control p-2" id="input-track-name" placeholder="${window.t('registrations.tracks_modal.name_placeholder') || 'Enter track name'}" required>
-                  <div class="invalid-feedback">${window.t('registrations.tracks_modal.validation_name') || 'Please enter a valid track name.'}</div>
+                <!-- Row 1: Nome (col-8) & Escala (col-4) -->
+                <div class="row mb-3">
+                  <!-- Track Name input -->
+                  <div class="col-8">
+                    <label for="input-track-name" class="form-label fw-semibold text-secondary small">${window.t("registrations.tracks_modal.name_label") || "Track Name"}</label>
+                    <input type="text" class="form-control p-2" id="input-track-name" placeholder="${window.t("registrations.tracks_modal.name_placeholder") || "Enter track name"}" required>
+                    <div class="invalid-feedback">${window.t("registrations.tracks_modal.validation_name") || "Please enter a valid track name."}</div>
+                  </div>
+                  <!-- Scale input -->
+                  <div class="col-4">
+                    <label for="input-track-scale" class="form-label fw-semibold text-secondary small">${window.t("registrations.tracks_modal.scale_label") || "Scale"}</label>
+                    <input type="text" class="form-control p-2" id="input-track-scale" value="1:32" placeholder="${window.t("registrations.tracks_modal.scale_placeholder") || "Enter scale"}">
+                  </div>
                 </div>
                 
-                <!-- Lanes and Scale row -->
+                <!-- Row 2: Fendas (col-4) & Comprimento (col-4) & Zonas (col-4) -->
                 <div class="row mb-3">
                   <!-- Lanes input -->
-                  <div class="col-6">
-                    <label for="input-track-lanes" class="form-label fw-semibold text-secondary small">${window.t('registrations.tracks_modal.lanes_label') || 'Lanes'}</label>
-                    <input type="number" min="1" step="1" class="form-control p-2" id="input-track-lanes" placeholder="${window.t('registrations.tracks_modal.lanes_placeholder') || 'Enter lanes'}" required>
-                    <div class="invalid-feedback">${window.t('registrations.tracks_modal.validation_lanes') || 'Please enter a valid lane count.'}</div>
+                  <div class="col-4">
+                    <label for="input-track-lanes" class="form-label fw-semibold text-secondary small">${window.t("registrations.tracks_modal.lanes_label") || "Number of Lanes"}</label>
+                    <input type="number" min="1" step="1" class="form-control p-2" id="input-track-lanes" placeholder="${window.t("registrations.tracks_modal.lanes_placeholder") || "Enter lanes"}" required>
+                    <div class="invalid-feedback">${window.t("registrations.tracks_modal.validation_lanes") || "Please enter a valid lane count."}</div>
                   </div>
-
-                  <!-- Scale input -->
-                  <div class="col-6">
-                    <label for="input-track-scale" class="form-label fw-semibold text-secondary small">${window.t('registrations.tracks_modal.scale_label') || 'Scale'}</label>
-                    <input type="text" class="form-control p-2" id="input-track-scale" value="1:32" placeholder="${window.t('registrations.tracks_modal.scale_placeholder') || 'Enter scale'}">
+                  <!-- Length input -->
+                  <div class="col-4">
+                    <label for="input-track-length" class="form-label fw-semibold text-secondary small">${window.t("registrations.tracks_modal.length_label") || "Length (meters)"}</label>
+                    <input type="number" min="0.1" step="0.01" class="form-control p-2" id="input-track-length" placeholder="${window.t("registrations.tracks_modal.length_placeholder") || "Enter length"}">
+                  </div>
+                  <!-- Powerbars input -->
+                  <div class="col-4">
+                    <label for="input-track-powerbars" class="form-label fw-semibold text-secondary small">${window.t("registrations.tracks_modal.powerbars_label") || "Zones"}</label>
+                    <input type="number" min="0" step="1" class="form-control p-2" id="input-track-powerbars" placeholder="${window.t("registrations.tracks_modal.powerbars_placeholder") || "Enter powerbars"}">
                   </div>
                 </div>
 
-                <!-- Length and Powerbars row -->
-                <div class="row mb-4">
-                  <!-- Length input -->
-                  <div class="col-6">
-                    <label for="input-track-length" class="form-label fw-semibold text-secondary small">${window.t('registrations.tracks_modal.length_label') || 'Length (meters)'}</label>
-                    <input type="number" min="0.1" step="0.01" class="form-control p-2" id="input-track-length" placeholder="${window.t('registrations.tracks_modal.length_placeholder') || 'Enter length'}">
-                  </div>
-
-                  <!-- Powerbars input -->
-                  <div class="col-6">
-                    <label for="input-track-powerbars" class="form-label fw-semibold text-secondary small">${window.t('registrations.tracks_modal.powerbars_label') || 'Powerbars'}</label>
-                    <input type="number" min="0" step="1" class="form-control p-2" id="input-track-powerbars" placeholder="${window.t('registrations.tracks_modal.powerbars_placeholder') || 'Enter powerbars'}">
+                <div class="row mb-4 d-none" id="custom-lanes-row">
+                  <div class="col-12">
+                    <table class="table table-dark align-middle mb-0">
+                      <thead>
+                        <tr class="border-bottom border-secondary-subtle" style="font-size: 0.8rem; letter-spacing: 0.05em; color: #8b949e;">
+                          <th scope="col" class="py-2 px-0 text-start fw-semibold" style="width: 60%;">${window.t("realtime_quali.toolbar.lane") || "Fenda"}</th>
+                          <th scope="col" class="py-2 px-0 text-end fw-semibold" style="width: 40%;">Rodízio</th>
+                        </tr>
+                      </thead>
+                      <tbody id="custom-lanes-container">
+                        <!-- Dynamic list of lanes configuration -->
+                      </tbody>
+                    </table>
                   </div>
                 </div>
                 
                 <!-- Modal Actions -->
                 <div class="d-flex justify-content-end gap-2 pt-3">
-                  <button type="button" class="btn btn-secondary px-3 fw-semibold" data-bs-dismiss="modal">
-                    ${window.t('registrations.tracks_modal.cancel_button') || 'Cancel'}
+                  <button type="button" id="btn-cancel-track" class="btn btn-secondary px-3 fw-semibold">
+                    ${window.t("registrations.tracks_modal.cancel_button") || "Cancel"}
                   </button>
                   <button type="submit" id="btn-submit-track" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
                     <i class="mdi mdi-content-save-outline fs-5"></i>
-                    ${window.t('registrations.tracks_modal.save_button') || 'Save Track'}
+                    ${window.t("registrations.tracks_modal.save_button") || "Save Track"}
                   </button>
                 </div>
                 
@@ -528,7 +837,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-crop-track-image-title" style="font-size: 1.1rem;">
                 <i class="mdi mdi-crop text-primary fs-4"></i>
-                ${window.t('registrations.tracks_modal.crop_title') || 'Crop Track Photo'}
+                ${window.t("registrations.tracks_modal.crop_title") || "Crop Track Photo"}
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -544,19 +853,46 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
                 <input type="range" class="form-range" id="crop-track-zoom-slider" min="0.5" max="4" step="0.05" value="1">
               </div>
               <div class="small text-secondary px-2 mb-3" style="font-size: 0.7rem;">
-                <i class="mdi mdi-information-outline"></i> ${window.t('registrations.tracks_modal.crop_help') || 'Drag to pan and use the slider to zoom'}
+                <i class="mdi mdi-information-outline"></i> ${window.t("registrations.tracks_modal.crop_help") || "Drag to pan and use the slider to zoom"}
               </div>
               
               <!-- Modal Actions -->
               <div class="d-flex justify-content-end gap-2 pt-2 px-1">
                 <button type="button" class="btn btn-secondary px-3 py-2 fw-semibold btn-sm" data-bs-dismiss="modal">
-                  ${window.t('registrations.tracks_modal.cancel_button') || 'Cancel'}
+                  ${window.t("registrations.tracks_modal.cancel_button") || "Cancel"}
                 </button>
                 <button type="button" id="btn-apply-track-crop" class="btn btn-primary px-3 py-2 fw-semibold d-flex align-items-center gap-2 btn-sm">
                   <i class="mdi mdi-check"></i>
-                  ${window.t('registrations.tracks_modal.crop_button') || 'Apply Crop'}
+                  ${window.t("registrations.tracks_modal.crop_button") || "Apply Crop"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmation Modal for Closing Track Modal with Unsaved Changes -->
+      <div class="modal fade" id="modal-confirm-cancel-track" tabindex="-1" aria-labelledby="modal-confirm-cancel-track-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+          <div class="modal-content border-warning-subtle">
+            <div class="modal-header bg-warning bg-opacity-10 border-warning-subtle py-2.5">
+              <h6 class="modal-title fw-bold text-warning d-flex align-items-center gap-2" id="modal-confirm-cancel-track-title" style="font-size: 0.95rem;">
+                <i class="mdi mdi-alert-circle-outline fs-5"></i>
+                ${window.t("registrations.tracks_modal.confirm_cancel_title") || "Descartar Alterações?"}
+              </h6>
+            </div>
+            <div class="modal-body text-start py-3">
+              <p class="mb-0 text-body-emphasis small">
+                ${window.t("registrations.tracks_modal.confirm_cancel_body") || "Existem alterações não salvas. Deseja realmente descartá-las?"}
+              </p>
+            </div>
+            <div class="modal-footer border-secondary-subtle py-2">
+              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">
+                ${window.t("registrations.tracks_modal.confirm_cancel_continue") || "Continuar Editando"}
+              </button>
+              <button type="button" id="btn-confirm-discard-track-changes" class="btn btn-sm btn-warning text-dark fw-semibold px-3">
+                ${window.t("registrations.tracks_modal.confirm_cancel_discard") || "Descartar"}
+              </button>
             </div>
           </div>
         </div>
@@ -565,4 +901,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
   }
 }
 
-customElements.define('slotrace-registrations-tracks-create-modal', SlotRaceRegistrationsTracksCreateModal);
+customElements.define(
+  "slotrace-registrations-tracks-create-modal",
+  SlotRaceRegistrationsTracksCreateModal,
+);

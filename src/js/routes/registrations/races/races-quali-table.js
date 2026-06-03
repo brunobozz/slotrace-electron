@@ -388,9 +388,10 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
 
       const sessionLapsEl = accordionRow.querySelector(`#session-laps-${item.pilotId}`);
       if (sessionLapsEl) {
+        const isPole = index === 0 && currentBest > 0;
         sessionLapsEl.setParams(item, () => {
           recalculateQualiMetrics(item);
-        });
+        }, isPole);
       }
 
       // Chevron Toggle Button Listener

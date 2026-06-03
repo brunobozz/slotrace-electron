@@ -35,9 +35,33 @@ class QualiToolbar extends HTMLElement {
 
   render() {
     const laneCount = parseInt(this._track?.lanes) || 0;
+    const laneColors = this._track?.laneColors || [];
+    
+    const defaultColors = [
+      '#ff3b30', '#007aff', '#34c759', '#ffcc00',
+      '#ff9500', '#ffffff', '#af52de', '#8e8e93'
+    ];
+    
+    const colorHexToId = {
+      '#ff3b30': 1,
+      '#007aff': 2,
+      '#34c759': 3,
+      '#ffcc00': 4,
+      '#ff9500': 5,
+      '#ffffff': 6,
+      '#af52de': 7,
+      '#8e8e93': 8
+    };
+
+    const timeVal = this._race?.timePerPilot !== undefined ? this._race.timePerPilot : 60;
+    const intervalVal = this._race?.interval !== undefined ? this._race.interval : 10;
+    const selectedLane = this._race?.lane !== undefined ? this._race.lane : 1;
+
     let laneOptions = '';
     for (let i = 1; i <= laneCount; i++) {
-      laneOptions += `<option value="${i}">${i}</option>`;
+      const colorHex = laneColors[i - 1] || defaultColors[(i - 1) % defaultColors.length];
+      const isSelected = i === parseInt(selectedLane) ? 'selected' : '';
+      laneOptions += `<option value="${i}" style="color: ${colorHex}; background-color: #1c1f26; font-weight: bold;" ${isSelected}>${window.t("realtime_quali.toolbar.lane") || "Fenda"} ${i}</option>`;
     }
 
     const hasPilots = this._hasPilots();
@@ -51,35 +75,25 @@ class QualiToolbar extends HTMLElement {
         <div class="d-flex align-items-center gap-3">
 
           <!-- Time per pilot -->
-          <div class="d-flex align-items-center gap-1">
-            <label class="text-secondary mb-0" style="font-size: 0.75rem; white-space: nowrap;">
-              ${window.t('realtime_quali.toolbar.time_per_pilot') || 'Time (per pilot)'}
-            </label>
-            <div class="d-flex align-items-center">
-              <input type="number" id="quali-time" class="form-control form-control-sm bg-dark text-white border-secondary-subtle text-center" min="1" step="1" value="60" style="width: 64px; font-size: 0.8rem; box-shadow: none;">
-              <span class="text-secondary ms-1" style="font-size: 0.75rem;">s</span>
-            </div>
-          </div>
-
-          <!-- Lane -->
-          <div class="d-flex align-items-center gap-1">
-            <label class="text-secondary mb-0" style="font-size: 0.75rem; white-space: nowrap;">
-              ${window.t('realtime_quali.toolbar.lane') || 'Lane'}
-            </label>
-            <select id="quali-lane" class="form-select form-select-sm bg-dark text-white border-secondary-subtle" style="width: 64px; font-size: 0.8rem; box-shadow: none;">
-              ${laneOptions}
-            </select>
+          <div class="input-group input-group-sm" style="width: 110px;" title="${window.t('realtime_quali.toolbar.time_per_pilot') || 'Time (per pilot)'}">
+            <span class="input-group-text bg-dark text-secondary border-secondary-subtle"><i class="mdi mdi-clock-outline"></i></span>
+            <input type="number" id="quali-time" class="form-control bg-dark text-white border-secondary-subtle text-end px-2" min="1" step="1" value="${timeVal}" style="font-size: 0.8rem; box-shadow: none;">
+            <span class="input-group-text bg-dark text-secondary border-secondary-subtle">s</span>
           </div>
 
           <!-- Interval -->
-          <div class="d-flex align-items-center gap-1">
-            <label class="text-secondary mb-0" style="font-size: 0.75rem; white-space: nowrap;">
-              ${window.t('realtime_quali.toolbar.interval') || 'Interval'}
-            </label>
-            <div class="d-flex align-items-center">
-              <input type="number" id="quali-interval" class="form-control form-control-sm bg-dark text-white border-secondary-subtle text-center" min="0" step="1" value="10" style="width: 64px; font-size: 0.8rem; box-shadow: none;">
-              <span class="text-secondary ms-1" style="font-size: 0.75rem;">s</span>
-            </div>
+          <div class="input-group input-group-sm" style="width: 110px;" title="${window.t('realtime_quali.toolbar.interval') || 'Interval'}">
+            <span class="input-group-text bg-dark text-secondary border-secondary-subtle"><i class="mdi mdi-timer-sand"></i></span>
+            <input type="number" id="quali-interval" class="form-control bg-dark text-white border-secondary-subtle text-end px-2" min="0" step="1" value="${intervalVal}" style="font-size: 0.8rem; box-shadow: none;">
+            <span class="input-group-text bg-dark text-secondary border-secondary-subtle">s</span>
+          </div>
+
+          <!-- Lane -->
+          <div class="input-group input-group-sm" style="width: 130px;" title="${window.t('realtime_quali.toolbar.lane') || 'Lane'}">
+            <span class="input-group-text bg-dark text-secondary border-secondary-subtle"><i class="mdi mdi-road-variant"></i></span>
+            <select id="quali-lane" class="form-select bg-dark border-secondary-subtle px-2" style="font-size: 0.8rem; box-shadow: none; font-weight: bold;">
+              ${laneOptions}
+            </select>
           </div>
 
         </div>
@@ -117,6 +131,7 @@ class QualiToolbar extends HTMLElement {
     `;
 
     this._bindEvents();
+    this._updateLaneSelectColor();
     this._updateButtons();
   }
 
@@ -159,9 +174,31 @@ class QualiToolbar extends HTMLElement {
       });
     }
 
+    const timeInput = this.querySelector('#quali-time');
+    const intervalInput = this.querySelector('#quali-interval');
     const laneSelect = this.querySelector('#quali-lane');
+
+    const handleInputChange = () => {
+      const timePerPilot = parseInt(timeInput?.value) || 60;
+      const interval = parseInt(intervalInput?.value) || 10;
+      const lane = parseInt(laneSelect?.value) || 1;
+      
+      window.dispatchEvent(new CustomEvent('qualiConfigChanged', {
+        detail: { timePerPilot, interval, lane }
+      }));
+    };
+
+    if (timeInput) {
+      timeInput.addEventListener('input', handleInputChange);
+    }
+    if (intervalInput) {
+      intervalInput.addEventListener('input', handleInputChange);
+    }
+
     if (laneSelect) {
       laneSelect.addEventListener('change', () => {
+        this._updateLaneSelectColor();
+        handleInputChange();
         window.dispatchEvent(new CustomEvent('qualiLaneChanged', {
           detail: { lane: parseInt(laneSelect.value) || 1 }
         }));
@@ -227,6 +264,21 @@ class QualiToolbar extends HTMLElement {
         inputs.forEach(el => el.disabled = true);
         break;
     }
+  }
+
+  _updateLaneSelectColor() {
+    const select = this.querySelector('#quali-lane');
+    if (!select) return;
+
+    const laneColors = this._track?.laneColors || [];
+    const defaultColors = [
+      '#ff3b30', '#007aff', '#34c759', '#ffcc00',
+      '#ff9500', '#ffffff', '#af52de', '#8e8e93'
+    ];
+
+    const val = parseInt(select.value) || 1;
+    const activeColor = laneColors[val - 1] || defaultColors[(val - 1) % defaultColors.length] || '#ffffff';
+    select.style.color = activeColor;
   }
 }
 

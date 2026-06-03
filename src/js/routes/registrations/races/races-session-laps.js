@@ -20,9 +20,10 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
     }
   }
 
-  setParams(item, onChangeCallback) {
+  setParams(item, onChangeCallback, isPole) {
     this.item = item;
     this.onChangeCallback = onChangeCallback;
+    this.isPole = isPole || false;
     this.render();
   }
 
@@ -70,6 +71,12 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         .lap-badge.best-lap .lap-badge-index {
           color: #2ec866 !important;
         }
+        .lap-badge.best-lap.pole-lap .lap-badge-index {
+          color: #a855f7 !important;
+        }
+        html[data-bs-theme="light"] .lap-badge.best-lap.pole-lap .lap-badge-index {
+          color: #6f42c1 !important;
+        }
         .lap-badge-input {
           border: 0 !important;
           background: transparent !important;
@@ -87,6 +94,14 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         }
         .lap-badge.best-lap .lap-badge-input {
           color: #2ec866 !important;
+          font-weight: 700;
+        }
+        .lap-badge.best-lap.pole-lap .lap-badge-input {
+          color: #a855f7 !important;
+          font-weight: 700;
+        }
+        html[data-bs-theme="light"] .lap-badge.best-lap.pole-lap .lap-badge-input {
+          color: #6f42c1 !important;
           font-weight: 700;
         }
         .lap-badge-input::-webkit-outer-spin-button,
@@ -144,8 +159,9 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         const isBestLap =
           this.item.bestLapIndex === lapIndex + 1 &&
           parseFloat(this.item.bestLapTime) > 0;
+        const isPoleLap = isBestLap && this.isPole;
         const pill = document.createElement("div");
-        pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""}`;
+        pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}`;
         pill.innerHTML = `
           <span class="lap-badge-index">#${lapIndex + 1}</span>
           <input type="number" step="0.001" min="0" class="lap-badge-input input-lap-time" value="${lapTime || ""}" placeholder="0.000" data-lap-index="${lapIndex}">

@@ -21,6 +21,8 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       const { race } = e.detail;
       // Deep clone the race object to avoid mutating the list's in-memory model unless saved
       this.race = JSON.parse(JSON.stringify(race));
+      if (!this.race.pilots) this.race.pilots = [];
+      if (!this.race.quali) this.race.quali = [];
 
       // Load tracks, drivers, and cars from the DB first, then populate the dropdowns
       Promise.all([
@@ -316,7 +318,8 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         const selectedType = typeSelect ? typeSelect.value : 'grand_prix';
 
         const nameInput = this.querySelector('#input-race-edit-name');
-        const selectedTrackId = trackSelect ? trackSelect.value : '';
+        const trackSelectElement = this.querySelector('#select-race-edit-track');
+        const selectedTrackId = trackSelectElement ? trackSelectElement.value : '';
         const dateInput = this.querySelector('#input-race-edit-date');
 
         const newName = nameInput ? nameInput.value.trim() : '';
@@ -351,8 +354,8 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 trackId: selectedTrackId,
                 trackName: selectedTrackName,
                 date: selectedDateISO,
-                pilots: this.race.pilots,
-                quali: this.race.quali
+                pilots: this.race.pilots || [],
+                quali: this.race.quali || []
               };
             }
             return r;

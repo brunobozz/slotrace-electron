@@ -32,23 +32,35 @@ class QualiQueue extends HTMLElement {
     }
   }
 
-  setData({ pendingPilots, drivers, startIndex, lane }) {
+  setData({ pendingPilots, drivers, startIndex, lane, laneColors }) {
     this.pendingPilots = pendingPilots || [];
     this.drivers = drivers || [];
     this.startIndex = startIndex || 1;
     this.lane = lane || 1;
+    this.laneColors = laneColors || null;
     this.render();
   }
 
   _resolveName(pilotId) {
     const driver = this.drivers.find(d => d.id === pilotId);
     if (!driver) return pilotId;
-    return driver.nickname || driver.name || pilotId;
+    const baseName = driver.name || driver.nickname || pilotId;
+    return baseName.trim().split(/\s+/)[0];
   }
 
   render() {
     const title = window.t('realtime_quali.queue.title') || 'NEXT';
-    const laneColor = getLaneColor(this.lane);
+    const defaultColors = {
+      1: '#ff3b30', // Red
+      2: '#007aff', // Blue
+      3: '#34c759', // Green
+      4: '#ffcc00', // Yellow
+      5: '#ff9500', // Orange
+      6: '#ffffff', // White
+      7: '#af52de', // Purple
+      8: '#8e8e93'  // Grey
+    };
+    const laneColor = (this.laneColors && this.laneColors[this.lane - 1]) || defaultColors[this.lane] || '#8e8e93';
 
     const rowsHtml = this.pendingPilots.map((pilot, index) => {
       const seqNum = this.startIndex + index;
@@ -56,16 +68,16 @@ class QualiQueue extends HTMLElement {
 
       return `
         <tr>
-          <td class="align-middle text-center" style="width: 12%; font-weight: 600; color: #8b949e; font-size: 1.3rem;">
+          <td class="align-middle text-center" style="width: 12%; font-weight: 700; color: #fff; font-size: 1.4rem;">
             ${seqNum}
+          </td>
+          <td class="align-middle text-start text-uppercase ps-4" style="width: 58%; font-size: 1.25rem; font-weight: 600; color: #c9d1d9; letter-spacing: 0.03em;">
+            ${name}
           </td>
           <td class="align-middle text-center" style="width: 30%;">
             <div class="d-flex align-items-center justify-content-center">
               <span style="display: inline-block; width: 28px; height: 28px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 8px ${laneColor}; border: 1.5px solid rgba(255,255,255,0.30);"></span>
             </div>
-          </td>
-          <td class="align-middle text-end text-uppercase" style="width: 58%; font-size: 1.25rem; font-weight: 600; color: #c9d1d9; letter-spacing: 0.03em; padding-right: 2.5rem;">
-            ${name}
           </td>
         </tr>
       `;
@@ -114,8 +126,8 @@ class QualiQueue extends HTMLElement {
           <thead>
             <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.08); font-size: 0.95rem; letter-spacing: 0.08em; color: #8b949e;">
               <th class="py-2 text-center" style="width: 12%;">#</th>
+              <th class="py-2 text-start ps-4" style="width: 58%;">${window.t('realtime_quali.queue.pilot') || 'Driver'}</th>
               <th class="py-2 text-center" style="width: 30%;">${window.t('realtime_quali.queue.lane') || 'Lane'}</th>
-              <th class="py-2 text-end" style="width: 58%; padding-right: 2.5rem;">${window.t('realtime_quali.queue.pilot') || 'Driver'}</th>
             </tr>
           </thead>
         </table>

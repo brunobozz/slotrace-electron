@@ -25,7 +25,8 @@ class QualiStandings extends HTMLElement {
   _resolveName(pilotId) {
     const driver = this.drivers.find(d => d.id === pilotId);
     if (!driver) return pilotId;
-    return driver.nickname || driver.name || pilotId;
+    const baseName = driver.name || driver.nickname || pilotId;
+    return baseName.trim().split(/\s+/)[0];
   }
 
   render() {
@@ -71,7 +72,7 @@ class QualiStandings extends HTMLElement {
           <td class="align-middle text-center" style="width: 12%; font-weight: 700; color: #fff; font-size: 1.4rem;">
             ${pos}
           </td>
-          <td class="align-middle text-center text-uppercase" style="width: 40%; font-size: 1.25rem; font-weight: 600; color: #c9d1d9; letter-spacing: 0.03em;">
+          <td class="align-middle text-start text-uppercase ps-4" style="width: 40%; font-size: 1.25rem; font-weight: 600; color: #c9d1d9; letter-spacing: 0.03em;">
             ${name}
           </td>
           <td class="align-middle text-center" style="width: 24%; font-family: 'Courier New', monospace; font-size: 1.3rem; color: ${diffColor};">
@@ -130,7 +131,7 @@ class QualiStandings extends HTMLElement {
           <thead>
             <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.08); font-size: 0.95rem; letter-spacing: 0.08em; color: #8b949e;">
               <th class="py-2" style="width: 12%;">${window.t('realtime_quali.standings.position') || 'Pos'}</th>
-              <th class="py-2" style="width: 40%;">${window.t('realtime_quali.standings.pilot') || 'Driver'}</th>
+              <th class="py-2 text-start ps-4" style="width: 40%;">${window.t('realtime_quali.standings.pilot') || 'Driver'}</th>
               <th class="py-2" style="width: 24%;">${window.t('realtime_quali.standings.diff') || 'Diff'}</th>
               <th class="py-2" style="width: 24%;">${window.t('realtime_quali.standings.best') || 'Best'}</th>
             </tr>
