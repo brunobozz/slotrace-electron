@@ -275,18 +275,24 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       // Listen to form input and change events to update button disabled state
       form.addEventListener("input", (e) => {
         this.checkPendingChanges();
-        if (e.target && (e.target.classList.contains("lane-color-picker") || e.target.classList.contains("lane-rotation-select"))) {
+        if (
+          e.target &&
+          (e.target.classList.contains("lane-color-picker") ||
+            e.target.classList.contains("lane-rotation-select"))
+        ) {
           this.updateSelectOptionColors();
         }
       });
       form.addEventListener("change", (e) => {
         this.checkPendingChanges();
-        if (e.target && (e.target.classList.contains("lane-color-picker") || e.target.classList.contains("lane-rotation-select"))) {
+        if (
+          e.target &&
+          (e.target.classList.contains("lane-color-picker") ||
+            e.target.classList.contains("lane-rotation-select"))
+        ) {
           this.updateSelectOptionColors();
         }
       });
-
-
 
       // Cancel button at bottom
       const cancelBtn = this.querySelector("#btn-cancel-track");
@@ -297,12 +303,17 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       }
 
       // Discard changes confirmation button inside the confirmation modal
-      const discardBtn = this.querySelector("#btn-confirm-discard-track-changes");
+      const discardBtn = this.querySelector(
+        "#btn-confirm-discard-track-changes",
+      );
       if (discardBtn) {
         discardBtn.addEventListener("click", () => {
-          const confirmCloseModalEl = this.querySelector("#modal-confirm-cancel-track");
+          const confirmCloseModalEl = this.querySelector(
+            "#modal-confirm-cancel-track",
+          );
           if (confirmCloseModalEl) {
-            const confirmCloseInstance = bootstrap.Modal.getInstance(confirmCloseModalEl);
+            const confirmCloseInstance =
+              bootstrap.Modal.getInstance(confirmCloseModalEl);
             if (confirmCloseInstance) {
               confirmCloseInstance.hide();
             }
@@ -579,7 +590,10 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     container.innerHTML = "";
     currentColors.forEach((colorHex, index) => {
       const laneNum = index + 1;
-      const selectedRotation = (laneRotation && laneRotation[index]) ? laneRotation[index] : (((index + 1) % count) + 1);
+      const selectedRotation =
+        laneRotation && laneRotation[index]
+          ? laneRotation[index]
+          : ((index + 1) % count) + 1;
 
       const itemEl = document.createElement("tr");
       itemEl.className = "lane-config-item";
@@ -605,7 +619,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
           </div>
         </td>
         <td class="pt-1 pb-0 px-0 text-end align-middle" style="width: 40%;">
-          <select class="form-select form-select-sm lane-rotation-select bg-dark border-0 ms-auto text-end" style="width: 100px; font-weight: bold; border-radius: 4px; box-shadow: none; color: ${currentColors[selectedRotation - 1] || '#ffffff'};" title="Selecione a fenda para rodízio">
+          <select class="form-select form-select-sm lane-rotation-select border-0 ms-auto text-end" style="width: 100px; font-weight: bold; border-radius: 4px; box-shadow: none; color: ${currentColors[selectedRotation - 1] || "#ffffff"};" title="Selecione a fenda para rodízio">
             ${selectOptions}
           </select>
         </td>
@@ -686,7 +700,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       powerbars: powerbarsVal,
       photo: this.trackPhotoBase64 || "",
       laneColors: laneColors,
-      laneRotation: laneRotation
+      laneRotation: laneRotation,
     });
   }
 
@@ -700,7 +714,8 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
   }
 
   handleCloseAttempt() {
-    const hasChanges = this.getCurrentStateSnapshot() !== this.initialStateSnapshot;
+    const hasChanges =
+      this.getCurrentStateSnapshot() !== this.initialStateSnapshot;
     if (hasChanges) {
       const confirmModalEl = this.querySelector("#modal-confirm-cancel-track");
       if (confirmModalEl) {
@@ -708,7 +723,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
         if (!confirmModalInstance) {
           confirmModalInstance = new bootstrap.Modal(confirmModalEl, {
             backdrop: "static",
-            keyboard: false
+            keyboard: false,
           });
         }
         confirmModalInstance.show();
@@ -798,7 +813,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
                 <div class="row mb-4 d-none" id="custom-lanes-row">
                   <div class="col-12">
-                    <table class="table table-dark align-middle mb-0">
+                    <table class="table align-middle mb-0">
                       <thead>
                         <tr class="border-bottom border-secondary-subtle" style="font-size: 0.8rem; letter-spacing: 0.05em; color: #8b949e;">
                           <th scope="col" class="py-2 px-0 text-start fw-semibold" style="width: 60%;">${window.t("realtime_quali.toolbar.lane") || "Fenda"}</th>
