@@ -64,15 +64,7 @@ window.applyTheme = function(theme) {
   const themeLink = document.getElementById('theme-stylesheet');
   let stylesheetPath = '';
   
-  if (theme === 'tailwind_dark') {
-    document.documentElement.setAttribute('data-bs-theme', 'dark');
-    document.documentElement.setAttribute('data-theme-style', 'tailwind');
-    stylesheetPath = 'css/themes/tailwind-dark.css';
-  } else if (theme === 'tailwind_light') {
-    document.documentElement.setAttribute('data-bs-theme', 'light');
-    document.documentElement.setAttribute('data-theme-style', 'tailwind');
-    stylesheetPath = 'css/themes/tailwind-light.css';
-  } else if (theme === 'light') {
+  if (theme === 'light') {
     document.documentElement.setAttribute('data-bs-theme', 'light');
     document.documentElement.removeAttribute('data-theme-style');
     stylesheetPath = 'css/themes/bootstrap-light.css';

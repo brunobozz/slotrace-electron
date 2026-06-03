@@ -25,9 +25,9 @@ class SlotRaceRegistrationsDriversToolbar extends HTMLElement {
     this.innerHTML = `
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
         <!-- Search Input Left -->
-        <div class="d-flex align-items-center form-control search-wrapper-cardless border border-secondary-subtle rounded" style="max-width: 300px; width: 100%; background-color: #111111">
+        <div class="d-flex align-items-center form-control search-wrapper-cardless border border-secondary-subtle rounded" style="max-width: 300px; width: 100%;>
           <span class="bg-transparent border-0 pe-1 ps-1">
-            <i class="mdi mdi-magnify fs-5 text-white"></i>
+            <i class="mdi mdi-magnify fs-5"></i>
           </span>
           <input type="text" id="input-driver-search" class="form-control bg-transparent border-0 text-body-emphasis ps-1 pe-3 py-2 flex-grow-1" placeholder="${window.t("registrations.search_placeholder") || "Pesquisar piloto..."}" style="outline: none; box-shadow: none; border: 0px !important;">
         </div>
