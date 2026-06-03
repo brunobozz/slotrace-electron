@@ -5,6 +5,17 @@ class QualiLaps extends HTMLElement {
     this._activeLapNum = 0;
     this._firstLapMarked = false;
     this.innerHTML = '';
+
+    this._langListener = () => {
+      this.render();
+    };
+    window.addEventListener('languageChanged', this._langListener);
+  }
+
+  disconnectedCallback() {
+    if (this._langListener) {
+      window.removeEventListener('languageChanged', this._langListener);
+    }
   }
 
   setData({ lapTimes, overallBestTime, activeLapNum, firstLapMarked }) {
@@ -114,10 +125,9 @@ class QualiLaps extends HTMLElement {
     this.innerHTML = `
       <div class="d-flex flex-column h-100" style="background-color: #0f1115;">
         <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between" style="padding: 0.6rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #6c757d;">#</div>
+        <div class="d-flex align-items-center" style="padding: 0.6rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
           <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #6c757d;">
-            ${window.t('realtime_quali.pilot_panel.time') || 'TIME'}
+            ${window.t('realtime_quali.laps.title') || 'LAP TIMES'}
           </div>
         </div>
         <!-- Laps list -->

@@ -26,26 +26,23 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._onResume = () => this._handleResume();
     this._onMarkLap = () => this._handleMarkLap();
     this._onFinish = () => this._handleFinish();
+    this._onLaneChanged = (e) => {
+      this._sessionConfig.lane = e.detail.lane;
+      this._updateQueue();
+      this._updateDriverPanel();
+    };
 
     window.addEventListener('qualiSessionStart', this._onStart);
     window.addEventListener('qualiSessionPause', this._onPause);
     window.addEventListener('qualiSessionResume', this._onResume);
     window.addEventListener('qualiMarkLap', this._onMarkLap);
     window.addEventListener('qualiSessionFinish', this._onFinish);
+    window.addEventListener('qualiLaneChanged', this._onLaneChanged);
 
     // Running lap timer loop
     this._runningLoopActive = true;
     this._startRunningLoop();
 
-    // DEV: Auto-open modal for development
-    setTimeout(() => {
-      this.race = {
-        id: 'dev-001', name: 'Dev Race', type: 'grand_prix',
-        date: new Date().toISOString(), trackId: '', trackName: '',
-        winner: '', pilots: [], quali: []
-      };
-      this.loadDataAndRender();
-    }, 500);
   }
 
   disconnectedCallback() {
@@ -58,6 +55,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener('qualiSessionResume', this._onResume);
     window.removeEventListener('qualiMarkLap', this._onMarkLap);
     window.removeEventListener('qualiSessionFinish', this._onFinish);
+    window.removeEventListener('qualiLaneChanged', this._onLaneChanged);
   }
 
   _startRunningLoop() {
@@ -364,13 +362,14 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const panel = this.querySelector('quali-driver-panel');
     if (!panel) return;
 
+    const lane = this._sessionConfig.lane || 1;
     if (this._currentPilotId) {
       const driver = this._getDriver(this._currentPilotId);
       const record = this._getQualiRecord(this._currentPilotId);
       const overallBest = this._getOverallBestTime();
-      panel.setData({ driver, qualiRecord: record, overallBestTime: overallBest });
+      panel.setData({ driver, qualiRecord: record, overallBestTime: overallBest, lane });
     } else {
-      panel.setData({ driver: null, qualiRecord: null, overallBestTime: 0 });
+      panel.setData({ driver: null, qualiRecord: null, overallBestTime: 0, lane });
     }
   }
 
@@ -410,7 +409,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       const pilot = (this.race.pilots || []).find(p => (typeof p === 'object' ? p.id : p) === id);
       return typeof pilot === 'object' ? pilot : { id: pilot || id, carId: null };
     });
-    queue.setData({ pendingPilots, drivers: this.drivers });
+    queue.setData({ pendingPilots, drivers: this.drivers, lane: this._sessionConfig.lane || 1 });
   }
 
   // ─── INITIAL DISTRIBUTION ──────────────────────────────
@@ -443,7 +442,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const queue = this.querySelector('quali-queue');
     if (queue) {
       const allPilots = racePilots.map(p => typeof p === 'object' ? p : { id: p, carId: null });
-      queue.setData({ pendingPilots: allPilots, drivers: this.drivers });
+      queue.setData({ pendingPilots: allPilots, drivers: this.drivers, lane: this._sessionConfig.lane || 1 });
     }
   }
 
@@ -510,9 +509,9 @@ class SlotRaceRealtimeQuali extends HTMLElement {
               </div>
 
               <!-- Right Column: Standings + Queue -->
-              <div class="d-flex flex-column h-100 overflow-auto p-3 gap-3" style="width: 30%; min-width: 320px;">
-                <quali-standings class="flex-shrink-0"></quali-standings>
-                <quali-queue class="flex-grow-1"></quali-queue>
+              <div class="d-flex flex-column h-100" style="width: 30%; min-width: 320px; background-color: #0f1115;">
+                <quali-standings class="overflow-hidden" style="flex: 1; min-height: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);"></quali-standings>
+                <quali-queue class="overflow-hidden" style="flex: 1; min-height: 0;"></quali-queue>
               </div>
 
             </div>

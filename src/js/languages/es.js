@@ -197,7 +197,12 @@ window.localeStrings.es = {
       diff: "Dif"
     },
     queue: {
-      title: "PRÓXIMOS"
+      title: "PRÓXIMOS",
+      pilot: "Piloto",
+      lane: "Carril"
+    },
+    laps: {
+      title: "TIEMPOS DE VUELTA"
     }
   },
   settings: {

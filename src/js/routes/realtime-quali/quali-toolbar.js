@@ -158,6 +158,15 @@ class QualiToolbar extends HTMLElement {
         window.dispatchEvent(new CustomEvent('qualiSessionFinish'));
       });
     }
+
+    const laneSelect = this.querySelector('#quali-lane');
+    if (laneSelect) {
+      laneSelect.addEventListener('change', () => {
+        window.dispatchEvent(new CustomEvent('qualiLaneChanged', {
+          detail: { lane: parseInt(laneSelect.value) || 1 }
+        }));
+      });
+    }
   }
 
   _updateButtons() {

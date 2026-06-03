@@ -173,7 +173,7 @@ window.localeStrings.en = {
   },
   realtime_quali: {
     toolbar: {
-      time_per_pilot: "Time (per pilot)",
+      time_per_pilot: "Time (per driver)",
       lane: "Lane",
       interval: "Interval",
       start: "Start",
@@ -184,7 +184,7 @@ window.localeStrings.en = {
       seconds: "s"
     },
     pilot_panel: {
-      pilot: "PILOT",
+      pilot: "DRIVER",
       time: "TIME",
       laps: "LAPS",
       best: "BEST"
@@ -192,12 +192,17 @@ window.localeStrings.en = {
     standings: {
       title: "STANDINGS",
       position: "Pos",
-      pilot: "Pilot",
+      pilot: "Driver",
       best: "Best",
       diff: "Diff"
     },
     queue: {
-      title: "NEXT"
+      title: "NEXT",
+      pilot: "Driver",
+      lane: "Lane"
+    },
+    laps: {
+      title: "LAP TIMES"
     }
   },
   settings: {

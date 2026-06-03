@@ -1,7 +1,22 @@
+function getLaneColor(lane) {
+  const colors = {
+    1: '#ff3b30', // Red
+    2: '#007aff', // Blue
+    3: '#34c759', // Green
+    4: '#ffcc00', // Yellow
+    5: '#ff9500', // Orange
+    6: '#ffffff', // White
+    7: '#af52de', // Purple
+    8: '#8e8e93'  // Grey
+  };
+  return colors[lane] || '#8e8e93';
+}
+
 class QualiDriverPanel extends HTMLElement {
   connectedCallback() {
     this._driver = null;
     this._qualiRecord = null;
+    this._lane = 1;
     this.render();
 
     this._langListener = () => {
@@ -16,10 +31,11 @@ class QualiDriverPanel extends HTMLElement {
     }
   }
 
-  setData({ driver, qualiRecord, overallBestTime }) {
+  setData({ driver, qualiRecord, overallBestTime, lane }) {
     this._driver = driver || null;
     this._qualiRecord = qualiRecord || null;
     this._overallBestTime = overallBestTime || 0;
+    this._lane = lane || 1;
     this.render();
   }
 
@@ -35,7 +51,13 @@ class QualiDriverPanel extends HTMLElement {
     const driver = this._driver;
     const record = this._qualiRecord;
 
-    const pilotName = driver ? (driver.nickname || driver.name || '--') : '--';
+    let pilotName = '--';
+    if (driver) {
+      const baseName = driver.name ? driver.name : (driver.nickname || '');
+      if (baseName) {
+        pilotName = baseName.trim().split(/\s+/)[0];
+      }
+    }
     const laps = record ? (record.laps ?? '--') : '--';
     const bestTimeVal = record && record.bestLapTime ? parseFloat(record.bestLapTime) : 0;
     const bestTime = bestTimeVal > 0 ? this._formatTime(bestTimeVal) : '--.--.----';
@@ -50,6 +72,7 @@ class QualiDriverPanel extends HTMLElement {
     const labelTime = window.t('realtime_quali.pilot_panel.time') || 'TIME';
     const labelLaps = window.t('realtime_quali.pilot_panel.laps') || 'LAPS';
     const labelBest = window.t('realtime_quali.pilot_panel.best') || 'BEST';
+    const labelLane = window.t('realtime_quali.toolbar.lane') || 'LANE';
 
     // Best time color logic
     let bestTimeColor = '#fff';
@@ -58,17 +81,37 @@ class QualiDriverPanel extends HTMLElement {
       bestTimeColor = isRaceBest ? '#a855f7' : '#adff2f';
     }
 
-    this.innerHTML = `
-      <div class="quali-driver-panel d-flex flex-column justify-content-between h-100" style="background-color: #0f1115; padding: 1.5rem 2.5rem;">
+    const laneColor = getLaneColor(this._lane);
 
-        <!-- Pilot -->
-        <div class="d-flex flex-column flex-grow-1 justify-content-center" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1rem 0;">
-          <div style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: #8b949e;">
-            ${labelPilot}
+    this.innerHTML = `
+      <div class="quali-driver-panel d-flex flex-column justify-content-between h-100" style="background-color: #0f1115; padding: 0 2.5rem 1.5rem 2.5rem;">
+
+        <!-- Pilot & Lane Info -->
+        <div class="d-flex flex-row flex-grow-1" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1rem 0; min-height: 0;">
+          
+          <!-- Pilot Info -->
+          <div class="d-flex flex-column justify-content-center align-items-start" style="flex: 1; padding-right: 1.5rem; min-width: 0;">
+            <div style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: #8b949e;">
+              ${labelPilot}
+            </div>
+            <div class="fw-extrabold" style="font-size: 3.2rem; font-weight: 800; color: #fff; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; text-align: left; width: 100%;">
+              ${pilotName}
+            </div>
           </div>
-          <div class="d-flex align-items-center justify-content-center flex-grow-1" style="font-size: 3.5rem; font-weight: 800; color: #fff; line-height: 1.2;">
-            ${pilotName}
+
+          <!-- Divider line between Pilot and Lane -->
+          <div style="width: 1px; height: 70%; background-color: rgba(255,255,255,0.08); align-self: center;"></div>
+
+          <!-- Lane Info -->
+          <div class="d-flex flex-column justify-content-center align-items-center" style="width: 160px; padding-left: 1.5rem;">
+            <div style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: #8b949e; margin-bottom: 0.5rem;">
+              ${labelLane}
+            </div>
+            <div class="d-flex align-items-center justify-content-center">
+              <span style="display: inline-block; width: 56px; height: 56px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 20px ${laneColor}; border: 3px solid rgba(255,255,255,0.3);"></span>
+            </div>
           </div>
+
         </div>
 
         <!-- Time -->

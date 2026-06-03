@@ -3,6 +3,17 @@ class QualiStandings extends HTMLElement {
     this.quali = [];
     this.drivers = [];
     this.innerHTML = '';
+
+    this._langListener = () => {
+      this.render();
+    };
+    window.addEventListener('languageChanged', this._langListener);
+  }
+
+  disconnectedCallback() {
+    if (this._langListener) {
+      window.removeEventListener('languageChanged', this._langListener);
+    }
   }
 
   setData({ quali, drivers }) {
@@ -45,27 +56,29 @@ class QualiStandings extends HTMLElement {
       const bestTimeStr = bestTime > 0 ? bestTime.toFixed(4) : '—';
 
       let diffStr = '—';
+      let diffColor = '#8b949e';
       if (index > 0 && bestTime > 0 && leaderTime > 0) {
         const diff = bestTime - leaderTime;
         diffStr = `+${diff.toFixed(4)}`;
+        diffColor = '#ffcc00'; // Yellow
       }
 
       const isFirst = index === 0 && bestTime > 0;
-      const rowBg = isFirst ? 'background-color: rgba(13, 110, 253, 0.08);' : '';
+      const rowClass = isFirst ? 'class="leader-row"' : '';
 
       return `
-        <tr style="${rowBg}">
+        <tr ${rowClass}>
           <td class="align-middle text-center" style="width: 12%; font-weight: 700; color: #fff; font-size: 1.4rem;">
             ${pos}
           </td>
           <td class="align-middle text-center text-uppercase" style="width: 40%; font-size: 1.25rem; font-weight: 600; color: #c9d1d9; letter-spacing: 0.03em;">
             ${name}
           </td>
+          <td class="align-middle text-center" style="width: 24%; font-family: 'Courier New', monospace; font-size: 1.3rem; color: ${diffColor};">
+            ${diffStr}
+          </td>
           <td class="align-middle text-center" style="width: 24%; font-family: 'Courier New', monospace; font-size: 1.5rem; font-weight: 600; color: #e6e6e6;">
             ${bestTimeStr}
-          </td>
-          <td class="align-middle text-center" style="width: 24%; font-family: 'Courier New', monospace; font-size: 1.3rem; color: #8b949e;">
-            ${diffStr}
           </td>
         </tr>
       `;
@@ -73,13 +86,14 @@ class QualiStandings extends HTMLElement {
 
     this.innerHTML = `
       <style>
-        quali-standings table {
-          background-color: #1a1d23;
-          margin-bottom: 0;
+        quali-standings table, 
+        quali-standings tr, 
+        quali-standings td, 
+        quali-standings th {
+          background-color: transparent !important;
         }
-        quali-standings .quali-standings-header {
-          background-color: #0d6efd;
-          color: #fff;
+        quali-standings tr.leader-row td {
+          background-color: rgba(13, 110, 253, 0.1) !important;
         }
         quali-standings tbody tr {
           border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -87,27 +101,50 @@ class QualiStandings extends HTMLElement {
         quali-standings tbody tr:last-child {
           border-bottom: none;
         }
+        /* Custom scrollbar style */
+        quali-standings .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
+        }
+        quali-standings .overflow-y-auto::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+        }
+        quali-standings .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 3px;
+        }
+        quali-standings .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
       </style>
 
-      <div class="border border-secondary-subtle rounded-3 overflow-hidden shadow-sm" style="background-color: #1a1d23;">
-        <table class="table table-dark table-borderless align-middle mb-0 text-center" style="background-color: #1a1d23;">
+      <div class="d-flex flex-column h-100" style="background: transparent;">
+        <!-- Title -->
+        <div class="d-flex align-items-center" style="padding: 0.6rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+          <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #6c757d;">
+            ${title}
+          </div>
+        </div>
+
+        <!-- Table Header (Fixed) -->
+        <table class="table table-dark table-borderless text-center mb-0" style="background: transparent; table-layout: fixed; width: 100%;">
           <thead>
-            <tr class="quali-standings-header">
-              <th colspan="4" class="text-center text-uppercase fw-bold py-3" style="font-size: 1.2rem; letter-spacing: 0.15em;">
-                ${title}
-              </th>
-            </tr>
-            <tr style="background-color: #14171d; font-size: 0.95rem; letter-spacing: 0.08em; color: #8b949e;">
-              <th class="text-center py-2 fw-semibold" style="width: 12%;">Pos</th>
-              <th class="text-center py-2 fw-semibold" style="width: 40%;">Pilot</th>
-              <th class="text-center py-2 fw-semibold" style="width: 24%;">Best</th>
-              <th class="text-center py-2 fw-semibold" style="width: 24%;">Diff</th>
+            <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.08); font-size: 0.95rem; letter-spacing: 0.08em; color: #8b949e;">
+              <th class="py-2" style="width: 12%;">${window.t('realtime_quali.standings.position') || 'Pos'}</th>
+              <th class="py-2" style="width: 40%;">${window.t('realtime_quali.standings.pilot') || 'Driver'}</th>
+              <th class="py-2" style="width: 24%;">${window.t('realtime_quali.standings.diff') || 'Diff'}</th>
+              <th class="py-2" style="width: 24%;">${window.t('realtime_quali.standings.best') || 'Best'}</th>
             </tr>
           </thead>
-          <tbody>
-            ${rowsHtml || `<tr><td colspan="4" class="text-secondary py-3" style="font-size: 1.1rem;">—</td></tr>`}
-          </tbody>
         </table>
+
+        <!-- Table Body (Scrollable) -->
+        <div class="flex-grow-1 overflow-y-auto" style="min-height: 0;">
+          <table class="table table-dark table-borderless text-center mb-0" style="background: transparent; table-layout: fixed; width: 100%;">
+            <tbody>
+              ${rowsHtml || `<tr><td colspan="4" class="text-secondary py-3" style="font-size: 1.1rem; width: 100%;">—</td></tr>`}
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
   }
