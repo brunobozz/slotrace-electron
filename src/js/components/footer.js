@@ -20,7 +20,7 @@ class SlotRaceFooter extends HTMLElement {
       window.t("footer.developed_by") || "Desenvolvido por";
 
     this.innerHTML = `
-      <footer class="mt-5 p-3 pt-2 pb-2 bg-dark">
+      <footer class="mt-2 p-3 pt-2 pb-2 border-top border-secondary-subtle bg-body-tertiary">
         <div class="d-flex justify-content-between align-items-center text-secondary" style="font-size: 0.75rem; opacity: 0.8;">
           <div>
             <span class="me-1">${developedByText}</span> <strong class="text-body-emphasis">BOZZ Company</strong>
