@@ -3,14 +3,14 @@ class SlotRaceTimer extends HTMLElement {
     super();
     this.seconds = 0;
     this.timerId = null;
-    this._mode = 'up'; // 'up' or 'down'
+    this._mode = "up"; // 'up' or 'down'
     this._onFinish = null;
     this._onTick = null;
   }
 
   connectedCallback() {
     this.innerHTML = `
-      <span class="font-monospace fw-bold" id="timer-display" style="font-size: 2.8rem; color: #adff2f !important; text-shadow: 0 0 10px rgba(173, 255, 47, 0.25); letter-spacing: 0.05em;">00:00:00</span>
+      <span class="font-monospace fw-bold text-primary" id="timer-display" style="font-size: 5rem; letter-spacing: 0.05em;">00:00:00</span>
     `;
   }
 
@@ -23,7 +23,7 @@ class SlotRaceTimer extends HTMLElement {
    */
   start() {
     this.stop();
-    this._mode = 'up';
+    this._mode = "up";
     this.seconds = 0;
     this.updateDisplay();
     this.timerId = setInterval(() => {
@@ -40,7 +40,7 @@ class SlotRaceTimer extends HTMLElement {
    */
   startCountdown(fromSeconds, onFinish) {
     this.stop();
-    this._mode = 'down';
+    this._mode = "down";
     this.seconds = fromSeconds;
     this._onFinish = onFinish || null;
     this.updateDisplay();
@@ -70,7 +70,7 @@ class SlotRaceTimer extends HTMLElement {
    */
   resume() {
     if (this.timerId) return; // already running
-    if (this._mode === 'down') {
+    if (this._mode === "down") {
       this.timerId = setInterval(() => {
         this.seconds--;
         this.updateDisplay();
@@ -114,23 +114,23 @@ class SlotRaceTimer extends HTMLElement {
   }
 
   setColor(color) {
-    const display = this.querySelector('#timer-display');
+    const display = this.querySelector("#timer-display");
     if (display) {
-      display.style.color = color + ' !important';
+      display.style.color = color + " !important";
       display.style.textShadow = `0 0 10px ${color}40`;
     }
   }
 
   updateDisplay() {
-    const display = this.querySelector('#timer-display');
+    const display = this.querySelector("#timer-display");
     if (!display) return;
 
     const totalSecs = Math.max(0, this.seconds);
-    const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
-    const secs = String(totalSecs % 60).padStart(2, '0');
+    const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, "0");
+    const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, "0");
+    const secs = String(totalSecs % 60).padStart(2, "0");
 
     display.textContent = `${hrs}:${mins}:${secs}`;
   }
 }
-customElements.define('slotrace-timer', SlotRaceTimer);
+customElements.define("slotrace-timer", SlotRaceTimer);

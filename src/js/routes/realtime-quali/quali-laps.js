@@ -4,17 +4,17 @@ class QualiLaps extends HTMLElement {
     this._overallBestTime = 0;
     this._activeLapNum = 0;
     this._firstLapMarked = false;
-    this.innerHTML = '';
+    this.innerHTML = "";
 
     this._langListener = () => {
       this.render();
     };
-    window.addEventListener('languageChanged', this._langListener);
+    window.addEventListener("languageChanged", this._langListener);
   }
 
   disconnectedCallback() {
     if (this._langListener) {
-      window.removeEventListener('languageChanged', this._langListener);
+      window.removeEventListener("languageChanged", this._langListener);
     }
   }
 
@@ -27,7 +27,7 @@ class QualiLaps extends HTMLElement {
   }
 
   updateRunningTime(elapsedSeconds) {
-    const activeEl = this.querySelector('#active-lap-time');
+    const activeEl = this.querySelector("#active-lap-time");
     if (activeEl) {
       activeEl.textContent = elapsedSeconds.toFixed(4);
     }
@@ -61,58 +61,63 @@ class QualiLaps extends HTMLElement {
   render() {
     const bestIdx = this._findBestLapIndex();
     const personalBest = this._getBestTime();
-    const isRaceBest = personalBest > 0 && this._overallBestTime > 0 && Math.abs(personalBest - this._overallBestTime) < 0.0001;
+    const isRaceBest =
+      personalBest > 0 &&
+      this._overallBestTime > 0 &&
+      Math.abs(personalBest - this._overallBestTime) < 0.0001;
 
-    let rowsHtml = '';
+    let rowsHtml = "";
 
     if (this.lapTimes.length === 0 && !this._firstLapMarked) {
       rowsHtml = `
-        <div class="d-flex align-items-center justify-content-center h-100" style="color: #8b949e; font-size: 0.9rem;">
-          —
+        <div class="d-flex align-items-center justify-content-center h-100">
         </div>
       `;
     } else {
-      const finishedLapsHtml = this.lapTimes.map((time, index) => {
-        const lapNum = index + 1;
-        const val = parseFloat(time) || 0;
-        const timeStr = val > 0 ? val.toFixed(4) : '—';
-        const isBest = index === bestIdx;
+      const finishedLapsHtml = this.lapTimes
+        .map((time, index) => {
+          const lapNum = index + 1;
+          const val = parseFloat(time) || 0;
+          const timeStr = val > 0 ? val.toFixed(4) : "—";
+          const isBest = index === bestIdx;
 
-        let numColor = '#8b949e';
-        let timeColor = '#c9d1d9'; // Light gray standard
+          let numColor = "";
+          let timeColor = "";
 
-        if (isBest) {
-          if (isRaceBest) {
-            // Race best = purple
-            numColor = '#a855f7';
-            timeColor = '#a855f7';
-          } else {
-            // Personal best = green
-            numColor = '#adff2f';
-            timeColor = '#adff2f';
+          if (isBest) {
+            if (isRaceBest) {
+              // Race best = purple
+              numColor = "color: #a855f7 !important";
+              timeColor = "color: #a855f7 !important";
+            } else {
+              // Personal best = green
+              numColor = "color: #adff2f !important";
+              timeColor = "color: #adff2f !important";
+            }
           }
-        }
 
-        return `
-          <div class="d-flex align-items-center justify-content-between" style="padding: 0.6rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <div style="font-weight: 700; color: ${numColor}; font-size: 2.8rem; font-family: 'Courier New', monospace;">
+          return `
+          <div class="d-flex align-items-center justify-content-between px-4 py-2 border-bottom border-secondary-subtle">
+            <div class="text-body-secondary" style="font-weight: 700; ${numColor}; font-size: 2.8rem; font-family: 'Courier New', monospace;">
               ${lapNum}
             </div>
-            <div style="font-family: 'Courier New', monospace; font-size: 4.0rem; font-weight: 700; color: ${timeColor}; line-height: 1.2; text-align: right;">
+            <div class="text-body-secondary" style="font-family: 'Courier New', monospace; font-size: 4.0rem; font-weight: 700; ${timeColor}; text-align: right;">
               ${timeStr}
             </div>
           </div>
         `;
-      }).reverse().join('');
+        })
+        .reverse()
+        .join("");
 
-      let activeRowHtml = '';
+      let activeRowHtml = "";
       if (this._firstLapMarked && this._activeLapNum > 0) {
         activeRowHtml = `
-          <div class="d-flex align-items-center justify-content-between" style="padding: 0.6rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); background-color: rgba(255,140,0,0.03);">
-            <div style="font-weight: 700; color: #ff8c00; font-size: 2.8rem; font-family: 'Courier New', monospace;">
+          <div class="d-flex align-items-center justify-content-between px-4 py-2 border-bottom border-secondary-subtle">
+            <div class="text-primary" style="font-weight: 700; font-size: 2.8rem; font-family: 'Courier New', monospace;">
               ${this._activeLapNum}
             </div>
-            <div id="active-lap-time" style="font-family: 'Courier New', monospace; font-size: 4.0rem; font-weight: 700; color: #ff8c00; line-height: 1.2; text-align: right;">
+            <div id="active-lap-time" class="text-primary" style="font-family: 'Courier New', monospace; font-size: 4.0rem; font-weight: 700; text-align: right;">
               0.0000
             </div>
           </div>
@@ -123,11 +128,11 @@ class QualiLaps extends HTMLElement {
     }
 
     this.innerHTML = `
-      <div class="d-flex flex-column h-100" style="background-color: #0f1115;">
+      <div class="d-flex flex-column h-100 border-end border-secondary-subtle">
         <!-- Header -->
-        <div class="d-flex align-items-center" style="padding: 0.6rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <div style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #6c757d;">
-            ${window.t('realtime_quali.laps.title') || 'LAP TIMES'}
+        <div class="d-flex align-items-center border-bottom border-secondary-subtle p-2">
+          <div class="text-uppercase text-body-secondary fw-bold" style="letter-spacing: 0.1rem;">
+            ${window.t("realtime_quali.laps.title") || "LAP TIMES"}
           </div>
         </div>
         <!-- Laps list -->
@@ -139,4 +144,4 @@ class QualiLaps extends HTMLElement {
   }
 }
 
-customElements.define('quali-laps', QualiLaps);
+customElements.define("quali-laps", QualiLaps);
