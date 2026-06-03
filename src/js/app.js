@@ -198,11 +198,44 @@ function handleRoute() {
   }
 }
 
+// Helper to recount races for all drivers based on active races list
+window.recalculateDriversRacesCount = function() {
+  return Promise.all([
+    window.electronAPI.db.get('races'),
+    window.electronAPI.db.get('drivers')
+  ]).then(([races, drivers]) => {
+    const racesList = races || [];
+    const driversList = drivers || [];
+
+    driversList.forEach(driver => {
+      const count = racesList.filter(race => {
+        const pilots = race.pilots || [];
+        return pilots.some(p => {
+          const id = typeof p === 'object' ? p.id : p;
+          return id === driver.id;
+        });
+      }).length;
+      
+      driver.races = count;
+      driver.gps = count; // for backward compatibility/graceful degradation
+    });
+
+    return window.electronAPI.db.set('drivers', driversList);
+  }).then(() => {
+    window.dispatchEvent(new CustomEvent('driverAdded'));
+  }).catch(err => {
+    console.error('Failed to recalculate drivers races count:', err);
+  });
+};
+
 // Listen for routing changes
 window.addEventListener('hashchange', handleRoute);
 
 // Initialize application on load
 window.addEventListener('DOMContentLoaded', () => {
+  // Recalculate drivers races count on startup
+  window.recalculateDriversRacesCount();
+
   // Restore saved primary color and dark/light theme on startup from Node.js database
   window.electronAPI.db.get('settings').then(settings => {
     if (settings) {

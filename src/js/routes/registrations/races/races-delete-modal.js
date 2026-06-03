@@ -58,6 +58,7 @@ class SlotRaceRegistrationsRacesDeleteModal extends HTMLElement {
           return window.electronAPI.db.set('races', updatedList);
         }).then(success => {
           if (success) {
+            window.recalculateDriversRacesCount();
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance) {
               modalInstance.hide();

@@ -151,7 +151,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
               driversList[driverIndex].name = nameVal;
               driversList[driverIndex].nickname = nicknameVal;
               driversList[driverIndex].photo = this.driverPhotoBase64 || '';
-              // Keep original gps and laps intact!
+              // Keep original races and laps intact!
             }
           } else {
             // Create Mode
@@ -160,7 +160,8 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
               name: nameVal,
               nickname: nicknameVal,
               photo: this.driverPhotoBase64 || '',
-              gps: 0,
+              races: 0,
+              gps: 0, // compatibility
               laps: 0,
               best_laps: 0
             };
@@ -396,7 +397,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <div class="modal fade" id="modal-new-driver" tabindex="-1" aria-labelledby="modal-new-driver-title" aria-hidden="true">
+      <div class="modal fade" id="modal-new-driver" tabindex="-1" aria-labelledby="modal-new-driver-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content border-secondary-subtle">
             
@@ -405,7 +406,6 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
                 <i class="mdi mdi-account-plus text-primary fs-4"></i>
                 ${window.t('registrations.modal.new_driver_title')}
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
             <div class="modal-body">

@@ -295,6 +295,14 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         });
       }
 
+      // Cancel button on footer
+      const cancelBtn = this.querySelector('#btn-cancel-edit-race');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          this.handleCloseAttempt();
+        });
+      }
+
       // Discard changes confirmation button
       const discardBtn = this.querySelector('#btn-confirm-discard-changes');
       if (discardBtn) {
@@ -363,6 +371,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           return window.electronAPI.db.set('races', updatedList);
         }).then(success => {
           if (success) {
+            window.recalculateDriversRacesCount();
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance) {
               modalInstance.hide();
@@ -540,6 +549,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
               </div>
               
               <div class="d-flex justify-content-end gap-2 p-3 border-top border-secondary-subtle">
+                <button type="button" id="btn-cancel-edit-race" class="btn btn-secondary px-3 fw-semibold">
+                  ${window.t('registrations.modal.cancel_button') || 'Cancelar'}
+                </button>
                 <button type="submit" id="btn-submit-edit-race" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
                   <i class="mdi mdi-content-save-outline fs-5"></i>
                   ${window.t('registrations.races_modal.save_button') || 'Salvar Alterações'}
