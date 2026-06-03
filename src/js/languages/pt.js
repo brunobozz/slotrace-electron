@@ -165,8 +165,39 @@ window.localeStrings.pt = {
         position: "Posição",
         best_lap_index: "Volta Melhor",
         best_lap_time: "Melhor Volta",
-        title: "Classificação do Quali"
+        title: "Classificação do Quali",
+        go_qualify_button: "Qualificar",
+        clear_quali_button: "Zerar Tempos"
       }
+    }
+  },
+  realtime_quali: {
+    toolbar: {
+      time_per_pilot: "Tempo (por piloto)",
+      lane: "Fenda",
+      interval: "Intervalo",
+      start: "Iniciar",
+      pause: "Pausar",
+      resume: "Retomar",
+      mark_lap: "Marcar Volta",
+      finish: "Finalizar",
+      seconds: "s"
+    },
+    pilot_panel: {
+      pilot: "PILOTO",
+      time: "TEMPO",
+      laps: "VOLTAS",
+      best: "MELHOR"
+    },
+    standings: {
+      title: "CLASSIFICAÇÃO",
+      position: "Pos",
+      pilot: "Piloto",
+      best: "Melhor",
+      diff: "Diff"
+    },
+    queue: {
+      title: "PRÓXIMOS"
     }
   },
   settings: {

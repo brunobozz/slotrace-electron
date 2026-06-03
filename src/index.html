@@ -27,6 +27,8 @@
     <script src="js/components/header.js" defer></script>
     <script src="js/components/footer.js" defer></script>
     <script src="js/components/driver-pill.js" defer></script>
+    <script src="js/components/logo.js" defer></script>
+    <script src="js/components/timer.js" defer></script>
     <!-- JS Routes / Views -->
     <script src="js/routes/dashboard/dashboard.js" defer></script>
     <script src="js/routes/registrations/registrations.js" defer></script>
@@ -78,6 +80,12 @@
     <script src="js/routes/registrations/races/races-quali-table.js" defer></script>
     <script src="js/routes/registrations/races/races-edit-modal.js" defer></script>
     <script src="js/routes/registrations/races/races-add-pilot-modal.js" defer></script>
+    <script src="js/routes/realtime-quali/realtime-quali.js" defer></script>
+    <script src="js/routes/realtime-quali/quali-toolbar.js" defer></script>
+    <script src="js/routes/realtime-quali/quali-driver-panel.js" defer></script>
+    <script src="js/routes/realtime-quali/quali-laps.js" defer></script>
+    <script src="js/routes/realtime-quali/quali-standings.js" defer></script>
+    <script src="js/routes/realtime-quali/quali-queue.js" defer></script>
 
     <script src="js/routes/settings/settings.js" defer></script>
     <script src="js/routes/settings/components/settings-menu.js" defer></script>
@@ -113,6 +121,9 @@
         <slotrace-settings></slotrace-settings>
       </div>
     </main>
+
+    <!-- Realtime Quali Fullscreen (standalone component) -->
+    <slotrace-realtime-quali></slotrace-realtime-quali>
 
     <!-- Modular Footer -->
     <slotrace-footer class="d-block"></slotrace-footer>

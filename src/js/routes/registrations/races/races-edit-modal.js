@@ -90,7 +90,21 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       this.checkPendingChanges();
     };
 
-    this._qualiUpdatedListener = () => {
+    this._qualiUpdatedListener = (e) => {
+      if (!this.race) return;
+      if (e && e.detail && e.detail.race) {
+        this.race.quali = JSON.parse(JSON.stringify(e.detail.race.quali || []));
+        this.populatePilots();
+        if (this.initialRaceSnapshot) {
+          try {
+            const snapshotObj = JSON.parse(this.initialRaceSnapshot);
+            snapshotObj.quali = this.race.quali;
+            this.initialRaceSnapshot = JSON.stringify(snapshotObj);
+          } catch (err) {
+            console.error('Error updating initial race snapshot:', err);
+          }
+        }
+      }
       this.checkPendingChanges();
     };
 

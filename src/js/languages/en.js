@@ -165,8 +165,39 @@ window.localeStrings.en = {
         position: "Position",
         best_lap_index: "Best Lap Index",
         best_lap_time: "Best Lap Time",
-        title: "Qualifying Standings"
+        title: "Qualifying Standings",
+        go_qualify_button: "Go Qualify",
+        clear_quali_button: "Clear Laps"
       }
+    }
+  },
+  realtime_quali: {
+    toolbar: {
+      time_per_pilot: "Time (per pilot)",
+      lane: "Lane",
+      interval: "Interval",
+      start: "Start",
+      pause: "Pause",
+      resume: "Resume",
+      mark_lap: "Mark Lap",
+      finish: "Finish",
+      seconds: "s"
+    },
+    pilot_panel: {
+      pilot: "PILOT",
+      time: "TIME",
+      laps: "LAPS",
+      best: "BEST"
+    },
+    standings: {
+      title: "STANDINGS",
+      position: "Pos",
+      pilot: "Pilot",
+      best: "Best",
+      diff: "Diff"
+    },
+    queue: {
+      title: "NEXT"
     }
   },
   settings: {

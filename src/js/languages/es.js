@@ -165,8 +165,39 @@ window.localeStrings.es = {
         position: "Posición",
         best_lap_index: "Volta Mejor",
         best_lap_time: "Mejor Volta",
-        title: "Clasificación de la Calificación"
+        title: "Clasificación de la Calificación",
+        go_qualify_button: "Clasificar",
+        clear_quali_button: "Reiniciar Tiempos"
       }
+    }
+  },
+  realtime_quali: {
+    toolbar: {
+      time_per_pilot: "Tiempo (por piloto)",
+      lane: "Carril",
+      interval: "Intervalo",
+      start: "Iniciar",
+      pause: "Pausar",
+      resume: "Reanudar",
+      mark_lap: "Marcar Vuelta",
+      finish: "Finalizar",
+      seconds: "s"
+    },
+    pilot_panel: {
+      pilot: "PILOTO",
+      time: "TIEMPO",
+      laps: "VUELTAS",
+      best: "MEJOR"
+    },
+    standings: {
+      title: "CLASIFICACIÓN",
+      position: "Pos",
+      pilot: "Piloto",
+      best: "Mejor",
+      diff: "Dif"
+    },
+    queue: {
+      title: "PRÓXIMOS"
     }
   },
   settings: {

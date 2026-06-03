@@ -76,9 +76,16 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
             <i class="mdi mdi-table-large text-primary fs-5"></i>
             Classificação
           </h6>
-          <button type="button" id="btn-clear-quali" class="btn btn-sm text-danger px-2 py-1 shadow-sm d-flex align-items-center justify-content-center" title="Zerar classificação" style="height: 30px; width: 30px; outline: none; box-shadow: none;">
-            <i class="mdi mdi-trash-can-outline fs-5"></i>
-          </button>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" id="btn-go-qualify" class="btn btn-sm btn-primary d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm" title="${window.t('registrations.races_modal.quali.go_qualify_button') || 'Go Qualify'}" style="outline: none; box-shadow: none;">
+              <i class="mdi mdi-timer-outline fs-6 me-2"></i>
+              <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.go_qualify_button') || 'Go Qualify'}</span>
+            </button>
+            <button type="button" id="btn-clear-quali" class="btn btn-sm btn-danger d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm" title="${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}" style="outline: none; box-shadow: none;">
+              <i class="mdi mdi-refresh fs-6 me-2"></i>
+              <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}</span>
+            </button>
+          </div>
         </div>
         <div class="table-responsive border border-secondary-subtle rounded-3 overflow-hidden shadow-sm bg-body-tertiary">
           <table class="table table-borderless align-middle mb-0 text-center" style="background: transparent;">
@@ -125,6 +132,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
         </div>
       </div>
     `;
+    this.setupHeaderEvents();
   }
 
   populateQualiTable() {
@@ -410,7 +418,9 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       tableBody.appendChild(row);
       tableBody.appendChild(accordionRow);
     });
+  }
 
+  setupHeaderEvents() {
     // Setup Clear Quali Button listener
     const clearBtn = this.querySelector('#btn-clear-quali');
     if (clearBtn) {
@@ -448,6 +458,17 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
             });
           }
         }
+      });
+    }
+
+    // Setup Go Qualify Button listener
+    const goQualifyBtn = this.querySelector('#btn-go-qualify');
+    if (goQualifyBtn) {
+      goQualifyBtn.addEventListener('click', () => {
+        // Dispatch custom event for future telemetry/racing screens integration
+        window.dispatchEvent(new CustomEvent('requestGoQualify', {
+          detail: { race: this.race }
+        }));
       });
     }
   }
