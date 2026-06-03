@@ -14,23 +14,39 @@ class SlotRaceRegistrationsTab extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <ul class="nav nav-tabs border-secondary-subtle mb-4" id="registrations-tabs" role="tablist">
+      <style>
+        .nav-tabs .nav-link:not(.active) {
+          color: #ffffff !important;
+          opacity: 0.75;
+          transition: opacity 0.15s ease-in-out;
+        }
+        .nav-tabs .nav-link:not(.active):hover {
+          opacity: 1;
+        }
+      </style>
+      <ul class="nav nav-tabs nav-justified border-secondary-subtle mb-4" id="registrations-tabs" role="tablist">
         <li class="nav-item" role="presentation">
-          <a class="nav-link d-flex align-items-center gap-2" id="subnav-drivers" href="#registrations/drivers" role="tab">
+          <a class="nav-link d-flex align-items-center justify-content-center gap-2" id="subnav-drivers" href="#registrations/drivers" role="tab">
             <i class="mdi mdi-account-multiple fs-5"></i>
             <span>${window.t('registrations.drivers')}</span>
           </a>
         </li>
         <li class="nav-item" role="presentation">
-          <a class="nav-link d-flex align-items-center gap-2" id="subnav-cars" href="#registrations/cars" role="tab">
+          <a class="nav-link d-flex align-items-center justify-content-center gap-2" id="subnav-cars" href="#registrations/cars" role="tab">
             <i class="mdi mdi-car-sports fs-5"></i>
             <span>${window.t('registrations.cars')}</span>
           </a>
         </li>
         <li class="nav-item" role="presentation">
-          <a class="nav-link d-flex align-items-center gap-2" id="subnav-tracks" href="#registrations/tracks" role="tab">
+          <a class="nav-link d-flex align-items-center justify-content-center gap-2" id="subnav-tracks" href="#registrations/tracks" role="tab">
             <i class="mdi mdi-go-kart-track fs-5"></i>
             <span>${window.t('registrations.tracks')}</span>
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link d-flex align-items-center justify-content-center gap-2" id="subnav-races" href="#registrations/races" role="tab">
+            <i class="mdi mdi-flag-checkered fs-5"></i>
+            <span>${window.t('registrations.races')}</span>
           </a>
         </li>
       </ul>
@@ -44,16 +60,24 @@ class SlotRaceRegistrationsTab extends HTMLElement {
     const subnavDrivers = this.querySelector('#subnav-drivers');
     const subnavCars = this.querySelector('#subnav-cars');
     const subnavTracks = this.querySelector('#subnav-tracks');
+    const subnavRaces = this.querySelector('#subnav-races');
     
     if (subnavDrivers && subnavCars && subnavTracks) {
       subnavDrivers.classList.remove('active');
       subnavCars.classList.remove('active');
       subnavTracks.classList.remove('active');
+      if (subnavRaces) {
+        subnavRaces.classList.remove('active');
+      }
       
       if (activeSubRoute === 'cars') {
         subnavCars.classList.add('active');
       } else if (activeSubRoute === 'tracks') {
         subnavTracks.classList.add('active');
+      } else if (activeSubRoute === 'races') {
+        if (subnavRaces) {
+          subnavRaces.classList.add('active');
+        }
       } else {
         subnavDrivers.classList.add('active');
       }

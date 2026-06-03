@@ -17,9 +17,22 @@ window.localeStrings.es = {
     drivers: "Pilotos",
     cars: "Coches",
     tracks: "Pistas",
+    races: "Carreras",
     new_driver: "Nuevo Piloto",
     new_car: "Nuevo Coche",
     new_track: "Nueva Pista",
+    new_race: "Nueva Carrera",
+    default_track: "Pista Estándar",
+    no_pilots_participated: "Ningún piloto participó en esta carrera aún.",
+    search_race_placeholder: "Buscar carrera...",
+    no_races_listed: "Ninguna carrera registrada en el historial aún.",
+    no_races_help: "Termine una carrera y guarde los resultados en el historial para verla aquí.",
+    no_races_found: "Ninguna carrera encontrada.",
+    no_races_found_desc: "Intente cambiar el término de su búsqueda.",
+    edit_race: "Renombrar Carrera",
+    delete_race: "Eliminar Carrera",
+    rename_race_prompt: "Introduzca el nuevo nombre de esta carrera:",
+    confirm_delete_race: "¿Está seguro de que desea eliminar esta carrera del historial?",
     no_drivers_listed: "Ningún piloto registrado aún.",
     search_placeholder: "Buscar piloto...",
     no_drivers_found: "Ningún piloto encontrado para esta búsqueda.",
@@ -34,7 +47,9 @@ window.localeStrings.es = {
       save_button: "Guardar Piloto",
       cancel_button: "Cancelar",
       driver_caps_label: "PILOTO",
+      car_caps_label: "COCHE",
       laps_label: "Vueltas",
+      diff_label: "DIFERENCIA",
       best_laps_label: "Mejores Vueltas",
       best_laps_abbr: "M. Vueltas",
       edit_button: "Editar",
@@ -132,6 +147,57 @@ window.localeStrings.es = {
       crop_button: "Aplicar Recorte",
       validation_name: "Por favor, introduzca un nombre de trazado válido.",
       validation_lanes: "Por favor, introduzca el número de carriles."
+    },
+    races_modal: {
+      delete_title: "Eliminar Carrera",
+      delete_confirm_prefix: "¿Está seguro de que desea eliminar la carrera ",
+      delete_confirm_suffix: "? Esta acción no se puede deshacer y eliminará el registro del historial.",
+      edit_title: "Editar Carrera",
+      save_button: "Guardar Cambios",
+      winner_label: "Ganador",
+      no_winner: "Sin Ganador",
+      track_label: "Pista Utilizada",
+      date_label: "Fecha",
+      laps_title: "Tiempos de las Vueltas",
+      add_lap_button: "Añadir Vuelta",
+      no_laps_registered: "No hay vueltas registradas para este piloto. Haga clic en \"Añadir Vuelta\" para comenzar.",
+      quali: {
+        position: "Posición",
+        best_lap_index: "Volta Mejor",
+        best_lap_time: "Mejor Volta",
+        title: "Clasificación de la Calificación",
+        go_qualify_button: "Clasificar",
+        clear_quali_button: "Reiniciar Tiempos"
+      }
+    }
+  },
+  realtime_quali: {
+    toolbar: {
+      time_per_pilot: "Tiempo (por piloto)",
+      lane: "Carril",
+      interval: "Intervalo",
+      start: "Iniciar",
+      pause: "Pausar",
+      resume: "Reanudar",
+      mark_lap: "Marcar Vuelta",
+      finish: "Finalizar",
+      seconds: "s"
+    },
+    pilot_panel: {
+      pilot: "PILOTO",
+      time: "TIEMPO",
+      laps: "VUELTAS",
+      best: "MEJOR"
+    },
+    standings: {
+      title: "CLASIFICACIÓN",
+      position: "Pos",
+      pilot: "Piloto",
+      best: "Mejor",
+      diff: "Dif"
+    },
+    queue: {
+      title: "PRÓXIMOS"
     }
   },
   settings: {
