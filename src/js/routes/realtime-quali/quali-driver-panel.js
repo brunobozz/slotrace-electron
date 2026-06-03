@@ -87,7 +87,7 @@ class QualiDriverPanel extends HTMLElement {
       <div class="quali-driver-panel d-flex flex-column justify-content-between h-100" style="background-color: #0f1115; padding: 0 2.5rem 1.5rem 2.5rem;">
 
         <!-- Pilot & Lane Info -->
-        <div class="d-flex flex-row flex-grow-1" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1rem 0; min-height: 0;">
+        <div class="d-flex flex-row flex-grow-1" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 0 1rem 0; min-height: 0;">
           
           <!-- Pilot Info -->
           <div class="d-flex flex-column justify-content-center align-items-start" style="flex: 1; padding-right: 1.5rem; min-width: 0;">
@@ -108,7 +108,7 @@ class QualiDriverPanel extends HTMLElement {
               ${labelLane}
             </div>
             <div class="d-flex align-items-center justify-content-center">
-              <span style="display: inline-block; width: 56px; height: 56px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 20px ${laneColor}; border: 3px solid rgba(255,255,255,0.3);"></span>
+              <span style="display: inline-block; width: 80px; height: 80px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 20px ${laneColor}; border: 3px solid rgba(255,255,255,0.3);"></span>
             </div>
           </div>
 

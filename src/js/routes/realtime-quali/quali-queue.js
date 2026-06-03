@@ -61,7 +61,7 @@ class QualiQueue extends HTMLElement {
           </td>
           <td class="align-middle text-center" style="width: 30%;">
             <div class="d-flex align-items-center justify-content-center">
-              <span style="display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 8px ${laneColor}; border: 1.5px solid rgba(255,255,255,0.30);"></span>
+              <span style="display: inline-block; width: 28px; height: 28px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 8px ${laneColor}; border: 1.5px solid rgba(255,255,255,0.30);"></span>
             </div>
           </td>
           <td class="align-middle text-end text-uppercase" style="width: 58%; font-size: 1.25rem; font-weight: 600; color: #c9d1d9; letter-spacing: 0.03em; padding-right: 2.5rem;">

@@ -1,6 +1,6 @@
 {
   "name": "slotrace",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "SlotRace Control Panel - offline application using Electron and Bootstrap 5",
   "main": "main.js",
   "scripts": {
