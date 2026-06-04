@@ -117,7 +117,6 @@ class SlotRaceTimer extends HTMLElement {
     const display = this.querySelector("#timer-display");
     if (display) {
       display.style.color = color + " !important";
-      display.style.textShadow = `0 0 10px ${color}40`;
     }
   }
 
