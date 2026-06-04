@@ -28,76 +28,102 @@ class SlotRaceRealtimeRaceHeader extends HTMLElement {
   }
 
   render() {
-    const raceName = this._race?.name || "";
     const isIdle = this._state === "idle";
     const isRunning = this._state === "running";
     const isPaused = this._state === "paused";
+    const isFinished = this._state === "finished";
 
-    this.innerHTML = `
-      <div class="modal-header border-bottom border-secondary-subtle px-4 py-0 d-flex align-items-center justify-content-between" style="min-height: 70px;">
-        
-        <!-- Left: Action buttons (Iniciar / Pausar / Retomar / Zerar) + Config -->
-        <div class="d-flex align-items-center gap-2" style="width: 300px;">
-          <!-- Iniciar / Retomar -->
-          ${
-            isIdle || isPaused
-              ? `
-            <button id="btn-race-start" class="btn btn-lg btn-success fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
-              <i class="mdi mdi-play"></i>
-              <span>${isPaused ? "Retomar" : "Iniciar"}</span>
-            </button>
-          `
-              : ""
-          }
+    const actionsHtml = `
+      <!-- Iniciar / Retomar -->
+      ${
+        isIdle || isPaused
+          ? `
+        <button id="btn-race-start" class="btn btn-lg btn-success fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
+          <i class="mdi mdi-play"></i>
+          <span>${isPaused ? "Retomar" : "Iniciar"}</span>
+        </button>
+      `
+          : ""
+      }
 
-          <!-- Pausar -->
-          ${
-            isRunning
-              ? `
-            <button id="btn-race-pause" class="btn btn-lg btn-warning text-dark fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
-              <i class="mdi mdi-pause"></i>
-              <span>Pausar</span>
-            </button>
-          `
-              : ""
-          }
+      <!-- Pausar -->
+      ${
+        isRunning
+          ? `
+        <button id="btn-race-pause" class="btn btn-lg btn-warning text-dark fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
+          <i class="mdi mdi-pause"></i>
+          <span>Pausar</span>
+        </button>
+      `
+          : ""
+      }
 
-          <!-- Zerar -->
-          ${
-            isRunning || isPaused
-              ? `
-            <button id="btn-race-reset" class="btn btn-lg btn-danger fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
-              <i class="mdi mdi-stop"></i>
-              <span>Zerar</span>
-            </button>
-          `
-              : ""
-          }
+      <!-- Zerar -->
+      ${
+        isRunning || isPaused
+          ? `
+        <button id="btn-race-reset" class="btn btn-lg btn-danger fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
+          <i class="mdi mdi-stop"></i>
+          <span>Zerar</span>
+        </button>
+      `
+          : ""
+      }
 
-          <!-- Gear Config Button -->
-          <button id="btn-race-config" class="btn btn-sm btn-outline-secondary rounded-pill d-flex align-items-center justify-content-center shadow-sm" title="Configurações da Corrida" style="width: 32px; height: 32px;">
-            <i class="mdi mdi-cog fs-5"></i>
-          </button>
-        </div>
+      <!-- Salvar Corrida -->
+      ${
+        isFinished
+          ? `
+        <button id="btn-race-save" class="btn btn-lg btn-primary fw-semibold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm">
+          <i class="mdi mdi-content-save"></i>
+          <span>Salvar Corrida</span>
+        </button>
+      `
+          : ""
+      }
 
-        <!-- Center: Race Name & Subtitle -->
-        <div class="flex-grow-1 text-center">
-          <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-2" style="letter-spacing: 0.05em;">
-            ${raceName}
-          </h2>
-          <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 1rem; letter-spacing: 0.25em;">
-            CORRIDA
-          </div>
-        </div>
-
-        <!-- Right: Timer & Close button -->
-        <div class="d-flex align-items-center gap-3 justify-content-end" style="width: 300px;">
-          <slotrace-timer></slotrace-timer>
-          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="outline: none; box-shadow: none;"></button>
-        </div>
-
-      </div>
+      <!-- Gear Config Button -->
+      <button id="btn-race-config" class="btn btn-sm btn-outline-secondary rounded-pill d-flex align-items-center justify-content-center shadow-sm" title="Configurações da Corrida" style="width: 32px; height: 32px;">
+        <i class="mdi mdi-cog fs-5"></i>
+      </button>
     `;
+
+    const actionsContainer = this.querySelector("#header-actions-container");
+    if (!actionsContainer) {
+      const raceName = this._race?.name || "";
+      this.innerHTML = `
+        <div class="modal-header border-bottom border-secondary-subtle px-4 py-0 d-flex align-items-center justify-content-between" style="min-height: 70px;">
+          
+          <!-- Left: Action buttons (Iniciar / Pausar / Retomar / Zerar) + Config -->
+          <div id="header-actions-container" class="d-flex align-items-center gap-2" style="width: 300px;">
+            ${actionsHtml}
+          </div>
+
+          <!-- Center: Race Name & Subtitle -->
+          <div class="flex-grow-1 text-center">
+            <h2 id="header-race-name" class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-2" style="letter-spacing: 0.05em;">
+              ${raceName}
+            </h2>
+            <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 1rem; letter-spacing: 0.25em;">
+              CORRIDA
+            </div>
+          </div>
+
+          <!-- Right: Timer & Close button -->
+          <div class="d-flex align-items-center gap-3 justify-content-end" style="width: 300px;">
+            <slotrace-timer></slotrace-timer>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="outline: none; box-shadow: none;"></button>
+          </div>
+
+        </div>
+      `;
+    } else {
+      actionsContainer.innerHTML = actionsHtml;
+      const nameEl = this.querySelector("#header-race-name");
+      if (nameEl && this._race) {
+        nameEl.textContent = this._race.name || "";
+      }
+    }
 
     this._bindEvents();
   }
@@ -107,6 +133,7 @@ class SlotRaceRealtimeRaceHeader extends HTMLElement {
     const btnPause = this.querySelector("#btn-race-pause");
     const btnReset = this.querySelector("#btn-race-reset");
     const btnConfig = this.querySelector("#btn-race-config");
+    const btnSave = this.querySelector("#btn-race-save");
 
     if (btnStart) {
       btnStart.addEventListener("click", () => {
@@ -127,6 +154,12 @@ class SlotRaceRealtimeRaceHeader extends HTMLElement {
     if (btnReset) {
       btnReset.addEventListener("click", () => {
         window.dispatchEvent(new CustomEvent("raceSessionReset"));
+      });
+    }
+
+    if (btnSave) {
+      btnSave.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("raceSaveResults"));
       });
     }
 

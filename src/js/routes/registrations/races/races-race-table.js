@@ -195,7 +195,8 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
     // Sort: 
     // 1. More laps wins (descending)
     // 2. If laps are equal, smaller total elapsed time wins (ascending)
-    // 3. If laps and times are equal (e.g. 0 laps), preserve racePilots insertion order
+    // 3. If laps and times are equal, higher final zone wins (descending)
+    // 4. Preserve racePilots insertion order as fallback
     const sortedRace = [...this.race.raceSession].sort((a, b) => {
       const lapsA = parseInt(a.laps) || 0;
       const lapsB = parseInt(b.laps) || 0;
@@ -207,15 +208,21 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       const timeA = a.lapTimes ? a.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0) : 0;
       const timeB = b.lapTimes ? b.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0) : 0;
 
-      if (timeA === 0 && timeB === 0) {
-        const idxA = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === a.pilotId);
-        const idxB = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === b.pilotId);
-        return idxA - idxB;
+      if (timeA !== timeB) {
+        if (timeA === 0) return 1;
+        if (timeB === 0) return -1;
+        return timeA - timeB;
       }
-      if (timeA === 0) return 1;
-      if (timeB === 0) return -1;
 
-      return timeA - timeB;
+      const zoneA = parseFloat(a.finalZone) || 0;
+      const zoneB = parseFloat(b.finalZone) || 0;
+      if (zoneA !== zoneB) {
+        return zoneB - zoneA;
+      }
+
+      const idxA = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === a.pilotId);
+      const idxB = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === b.pilotId);
+      return idxA - idxB;
     });
 
     const leader = sortedRace[0];
@@ -315,7 +322,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
           `}
         </td>
         <td class="align-middle">
-          <span class="fw-semibold text-body-emphasis label-race-laps" style="font-size: 0.95rem;">${item.laps}</span>
+          <span class="fw-semibold text-body-emphasis label-race-laps" style="font-size: 0.95rem;">${item.laps}${item.finalZone > 0 ? ` (Z: ${item.finalZone})` : ""}</span>
         </td>
         <td class="align-middle">
           <span class="label-race-total-time ${totalTime > 0 ? 'fw-semibold text-body-emphasis font-monospace' : 'text-secondary'}" style="font-size: 0.95rem;">${totalTimeStr}</span>
