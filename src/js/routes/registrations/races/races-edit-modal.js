@@ -23,6 +23,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       this.race = JSON.parse(JSON.stringify(race));
       if (!this.race.pilots) this.race.pilots = [];
       if (!this.race.quali) this.race.quali = [];
+      if (!this.race.raceSession) this.race.raceSession = [];
 
       // Load tracks, drivers, and cars from the DB first, then populate the dropdowns
       Promise.all([
@@ -298,6 +299,19 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         qualiTableComponent.setParams(this.race, this.drivers, this.cars);
       }
     }
+
+    // Call race table population
+    const raceTableComponent = this.querySelector(
+      "#race-edit-race-table-component",
+    );
+    if (raceTableComponent) {
+      if (racePilots.length === 0) {
+        raceTableComponent.classList.add("d-none");
+      } else {
+        raceTableComponent.classList.remove("d-none");
+        raceTableComponent.setParams(this.race, this.drivers, this.cars);
+      }
+    }
   }
 
   setupEvents() {
@@ -406,6 +420,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   date: selectedDateISO,
                   pilots: this.race.pilots || [],
                   quali: this.race.quali || [],
+                  raceSession: this.race.raceSession || [],
                 };
               }
               return r;
@@ -458,6 +473,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
     const pilots = this.race.pilots || [];
     const quali = this.race.quali || [];
+    const raceSession = this.race.raceSession || [];
 
     return JSON.stringify({
       name: newName,
@@ -466,6 +482,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       date: selectedDateISO,
       pilots: pilots,
       quali: quali,
+      raceSession: raceSession,
     });
   }
 
@@ -592,6 +609,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
                 <!-- Qualifying Standings Table Row -->
                 <slotrace-registrations-races-quali-table id="race-edit-quali-table-component" class="d-block mt-4 d-none"></slotrace-registrations-races-quali-table>
+
+                <!-- Race Standings Table Row -->
+                <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block mt-4 d-none"></slotrace-registrations-races-race-table>
               </div>
               
               <div class="d-flex justify-content-end gap-2 p-3 border-top border-secondary-subtle">
