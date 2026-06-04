@@ -591,14 +591,14 @@ class SlotRaceRealtimeQuali extends HTMLElement {
             <div class="modal-header border-bottom border-secondary-subtle px-4 py-0 d-flex align-items-center justify-content-between">
               
               <!-- Left: Logo -->
-              <slotrace-logo></slotrace-logo>
+              <!-- <slotrace-logo></slotrace-logo> -->
 
               <!-- Center: Race Name & QUALIFICAÇÃO -->
-              <div class="text-center flex-grow-1 mx-3">
+              <div class="flex-grow-1 mx-3">
                 <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-2" style="letter-spacing: 0.05em;">
                   ${raceName}
                 </h2>
-                <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 0.8rem; letter-spacing: 0.25em;">
+                <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 1rem; letter-spacing: 0.25em;">
                   QUALIFICAÇÃO
                 </div>
               </div>
@@ -619,14 +619,14 @@ class SlotRaceRealtimeQuali extends HTMLElement {
               
               <!-- Left Column: Driver Panel + Laps (side by side) -->
               <div class="d-flex flex-row h-100 flex-grow-1">
-                <quali-driver-panel class="overflow-auto h-100" style="width: 50%;"></quali-driver-panel>
-                <quali-laps class="overflow-auto h-100" style="width: 50%;"></quali-laps>
+                <quali-driver-panel class="overflow-auto h-100" style="width: 55%;"></quali-driver-panel>
+                <quali-laps class="overflow-auto h-100" style="width: 45%;"></quali-laps>
               </div>
 
               <!-- Right Column: Standings + Queue -->
               <div class="d-flex flex-column h-100" style="width: 30%; min-width: 320px;">
-                <quali-standings class="overflow-hidden" style="flex: 1; min-height: 0;"></quali-standings>
-                <quali-queue class="overflow-hidden" style="flex: 1; min-height: 0;"></quali-queue>
+                <quali-standings class="overflow-hidden" style="flex: 3; min-height: 0;"></quali-standings>
+                <quali-queue></quali-queue>
               </div>
 
             </div>

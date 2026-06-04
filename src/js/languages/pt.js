@@ -3,13 +3,15 @@ window.localeStrings.pt = {
   navbar: {
     dashboard: "Painel",
     registrations: "Cadastros",
-    settings: "Configurações"
+    settings: "Configurações",
   },
   dashboard: {
     title: "SlotRace Control",
-    subtitle: "Painel offline de telemetria e gerenciamento de corridas para sua pista de autorama.",
+    subtitle:
+      "Painel offline de telemetria e gerenciamento de corridas para sua pista de autorama.",
     alert_title: "Configuração Inicial Concluída!",
-    alert_desc: "Este é o seu painel de controle vazio. O ambiente local está configurado com Bootstrap 5 e pronto para receber módulos de corrida, telemetria em tempo real e sensores."
+    alert_desc:
+      "Este é o seu painel de controle vazio. O ambiente local está configurado com Bootstrap 5 e pronto para receber módulos de corrida, telemetria em tempo real e sensores.",
   },
   registrations: {
     title: "Cadastros",
@@ -26,7 +28,8 @@ window.localeStrings.pt = {
     no_pilots_participated: "Nenhum piloto participou desta corrida ainda.",
     search_race_placeholder: "Pesquisar corrida...",
     no_races_listed: "Nenhuma corrida salva no histórico ainda.",
-    no_races_help: "Finalize uma corrida e clique em salvar os resultados no histórico para vê-la aqui.",
+    no_races_help:
+      "Finalize uma corrida e clique em salvar os resultados no histórico para vê-la aqui.",
     no_races_found: "Nenhuma corrida encontrada.",
     no_races_found_desc: "Tente mudar o termo da pesquisa.",
     edit_race: "Editar Nome",
@@ -62,18 +65,22 @@ window.localeStrings.pt = {
       edit_driver_title: "Editar Piloto",
       save_changes_button: "Salvar Alterações",
       crop_title: "Recortar Foto do Piloto",
-      crop_help: "Arraste a imagem para mover e use o controle deslizante para ampliar",
+      crop_help:
+        "Arraste a imagem para mover e use o controle deslizante para ampliar",
       crop_button: "Aplicar Recorte",
-      validation_name: "Por favor, insira um nome de piloto válido."
+      validation_name: "Por favor, insira um nome de piloto válido.",
     },
     drivers_registry: "Cadastro de Pilotos",
     drivers_desc: "Gerencie os pilotos cadastrados localmente no sistema.",
     no_drivers: "Nenhum Piloto Cadastrado",
-    no_drivers_desc: "O banco de dados e o formulário de cadastro de pilotos serão implementados em módulos futuros.",
+    no_drivers_desc:
+      "O banco de dados e o formulário de cadastro de pilotos serão implementados em módulos futuros.",
     cars_registry: "Cadastro de Carros",
-    cars_desc: "Gerencie os carros de escala (slot cars) cadastrados no sistema.",
+    cars_desc:
+      "Gerencie os carros de escala (slot cars) cadastrados no sistema.",
     no_cars: "Nenhum Carro Cadastrado",
-    no_cars_desc: "O banco de dados e o formulário de cadastro de carros serão implementados em módulos futuros.",
+    no_cars_desc:
+      "O banco de dados e o formulário de cadastro de carros serão implementados em módulos futuros.",
     no_cars_listed: "Nenhum carro cadastrado ainda.",
     search_car_placeholder: "Pesquisar carro...",
     no_cars_found: "Nenhum carro encontrado para esta pesquisa.",
@@ -102,14 +109,17 @@ window.localeStrings.pt = {
       delete_confirm_suffix: "? Esta ação não poderá ser desfeita.",
       delete_button_confirm: "Excluir",
       crop_title: "Recortar Foto do Carro",
-      crop_help: "Arraste a imagem para mover e use o controle deslizante para ampliar",
+      crop_help:
+        "Arraste a imagem para mover e use o controle deslizante para ampliar",
       crop_button: "Aplicar Recorte",
-      validation_name: "Por favor, insira o nome do modelo do carro."
+      validation_name: "Por favor, insira o nome do modelo do carro.",
     },
     tracks_registry: "Cadastro de Pistas",
-    tracks_desc: "Gerencie os layouts das suas pistas, número de fendas e extensões.",
+    tracks_desc:
+      "Gerencie os layouts das suas pistas, número de fendas e extensões.",
     no_tracks: "Nenhuma Pista Cadastrada",
-    no_tracks_desc: "O banco de dados e os layouts das pistas serão implementados em módulos futuros.",
+    no_tracks_desc:
+      "O banco de dados e os layouts das pistas serão implementados em módulos futuros.",
     no_tracks_listed: "Nenhuma pista cadastrada ainda.",
     search_track_placeholder: "Pesquisar pista...",
     no_tracks_found: "Nenhuma pista encontrada para esta pesquisa.",
@@ -139,7 +149,8 @@ window.localeStrings.pt = {
       save_changes_button: "Salvar Alterações",
       cancel_button: "Cancelar",
       confirm_cancel_title: "Descartar Alterações?",
-      confirm_cancel_body: "Existem alterações não salvas. Deseja realmente descartá-las?",
+      confirm_cancel_body:
+        "Existem alterações não salvas. Deseja realmente descartá-las?",
       confirm_cancel_continue: "Continuar Editando",
       confirm_cancel_discard: "Descartar",
       track_caps_label: "PISTA",
@@ -150,15 +161,17 @@ window.localeStrings.pt = {
       delete_confirm_suffix: "? Esta ação não poderá ser desfeita.",
       delete_button_confirm: "Excluir",
       crop_title: "Recortar Foto da Pista",
-      crop_help: "Arraste a imagem para mover e use o controle deslizante para ampliar",
+      crop_help:
+        "Arraste a imagem para mover e use o controle deslizante para ampliar",
       crop_button: "Aplicar Recorte",
       validation_name: "Por favor, insira o nome da pista.",
-      validation_lanes: "Por favor, insira o número de fendas."
+      validation_lanes: "Por favor, insira o número de fendas.",
     },
     races_modal: {
       delete_title: "Excluir Corrida",
       delete_confirm_prefix: "Tem certeza de que deseja excluir a corrida ",
-      delete_confirm_suffix: "? Esta ação não poderá ser desfeita e removerá o registro do histórico.",
+      delete_confirm_suffix:
+        "? Esta ação não poderá ser desfeita e removerá o registro do histórico.",
       edit_title: "Editar Corrida",
       save_button: "Salvar Alterações",
       winner_label: "Vencedor",
@@ -167,16 +180,17 @@ window.localeStrings.pt = {
       date_label: "Data",
       laps_title: "Tempos das Voltas",
       add_lap_button: "Adicionar Volta",
-      no_laps_registered: "Nenhuma volta registrada para este piloto. Clique em \"Adicionar Volta\" para começar.",
+      no_laps_registered:
+        'Nenhuma volta registrada para este piloto. Clique em "Adicionar Volta" para começar.',
       quali: {
         position: "Posição",
         best_lap_index: "Volta Melhor",
         best_lap_time: "Melhor Volta",
         title: "Classificação do Quali",
         go_qualify_button: "Qualificar",
-        clear_quali_button: "Zerar Tempos"
-      }
-    }
+        clear_quali_button: "Zerar Tempos",
+      },
+    },
   },
   realtime_quali: {
     colors: {
@@ -187,7 +201,7 @@ window.localeStrings.pt = {
       5: "Laranja",
       6: "Branco",
       7: "Roxo",
-      8: "Cinza"
+      8: "Cinza",
     },
     toolbar: {
       time_per_pilot: "Tempo (por piloto)",
@@ -198,29 +212,29 @@ window.localeStrings.pt = {
       resume: "Retomar",
       mark_lap: "Marcar Volta",
       finish: "Finalizar",
-      seconds: "s"
+      seconds: "s",
     },
     pilot_panel: {
-      pilot: "PILOTO",
-      time: "TEMPO",
+      driver: "PILOTO",
+      last: "ÚLTIMA",
       laps: "VOLTAS",
-      best: "MELHOR"
+      best: "MELHOR",
     },
     standings: {
       title: "CLASSIFICAÇÃO",
       position: "Pos",
       pilot: "Piloto",
       best: "Melhor",
-      diff: "Diff"
+      diff: "Diff",
     },
     queue: {
       title: "PRÓXIMOS",
       pilot: "Piloto",
-      lane: "Fenda"
+      lane: "Fenda",
     },
     laps: {
-      title: "TEMPOS DAS VOLTAS"
-    }
+      title: "TEMPOS DAS VOLTAS",
+    },
   },
   settings: {
     title: "Configurações",
@@ -228,17 +242,18 @@ window.localeStrings.pt = {
     menu: {
       informations: "Informações",
       preferences: "Preferências",
-      connections: "Conexões"
+      connections: "Conexões",
     },
     informations: {
       local_name_label: "Nome do Local",
       local_name_placeholder: "ex: Monza Slot Club, Garage Autorama",
       validation_error: "Por favor, insira um nome de local válido.",
-      save_button: "Salvar Localização"
+      save_button: "Salvar Localização",
     },
     preferences: {
       color_label: "Cor Principal",
-      color_help: "Clique na caixa para selecionar sua cor de marca personalizada.",
+      color_help:
+        "Clique na caixa para selecionar sua cor de marca personalizada.",
       theme_label: "Tema",
       theme_help: "Selecione entre o modo Claro e Escuro.",
       theme_dark: "Escuro",
@@ -247,13 +262,13 @@ window.localeStrings.pt = {
       theme_bootstrap_light: "Bootstrap Claro",
       language_label: "Idioma",
       language_help: "Selecione o idioma de sua preferência para a aplicação.",
-      save_button: "Salvar Preferências"
+      save_button: "Salvar Preferências",
     },
     feedback: {
-      saved: "Salvo!"
-    }
+      saved: "Salvo!",
+    },
   },
   footer: {
-    developed_by: "Desenvolvido por"
-  }
+    developed_by: "Desenvolvido por",
+  },
 };

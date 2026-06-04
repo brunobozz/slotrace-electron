@@ -81,27 +81,24 @@ class QualiLaps extends HTMLElement {
           const timeStr = val > 0 ? val.toFixed(4) : "—";
           const isBest = index === bestIdx;
 
-          let numColor = "";
-          let timeColor = "";
+          let fastestColor = "";
 
           if (isBest) {
             if (isRaceBest) {
               // Race best = purple
-              numColor = "color: #a855f7 !important";
-              timeColor = "color: #a855f7 !important";
+              fastestColor = "color: #aa55ff !important";
             } else {
               // Personal best = green
-              numColor = "color: #adff2f !important";
-              timeColor = "color: #adff2f !important";
+              fastestColor = "color: #00bb44 !important";
             }
           }
 
           return `
           <div class="d-flex align-items-center justify-content-between px-4 py-2 border-bottom border-secondary-subtle">
-            <div class="text-body-secondary" style="font-weight: 700; ${numColor}; font-size: 2.8rem; font-family: 'Courier New', monospace;">
+            <div class="text-body-secondary" style="font-weight: 700; ${fastestColor}; font-size: 2.8rem; font-family: 'Courier New', monospace;">
               ${lapNum}
             </div>
-            <div class="text-body-secondary" style="font-family: 'Courier New', monospace; font-size: 4.0rem; font-weight: 700; ${timeColor}; text-align: right;">
+            <div class="fw-bold font-monospace text-end display-2 text-body-secondary" style="${fastestColor};">
               ${timeStr}
             </div>
           </div>
@@ -130,8 +127,8 @@ class QualiLaps extends HTMLElement {
     this.innerHTML = `
       <div class="d-flex flex-column h-100 border-end border-secondary-subtle">
         <!-- Header -->
-        <div class="d-flex align-items-center border-bottom border-secondary-subtle p-2">
-          <div class="text-uppercase text-body-secondary fw-bold" style="letter-spacing: 0.1rem;">
+        <div class="border-bottom border-secondary-subtle p-2">
+          <div class="text-uppercase text-body-secondary text-center fw-bold" style="letter-spacing: 0.1rem;">
             ${window.t("realtime_quali.laps.title") || "LAP TIMES"}
           </div>
         </div>

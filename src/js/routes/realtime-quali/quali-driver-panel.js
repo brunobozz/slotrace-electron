@@ -75,11 +75,11 @@ class QualiDriverPanel extends HTMLElement {
       );
     }
 
-    const labelPilot = window.t("realtime_quali.pilot_panel.pilot") || "PILOT";
-    const labelTime = window.t("realtime_quali.pilot_panel.time") || "TIME";
+    const labelDriver =
+      window.t("realtime_quali.pilot_panel.driver") || "DRIVER";
+    const labelLast = window.t("realtime_quali.pilot_panel.last") || "TIME";
     const labelLaps = window.t("realtime_quali.pilot_panel.laps") || "LAPS";
     const labelBest = window.t("realtime_quali.pilot_panel.best") || "BEST";
-    const labelLane = window.t("realtime_quali.toolbar.lane") || "LANE";
 
     // Best time color logic
     let bestTimeColor = "";
@@ -87,7 +87,7 @@ class QualiDriverPanel extends HTMLElement {
       const isRaceBest =
         this._overallBestTime > 0 &&
         Math.abs(bestTimeVal - this._overallBestTime) < 0.0001;
-      bestTimeColor = isRaceBest ? "color: #a855f7;" : "color: #adff2f;";
+      bestTimeColor = isRaceBest ? "color: #aa55ff;" : "color: #00bb44;";
     }
 
     const defaultColors = {
@@ -110,26 +110,26 @@ class QualiDriverPanel extends HTMLElement {
 
         <!-- Pilot & Lane Info -->
         <div class="d-flex flex-column flex-grow-1 justify-content-center border-bottom border-secondary-subtle p-3">
-          <div class="text-uppercase fs-5 text-body-tertiary fw-semibold small letter-spacing-sm">
-            ${labelPilot}
+          <div class="text-uppercase text-body-secondary fw-bold fs-4" style="letter-spacing: 0.1rem;">
+            ${labelDriver}
           </div>
           <div class="d-flex align-items-center justify-content-around flex-grow-1">
             <div class="display-1 fw-bold font-monospace text-body-secondary">
               ${pilotName}
             </div>
             <div class="d-flex align-items-center justify-content-center">
-              <span style="display: inline-block; width: 80px; height: 80px; border-radius: 50%; background-color: ${laneColor}; box-shadow: 0 0 20px ${laneColor}; border: 3px solid rgba(255,255,255,0.3);"></span>
+              <span style="display: inline-block; width: 100px; height: 100px; border-radius: 50%; background-color: ${laneColor};"></span>
             </div>
           </div>
         </div>
 
         <!-- Time -->
         <div class="d-flex flex-column flex-grow-1 justify-content-center border-bottom border-secondary-subtle p-3">
-          <div class="text-uppercase fs-5 text-body-tertiary fw-semibold small letter-spacing-sm">
-            ${labelTime}
+          <div class="text-uppercase text-body-secondary fw-bold fs-4" style="letter-spacing: 0.1rem;">
+            ${labelLast}
           </div>
           <div class="d-flex align-items-center justify-content-center flex-grow-1">
-            <div class="display-1 fw-bold font-monospace text-body-secondary">
+            <div class="display-1 fw-bold font-monospace text-body-secondary" style="font-size: 6.5rem;">
               ${currentTime}
             </div>
           </div>
@@ -137,11 +137,11 @@ class QualiDriverPanel extends HTMLElement {
 
         <!-- Best -->
         <div class="d-flex flex-column flex-grow-1 justify-content-center border-bottom border-secondary-subtle p-3">
-          <div class="text-uppercase fs-5 text-body-tertiary fw-semibold small letter-spacing-sm">
+          <div class="text-uppercase text-body-secondary fw-bold fs-4" style="letter-spacing: 0.1rem;">
             ${labelBest}
           </div>
           <div class="d-flex align-items-center justify-content-center flex-grow-1">
-            <div class="display-1 fw-bold font-monospace" style="${bestTimeColor}">
+            <div class="display-1 fw-bold font-monospace" style="${bestTimeColor} font-size: 6.5rem;">
               ${bestTime}
             </div>
           </div>
@@ -149,11 +149,11 @@ class QualiDriverPanel extends HTMLElement {
 
         <!-- Laps -->
         <div class="d-flex flex-column flex-grow-1 justify-content-center p-3">
-          <div class="text-uppercase fs-5 text-body-tertiary fw-semibold small letter-spacing-sm">
+          <div class="text-uppercase text-body-secondary fw-bold fs-4" style="letter-spacing: 0.1rem;">
             ${labelLaps}
           </div>
           <div class="d-flex align-items-center justify-content-center flex-grow-1">
-            <div class="display-1 fw-bold font-monospace text-body-secondary">
+            <div class="display-1 fw-bold font-monospace text-body-secondary" style="font-size: 6.5rem;">
               ${laps}
             </div>
           </div>

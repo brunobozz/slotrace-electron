@@ -88,29 +88,46 @@ app.whenReady().then(async () => {
   await initDatabase();
   createWindow();
 
+  // Database operation serialization queue to prevent race conditions on concurrent reads/writes
+  let dbQueue = Promise.resolve();
+
   // Register Database IPC handlers
-  ipcMain.handle('db-get', async (event, key) => {
-    try {
-      const data = await fs.readFile(dbPath, 'utf8');
-      const db = JSON.parse(data);
-      return db[key];
-    } catch (err) {
-      console.error('Error reading database key:', key, err);
+  ipcMain.handle('db-get', (event, key) => {
+    const nextOp = dbQueue.then(async () => {
+      try {
+        const data = await fs.readFile(dbPath, 'utf8');
+        const db = JSON.parse(data);
+        return db[key];
+      } catch (err) {
+        console.error('Error reading database key:', key, err);
+        return null;
+      }
+    }).catch(err => {
+      console.error('Database queue error on get:', err);
       return null;
-    }
+    });
+    dbQueue = nextOp.then(() => {}); // advance the queue
+    return nextOp;
   });
 
-  ipcMain.handle('db-set', async (event, key, value) => {
-    try {
-      const data = await fs.readFile(dbPath, 'utf8');
-      const db = JSON.parse(data);
-      db[key] = value;
-      await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf8');
-      return true;
-    } catch (err) {
-      console.error('Error writing database key:', key, err);
+  ipcMain.handle('db-set', (event, key, value) => {
+    const nextOp = dbQueue.then(async () => {
+      try {
+        const data = await fs.readFile(dbPath, 'utf8');
+        const db = JSON.parse(data);
+        db[key] = value;
+        await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf8');
+        return true;
+      } catch (err) {
+        console.error('Error writing database key:', key, err);
+        return false;
+      }
+    }).catch(err => {
+      console.error('Database queue error on set:', err);
       return false;
-    }
+    });
+    dbQueue = nextOp.then(() => {}); // advance the queue
+    return nextOp;
   });
 
   // Provide synchronous application version safely to preload script

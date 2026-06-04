@@ -88,8 +88,8 @@ class QualiQueue extends HTMLElement {
     this.innerHTML = `
       <div class="d-flex flex-column h-100">
         <!-- Title -->
-        <div class="d-flex align-items-center border-bottom border-top border-secondary-subtle p-2">
-          <div class="text-uppercase text-body-secondary fw-bold" style="letter-spacing: 0.1rem;">
+        <div class="border-bottom border-top border-secondary-subtle p-2">
+          <div class="text-uppercase text-body-secondary text-center fw-bold" style="letter-spacing: 0.1rem;">
             ${title}
           </div>
         </div>

@@ -59,28 +59,34 @@ class QualiStandings extends HTMLElement {
         const bestTimeStr = bestTime > 0 ? bestTime.toFixed(4) : "—";
 
         let diffStr = "—";
-        let diffColor = "#8b949e";
+        let diffColor = "";
         if (index > 0 && bestTime > 0 && leaderTime > 0) {
           const diff = bestTime - leaderTime;
           diffStr = `+${diff.toFixed(4)}`;
-          diffColor = "#ffcc00"; // Yellow
+          diffColor = "color: #c4b700ff !important";
         }
 
         const isFirst = index === 0 && bestTime > 0;
-        const rowClass = isFirst ? 'class="leader-row"' : "";
+        const rowClass = isFirst ? "leader-row" : "";
 
         return `
-        <tr ${rowClass}>
-          <td class="align-middle fw-bold fs-4 text-body-secondary" style="width: 12%;">
+        <style>
+          .leader-row {
+            background-color: #aa55ff !important;
+            color:#fff !important;
+          }
+        </style>
+        <tr>
+          <td class="align-middle fw-bold fs-4 text-body-secondary ${rowClass}" style="width: 10%;">
             ${pos}
           </td>
-          <td class="align-middle text-start fw-bold fs-4 text-body-secondary" style="width: 40%;">
+          <td class="align-middle text-start fw-bold fs-3 text-body-secondary ${rowClass}" style="width: 30%;">
             ${name}
           </td>
-          <td class="align-middle text-center" style="width: 24%; font-family: 'Courier New', monospace; font-size: 1.3rem; color: ${diffColor};">
+          <td class="align-middle font-monospace text-center fw-bold fs-4 text-body-secondary ${rowClass}" style="width: 30%; ${diffColor}">
             ${diffStr}
           </td>
-          <td class="align-middle text-center" style="width: 24%; font-family: 'Courier New', monospace; font-size: 1.5rem; font-weight: 600;">
+          <td class="align-middle font-monospace text-center fw-bold fs-2 text-body-secondary ${rowClass}" style="width: 30%;">
             ${bestTimeStr}
           </td>
         </tr>
@@ -92,23 +98,11 @@ class QualiStandings extends HTMLElement {
 
       <div class="d-flex flex-column h-100">
         <!-- Title -->
-        <div class="d-flex align-items-center border-bottom border-secondary-subtle p-2">
-          <div class="text-uppercase text-body-secondary fw-bold" style="letter-spacing: 0.1rem;">
+        <div class="border-bottom border-secondary-subtle p-2">
+          <div class="text-uppercase text-body-secondary text-center fw-bold" style="letter-spacing: 0.1rem;">
             ${title}
           </div>
         </div>
-
-        <!-- Table Header (Fixed) -->
-        <table class="table text-center mb-0" style="table-layout: fixed; width: 100%;">
-          <thead>
-            <tr style="font-size: 0.95rem; letter-spacing: 0.08em;">
-              <th class="py-2" style="width: 12%;">${window.t("realtime_quali.standings.position") || "Pos"}</th>
-              <th class="py-2 text-start ps-4" style="width: 40%;">${window.t("realtime_quali.standings.pilot") || "Driver"}</th>
-              <th class="py-2" style="width: 24%;">${window.t("realtime_quali.standings.diff") || "Diff"}</th>
-              <th class="py-2" style="width: 24%;">${window.t("realtime_quali.standings.best") || "Best"}</th>
-            </tr>
-          </thead>
-        </table>
 
         <!-- Table Body (Scrollable) -->
         <div class="flex-grow-1 overflow-y-auto" style="min-height: 0;">
