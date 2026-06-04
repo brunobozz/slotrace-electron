@@ -188,6 +188,7 @@ window.localeStrings.pt = {
         best_lap_time: "Melhor Volta",
         title: "Classificação do Quali",
         go_qualify_button: "Qualificar",
+        go_race_button: "Correr",
         clear_quali_button: "Zerar Tempos",
       },
     },

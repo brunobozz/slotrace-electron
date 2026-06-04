@@ -76,7 +76,11 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             <i class="mdi mdi-flag-checkered text-primary fs-5"></i>
             Corrida
           </h6>
-          <div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" id="btn-go-race" class="btn btn-sm btn-primary d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm" title="${window.t('registrations.races_modal.quali.go_race_button') || 'Correr'}" style="outline: none; box-shadow: none;">
+              <i class="mdi mdi-flag-checkered fs-6 me-2"></i>
+              <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.go_race_button') || 'Correr'}</span>
+            </button>
             <button type="button" id="btn-clear-race" class="btn btn-sm btn-danger d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm d-none" title="${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}" style="outline: none; box-shadow: none;">
               <i class="mdi mdi-refresh fs-6 me-2"></i>
               <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}</span>
@@ -545,6 +549,16 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             });
           }
         }
+      });
+    }
+
+    // Setup Go Race Button listener
+    const goRaceBtn = this.querySelector('#btn-go-race');
+    if (goRaceBtn) {
+      goRaceBtn.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('requestGoRace', {
+          detail: { race: this.race }
+        }));
       });
     }
   }

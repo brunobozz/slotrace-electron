@@ -256,4 +256,19 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   handleRoute();
+
+  // Temporary development auto-open for realtime-race modal
+  setTimeout(async () => {
+    try {
+      const races = await window.electronAPI.db.get('races');
+      if (races && races.length > 0) {
+        const targetRace = races.find(r => r.name && r.name.toLowerCase().includes("pai e filho")) || races[0];
+        window.dispatchEvent(new CustomEvent('requestGoRace', {
+          detail: { race: targetRace }
+        }));
+      }
+    } catch (e) {
+      console.error("Failed to auto-open realtime-race:", e);
+    }
+  }, 800);
 });
