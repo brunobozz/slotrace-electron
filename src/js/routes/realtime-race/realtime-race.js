@@ -11,16 +11,16 @@ class SlotRaceRealtimeRace extends HTMLElement {
     };
     window.addEventListener("requestGoRace", this._goRaceListener);
 
-    // Toolbar Event Listeners
+    // Header Event Listeners
     this._startListener = () => {
       const timer = this.querySelector("slotrace-timer");
       if (timer) {
         timer.setColor("#adff2f");
         timer.start();
       }
-      const toolbar = this.querySelector("slotrace-realtime-race-toolbar");
-      if (toolbar) {
-        toolbar.setState("running");
+      const header = this.querySelector("slotrace-realtime-race-header");
+      if (header) {
+        header.setState("running");
       }
     };
 
@@ -29,9 +29,9 @@ class SlotRaceRealtimeRace extends HTMLElement {
       if (timer) {
         timer.pause();
       }
-      const toolbar = this.querySelector("slotrace-realtime-race-toolbar");
-      if (toolbar) {
-        toolbar.setState("paused");
+      const header = this.querySelector("slotrace-realtime-race-header");
+      if (header) {
+        header.setState("paused");
       }
     };
 
@@ -40,9 +40,9 @@ class SlotRaceRealtimeRace extends HTMLElement {
       if (timer) {
         timer.resume();
       }
-      const toolbar = this.querySelector("slotrace-realtime-race-toolbar");
-      if (toolbar) {
-        toolbar.setState("running");
+      const header = this.querySelector("slotrace-realtime-race-header");
+      if (header) {
+        header.setState("running");
       }
     };
 
@@ -51,9 +51,34 @@ class SlotRaceRealtimeRace extends HTMLElement {
       if (timer) {
         timer.reset();
       }
-      const toolbar = this.querySelector("slotrace-realtime-race-toolbar");
-      if (toolbar) {
-        toolbar.setState("idle");
+      const header = this.querySelector("slotrace-realtime-race-header");
+      if (header) {
+        header.setState("idle");
+      }
+    };
+
+    // Configuration Saved Listener
+    this._configSavedListener = async (e) => {
+      const { timePerLane, interval } = e.detail;
+      if (this.race) {
+        this.race.timePerLane = timePerLane;
+        this.race.interval = interval;
+
+        // Persist to offline JSON database
+        try {
+          const races = (await window.electronAPI.db.get("races")) || [];
+          const idx = races.findIndex((r) => r.id === this.race.id);
+          if (idx !== -1) {
+            races[idx].timePerLane = timePerLane;
+            races[idx].interval = interval;
+            await window.electronAPI.db.set("races", races);
+            console.log(
+              `[Database] Saved race configurations for ID: ${this.race.id} (Time/lane: ${timePerLane}s, Interval: ${interval}s)`,
+            );
+          }
+        } catch (err) {
+          console.error("Failed to save race configurations to database:", err);
+        }
       }
     };
 
@@ -61,6 +86,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
     window.addEventListener("raceSessionPause", this._pauseListener);
     window.addEventListener("raceSessionResume", this._resumeListener);
     window.addEventListener("raceSessionReset", this._resetListener);
+    window.addEventListener("raceConfigSaved", this._configSavedListener);
   }
 
   disconnectedCallback() {
@@ -69,6 +95,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
     window.removeEventListener("raceSessionPause", this._pauseListener);
     window.removeEventListener("raceSessionResume", this._resumeListener);
     window.removeEventListener("raceSessionReset", this._resetListener);
+    window.removeEventListener("raceConfigSaved", this._configSavedListener);
   }
 
   async loadDataAndRender() {
@@ -83,21 +110,34 @@ class SlotRaceRealtimeRace extends HTMLElement {
     this.render();
     this.showModal();
 
-    // Reset timer and toolbar states
+    // Reset timer and header states
     const timer = this.querySelector("slotrace-timer");
     if (timer) {
       timer.reset();
     }
 
-    const toolbar = this.querySelector("slotrace-realtime-race-toolbar");
-    if (toolbar) {
-      toolbar.setState("idle");
+    const header = this.querySelector("slotrace-realtime-race-header");
+    if (header && this.race) {
+      header.setData({ race: this.race });
+      header.setState("idle");
     }
 
-    // Populate race standings table
-    const standings = this.querySelector("slotrace-realtime-race-standings");
-    if (standings && this.race) {
-      standings.setData({
+    // Populate configurations modal data
+    const configModal = this.querySelector(
+      "slotrace-realtime-race-config-modal",
+    );
+    if (configModal && this.race) {
+      configModal.setData({
+        timePerLane:
+          this.race.timePerLane !== undefined ? this.race.timePerLane : 60,
+        interval: this.race.interval !== undefined ? this.race.interval : 10,
+      });
+    }
+
+    // Populate race session table
+    const session = this.querySelector("slotrace-realtime-race-session");
+    if (session && this.race) {
+      session.setData({
         raceSession: this.race.raceSession || [],
         pilots: this.race.pilots || [],
         drivers: this.drivers,
@@ -120,9 +160,9 @@ class SlotRaceRealtimeRace extends HTMLElement {
           timer.stop();
           timer.reset();
         }
-        const toolbar = this.querySelector("slotrace-realtime-race-toolbar");
-        if (toolbar) {
-          toolbar.setState("idle");
+        const header = this.querySelector("slotrace-realtime-race-header");
+        if (header) {
+          header.setState("idle");
         }
       });
 
@@ -135,7 +175,6 @@ class SlotRaceRealtimeRace extends HTMLElement {
       this.innerHTML = "";
       return;
     }
-    const raceName = this.race.name || "";
 
     this.innerHTML = `
       <div class="modal fade" id="modal-realtime-race" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -143,36 +182,31 @@ class SlotRaceRealtimeRace extends HTMLElement {
           <div class="modal-content border-0 text-white d-flex flex-column h-100">
             
             <!-- Header section -->
-            <div class="modal-header border-bottom border-secondary-subtle px-4 py-0 d-flex align-items-center justify-content-between">
-              <!-- Left: Logo -->
-              <!-- <slotrace-logo></slotrace-logo> -->
+            <slotrace-realtime-race-header></slotrace-realtime-race-header>
 
-              <!-- Center: Race Name & QUALIFICAÇÃO -->
-              <div class="flex-grow-1 mx-3">
-                <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-2" style="letter-spacing: 0.05em;">
-                  ${raceName}
-                </h2>
-                <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 1rem; letter-spacing: 0.25em;">
-                  QUALIFICAÇÃO
-                </div>
-              </div>
-
-              <!-- Right: Timer & Close button -->
-              <div class="d-flex align-items-center gap-3">
-                <slotrace-timer></slotrace-timer>
-                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="outline: none; box-shadow: none;"></button>
-              </div>
-            </div>
-
-            <!-- Toolbar section -->
-            <slotrace-realtime-race-toolbar></slotrace-realtime-race-toolbar>
-
-            <!-- Content area: Race Standings Table -->
+            <!-- Content area: Race Session Table -->
             <div class="h-100 d-flex flex-column">
-              <slotrace-realtime-race-standings class="flex-grow-1 d-flex flex-column"></slotrace-realtime-race-standings>
+              <slotrace-realtime-race-session class="flex-grow-1 d-flex flex-column"></slotrace-realtime-race-session>
             </div>
           </div>
         </div>
+      </div>
+
+
+      <!-- Content area: 2 columns -->
+      <div class="modal-body flex-grow-1 p-0 d-flex overflow-hidden">
+        
+        <!-- Race Config Mini Modal Component -->
+        <slotrace-realtime-race-config-modal></slotrace-realtime-race-config-modal>
+
+        <!-- Right Column: Standings + Queue -->
+        <div class="d-flex flex-column h-100" style="width: 30%; min-width: 320px;">
+          <!-- Aqui o race-standings vai entrar 
+          <race-standings class="flex-grow-1 d-flex flex-column"></race-standings> -->
+          <!-- Aqui o race-queue vai entrar 
+          <race-queue class="flex-grow-1 d-flex flex-column"></race-queue> -->
+        </div>
+
       </div>
     `;
   }

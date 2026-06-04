@@ -1,4 +1,4 @@
-class SlotRaceRealtimeRaceStandings extends HTMLElement {
+class SlotRaceRealtimeRaceSession extends HTMLElement {
   connectedCallback() {
     this.raceSession = [];
     this.pilots = [];
@@ -216,7 +216,7 @@ class SlotRaceRealtimeRaceStandings extends HTMLElement {
     this.innerHTML = `
       <div class="d-flex flex-column h-100">
         <div class="table-responsive flex-grow-1 overflow-y-auto" style="min-height: 0;">
-          <table class="table race-standings-table text-center mb-0" style="background: transparent; width: 100%;">
+          <table class="table race-session-table text-center mb-0" style="background: transparent; width: 100%;">
             <thead class="text-secondary small text-uppercase">
               <tr>
                 <th class="ps-4 text-center" style="width: 5%;">POS</th>
@@ -239,6 +239,6 @@ class SlotRaceRealtimeRaceStandings extends HTMLElement {
 }
 
 customElements.define(
-  "slotrace-realtime-race-standings",
-  SlotRaceRealtimeRaceStandings,
+  "slotrace-realtime-race-session",
+  SlotRaceRealtimeRaceSession,
 );
