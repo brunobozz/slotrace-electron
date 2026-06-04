@@ -292,8 +292,12 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       accordionRow.id = `laps-row-${item.pilotId}`;
       accordionRow.className = `laps-accordion-row ${isExpanded ? '' : 'd-none'}`;
       accordionRow.innerHTML = `
-        <td colspan="8" class="p-3 text-start">
-          <slotrace-registrations-races-session-laps id="session-laps-${item.pilotId}"></slotrace-registrations-races-session-laps>
+        <td colspan="8" class="p-0 text-start">
+          <div class="laps-collapse-container" style="overflow: hidden; transition: max-height 0.2s ease-out, opacity 0.2s ease-out; ${isExpanded ? 'max-height: none; opacity: 1;' : 'max-height: 0px; opacity: 0;'}">
+            <div class="p-3">
+              <slotrace-registrations-races-session-laps id="session-laps-${item.pilotId}"></slotrace-registrations-races-session-laps>
+            </div>
+          </div>
         </td>
       `;
 
@@ -398,20 +402,55 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       const toggleBtn = row.querySelector('.btn-toggle-laps');
       if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
+          const container = accordionRow.querySelector('.laps-collapse-container');
           const isOpen = !accordionRow.classList.contains('d-none');
           const chevron = row.querySelector(`#chevron-${item.pilotId}`);
           
           if (isOpen) {
-            accordionRow.classList.add('d-none');
-            this.expandedPilotIds.delete(item.pilotId);
-            if (chevron) chevron.style.transform = 'rotate(0deg)';
-            
-            // Re-sort and re-render the table only when collapsing (editing finished)
-            this.populateQualiTable();
+            if (container) {
+              // Retrieve actual scrollHeight first
+              container.style.maxHeight = container.scrollHeight + 'px';
+              // Force reflow
+              container.offsetHeight;
+              container.style.maxHeight = '0px';
+              container.style.opacity = '0';
+              
+              const onTransitionEnd = () => {
+                accordionRow.classList.add('d-none');
+                this.expandedPilotIds.delete(item.pilotId);
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+                
+                // Re-sort and re-render the table only when collapsing (editing finished)
+                this.populateQualiTable();
+                container.removeEventListener('transitionend', onTransitionEnd);
+              };
+              container.addEventListener('transitionend', onTransitionEnd);
+            } else {
+              accordionRow.classList.add('d-none');
+              this.expandedPilotIds.delete(item.pilotId);
+              if (chevron) chevron.style.transform = 'rotate(0deg)';
+              this.populateQualiTable();
+            }
           } else {
             accordionRow.classList.remove('d-none');
             this.expandedPilotIds.add(item.pilotId);
             if (chevron) chevron.style.transform = 'rotate(180deg)';
+            
+            if (container) {
+              container.style.maxHeight = '0px';
+              container.style.opacity = '0';
+              // Force reflow
+              container.offsetHeight;
+              container.style.maxHeight = container.scrollHeight + 'px';
+              container.style.opacity = '1';
+              
+              const onTransitionEnd = () => {
+                // Allow container to expand freely with dynamically added laps
+                container.style.maxHeight = 'none';
+                container.removeEventListener('transitionend', onTransitionEnd);
+              };
+              container.addEventListener('transitionend', onTransitionEnd);
+            }
           }
         });
       }
