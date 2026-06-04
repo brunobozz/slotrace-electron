@@ -13,6 +13,8 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._pausedState = null; // Which state to resume to after pause
     this._firstLapMarked = false; // First click only starts the lap, no time recorded
     this._isShuffling = false;
+    this._viewedPilotId = null; // Pilot currently being viewed in the panels
+    this._shuffleIntervalId = null; // Shuffling interval reference
 
     this._goQualifyListener = (e) => {
       const { race } = e.detail;
@@ -34,6 +36,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     };
     this._onConfigChanged = (e) => this._handleConfigChanged(e.detail);
     this._onShuffleOrder = () => this._handleShuffleOrder();
+    this._onSelectTelemetryPilot = (e) => this._handleSelectTelemetryPilot(e);
 
     window.addEventListener("qualiSessionStart", this._onStart);
     window.addEventListener("qualiSessionPause", this._onPause);
@@ -43,6 +46,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.addEventListener("qualiLaneChanged", this._onLaneChanged);
     window.addEventListener("qualiConfigChanged", this._onConfigChanged);
     window.addEventListener("requestShuffleOrder", this._onShuffleOrder);
+    window.addEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
 
     // Running lap timer loop
     this._runningLoopActive = true;
@@ -62,8 +66,12 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener("qualiLaneChanged", this._onLaneChanged);
     window.removeEventListener("qualiConfigChanged", this._onConfigChanged);
     window.removeEventListener("requestShuffleOrder", this._onShuffleOrder);
+    window.removeEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
     if (this._autoSaveTimeout) {
       clearTimeout(this._autoSaveTimeout);
+    }
+    if (this._shuffleIntervalId) {
+      clearInterval(this._shuffleIntervalId);
     }
   }
 
@@ -134,10 +142,11 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._pilotQueue = [...sessionOrder];
 
     if (this._pilotQueue.length > 0) {
-      this._currentPilotId = this._pilotQueue.shift();
+      this._currentPilotId = this._pilotQueue[0];
     } else {
       this._currentPilotId = null;
     }
+    this._viewedPilotId = this._currentPilotId;
   }
 
   getTrackForRace() {
@@ -189,7 +198,12 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       }
     });
 
-    this._startNextPilot(true); // isFirst = true, don't shift queue since we already have the first pilot active
+    // Shift current pilot from the queue now because they are starting!
+    if (this._pilotQueue.length > 0 && this._pilotQueue[0] === this._currentPilotId) {
+      this._pilotQueue.shift();
+    }
+
+    this._startNextPilot(true); // isFirst = true, don't shift queue since we just did it
   }
 
   _startNextPilot(isFirst = false) {
@@ -197,6 +211,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       if (this._pilotQueue.length === 0) {
         this._state = "finished";
         this._currentPilotId = null;
+        this._viewedPilotId = null;
         this._updateToolbarState();
         this._updateDriverPanel();
         this._updateLaps();
@@ -206,9 +221,11 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         return;
       }
       this._currentPilotId = this._pilotQueue.shift();
+      this._viewedPilotId = this._currentPilotId;
     } else {
       if (!this._currentPilotId) {
         this._state = "finished";
+        this._viewedPilotId = null;
         this._updateToolbarState();
         this._updateDriverPanel();
         this._updateLaps();
@@ -217,6 +234,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         if (timer) timer.reset();
         return;
       }
+      this._viewedPilotId = this._currentPilotId;
     }
 
     this._state = "qualifying";
@@ -248,6 +266,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     if (intervalTime > 0 && this._pilotQueue.length > 0) {
       // Shift the next pilot now so they show up in panels and get removed from queue
       this._currentPilotId = this._pilotQueue.shift();
+      this._viewedPilotId = this._currentPilotId;
 
       // Start interval countdown
       this._state = "interval";
@@ -410,9 +429,9 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const track = this.getTrackForRace();
     const laneColors = track ? track.laneColors : null;
 
-    if (this._currentPilotId) {
-      const driver = this._getDriver(this._currentPilotId);
-      const record = this._getQualiRecord(this._currentPilotId);
+    if (this._viewedPilotId) {
+      const driver = this._getDriver(this._viewedPilotId);
+      const record = this._getQualiRecord(this._viewedPilotId);
       const overallBest = this._getOverallBestTime();
       panel.setData({
         driver,
@@ -438,14 +457,15 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
     const overallBest = this._getOverallBestTime();
 
-    if (this._currentPilotId) {
-      const record = this._getQualiRecord(this._currentPilotId);
+    if (this._viewedPilotId) {
+      const record = this._getQualiRecord(this._viewedPilotId);
       const lapTimes = record ? record.lapTimes : [];
+      const isCurrentlyQualifying = (this._viewedPilotId === this._currentPilotId && this._state === "qualifying");
       lapsEl.setData({
         lapTimes,
         overallBestTime: overallBest,
-        activeLapNum: lapTimes.length + 1,
-        firstLapMarked: this._firstLapMarked,
+        activeLapNum: isCurrentlyQualifying ? lapTimes.length + 1 : 0,
+        firstLapMarked: isCurrentlyQualifying ? this._firstLapMarked : false,
       });
     } else {
       lapsEl.setData({
@@ -463,6 +483,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       standings.setData({
         quali: this.race.quali || [],
         drivers: this.drivers,
+        state: this._state,
       });
     }
   }
@@ -522,34 +543,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._updateDriverPanel();
     this._updateLaps();
     this._updateStandings();
-
-    const queue = this.querySelector("quali-queue");
-    if (queue) {
-      const currentPilotIds = racePilots.map((p) => typeof p === "object" ? p.id : p);
-      let sessionOrder = [];
-      if (this.race.qualiOrder && Array.isArray(this.race.qualiOrder)) {
-        const savedOrder = this.race.qualiOrder.filter(id => currentPilotIds.includes(id));
-        const newPilots = currentPilotIds.filter(id => !savedOrder.includes(id));
-        sessionOrder = [...savedOrder, ...newPilots];
-      } else {
-        sessionOrder = [...currentPilotIds];
-      }
-
-      const orderedPilots = sessionOrder.map(id => {
-        return racePilots.find(p => (typeof p === "object" ? p.id : p) === id);
-      }).filter(Boolean).map(p => typeof p === "object" ? p : { id: p, carId: null });
-
-      const track = this.getTrackForRace();
-      const laneColors = track ? track.laneColors : null;
-      queue.setData({
-        pendingPilots: orderedPilots,
-        drivers: this.drivers,
-        lane: this._sessionConfig.lane || 1,
-        laneColors,
-        state: this._state,
-        isShuffling: this._isShuffling,
-      });
-    }
+    this._updateQueue();
   }
 
   _handleConfigChanged(detail) {
@@ -615,7 +609,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const duration = 5000;
     let elapsed = 0;
 
-    const intervalId = setInterval(() => {
+    this._shuffleIntervalId = setInterval(() => {
       // Generate temporary random order for the 5-second animation
       const tempOrder = this._shuffleArray(currentPilotIds);
       const tempPendingPilots = tempOrder.map(id => {
@@ -638,7 +632,8 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
       elapsed += intervalTime;
       if (elapsed >= duration) {
-        clearInterval(intervalId);
+        clearInterval(this._shuffleIntervalId);
+        this._shuffleIntervalId = null;
 
         // Final random order
         const finalOrder = this._shuffleArray(currentPilotIds);
@@ -669,6 +664,16 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  _handleSelectTelemetryPilot(e) {
+    if (this._state === "qualifying" || this._state === "interval") return;
+    const { pilotId } = e.detail;
+
+    this._viewedPilotId = pilotId;
+
+    this._updateDriverPanel();
+    this._updateLaps();
   }
 
   showModal() {

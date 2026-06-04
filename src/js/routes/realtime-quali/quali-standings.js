@@ -2,6 +2,7 @@ class QualiStandings extends HTMLElement {
   connectedCallback() {
     this.quali = [];
     this.drivers = [];
+    this.state = "idle";
     this.innerHTML = "";
 
     this._langListener = () => {
@@ -16,9 +17,10 @@ class QualiStandings extends HTMLElement {
     }
   }
 
-  setData({ quali, drivers }) {
+  setData({ quali, drivers, state }) {
     this.quali = quali || [];
     this.drivers = drivers || [];
+    this.state = state || "idle";
     this.render();
   }
 
@@ -47,6 +49,14 @@ class QualiStandings extends HTMLElement {
       return timeA - timeB;
     });
 
+    const isQualiRunning = this.state === "qualifying" || this.state === "interval";
+    const cursorStyle = isQualiRunning ? "" : "cursor: pointer;";
+    const hoverStyle = isQualiRunning ? "" : `
+      .standings-pilot-row:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+      }
+    `;
+
     const leaderTime =
       sorted.length > 0 ? parseFloat(sorted[0].bestLapTime) || 0 : 0;
 
@@ -70,13 +80,7 @@ class QualiStandings extends HTMLElement {
         const rowClass = isFirst ? "leader-row" : "";
 
         return `
-        <style>
-          .leader-row {
-            background-color: #aa55ff !important;
-            color:#fff !important;
-          }
-        </style>
-        <tr>
+        <tr class="standings-pilot-row" data-pilot-id="${item.pilotId}" style="${cursorStyle}">
           <td class="align-middle fw-bold fs-4 text-body-secondary ${rowClass}" style="width: 10%;">
             ${pos}
           </td>
@@ -95,7 +99,13 @@ class QualiStandings extends HTMLElement {
       .join("");
 
     this.innerHTML = `
-
+      <style>
+        .leader-row {
+          background-color: #aa55ff !important;
+          color:#fff !important;
+        }
+        ${hoverStyle}
+      </style>
       <div class="d-flex flex-column h-100">
         <!-- Title -->
         <div class="border-bottom border-secondary-subtle p-2">
@@ -114,6 +124,23 @@ class QualiStandings extends HTMLElement {
         </div>
       </div>
     `;
+
+    this._bindEvents();
+  }
+
+  _bindEvents() {
+    const isQualiRunning = this.state === "qualifying" || this.state === "interval";
+    if (isQualiRunning) return;
+
+    const rows = this.querySelectorAll(".standings-pilot-row");
+    rows.forEach(row => {
+      row.addEventListener("click", () => {
+        const pilotId = row.getAttribute("data-pilot-id");
+        window.dispatchEvent(new CustomEvent("requestSelectTelemetryPilot", {
+          detail: { pilotId }
+        }));
+      });
+    });
   }
 }
 

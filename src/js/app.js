@@ -255,22 +255,5 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('Failed to load theme configuration on startup:', err);
   });
 
-  // Development Auto-Open: Automatically launch the realtime qualifying modal for the latest race
-  window.electronAPI.db.get('races').then(races => {
-    const racesList = races || [];
-    if (racesList.length > 0) {
-      const lastRace = [...racesList].sort((a, b) => (b.id || '').localeCompare(a.id || ''))[0];
-      if (lastRace) {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('requestGoQualify', {
-            detail: { race: lastRace }
-          }));
-        }, 500);
-      }
-    }
-  }).catch(err => {
-    console.error('Failed to load races for auto-open on startup:', err);
-  });
-
   handleRoute();
 });
