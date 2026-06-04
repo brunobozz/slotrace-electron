@@ -160,11 +160,14 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
           this.item.bestLapIndex === lapIndex + 1 &&
           parseFloat(this.item.bestLapTime) > 0;
         const isPoleLap = isBestLap && this.isPole;
+
+        const formattedValue = (lapTime !== undefined && lapTime !== null) ? parseFloat(lapTime).toFixed(4) : "";
+
         const pill = document.createElement("div");
         pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}`;
         pill.innerHTML = `
           <span class="lap-badge-index">#${lapIndex + 1}</span>
-          <input type="number" step="0.0001" min="0" class="lap-badge-input input-lap-time" value="${lapTime || ""}" placeholder="0.0000" data-lap-index="${lapIndex}">
+          <input type="number" step="0.0001" min="0" class="lap-badge-input input-lap-time" value="${formattedValue}" placeholder="0.0000" data-lap-index="${lapIndex}">
           <i class="mdi mdi-close lap-badge-delete btn-delete-lap" data-lap-index="${lapIndex}"></i>
         `;
 
@@ -177,7 +180,10 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
               this.onChangeCallback();
             }
           });
-          lapInput.addEventListener("blur", () => {
+          lapInput.addEventListener("blur", (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            e.target.value = val.toFixed(4);
+            this.item.lapTimes[lapIndex] = parseFloat(val.toFixed(4));
             if (this.onChangeCallback) {
               this.onChangeCallback();
             }

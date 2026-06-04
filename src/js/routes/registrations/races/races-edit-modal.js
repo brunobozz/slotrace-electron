@@ -26,68 +26,72 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
       // Load tracks, drivers, and cars from the DB first, then populate the dropdowns
       Promise.all([
-        window.electronAPI.db.get('tracks'),
-        window.electronAPI.db.get('drivers'),
-        window.electronAPI.db.get('cars')
-      ]).then(([tracks, drivers, cars]) => {
-        this.tracks = tracks || [];
-        this.drivers = drivers || [];
-        this.cars = cars || [];
+        window.electronAPI.db.get("tracks"),
+        window.electronAPI.db.get("drivers"),
+        window.electronAPI.db.get("cars"),
+      ])
+        .then(([tracks, drivers, cars]) => {
+          this.tracks = tracks || [];
+          this.drivers = drivers || [];
+          this.cars = cars || [];
 
-        this.populateDropdowns();
+          this.populateDropdowns();
 
-        // Populate type field
-        const typeSelect = this.querySelector('#select-race-edit-type');
-        if (typeSelect) {
-          typeSelect.value = this.race.type || 'grand_prix';
-        }
-
-        // Populate name field
-        const nameInput = this.querySelector('#input-race-edit-name');
-        if (nameInput) {
-          nameInput.value = this.race.name || '';
-        }
-
-        // Populate date field
-        const dateInput = this.querySelector('#input-race-edit-date');
-        if (dateInput) {
-          const d = this.race.date ? new Date(this.race.date) : new Date();
-          const pad = (num) => String(num).padStart(2, '0');
-          const dateVal = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-          dateInput.value = dateVal;
-        }
-
-        // Initialize the initial snapshot after all modal fields have been populated
-        this.initialRaceSnapshot = this.getCurrentStateSnapshot();
-        this.checkPendingChanges();
-
-        // Show the Bootstrap modal
-        const modalEl = this.querySelector('#modal-edit-race');
-        if (modalEl) {
-          let modalInstance = bootstrap.Modal.getInstance(modalEl);
-          if (!modalInstance) {
-            modalInstance = new bootstrap.Modal(modalEl);
+          // Populate type field
+          const typeSelect = this.querySelector("#select-race-edit-type");
+          if (typeSelect) {
+            typeSelect.value = this.race.type || "grand_prix";
           }
-          modalInstance.show();
-        }
-      }).catch(err => {
-        console.error('Failed to load data for edit modal:', err);
-      });
+
+          // Populate name field
+          const nameInput = this.querySelector("#input-race-edit-name");
+          if (nameInput) {
+            nameInput.value = this.race.name || "";
+          }
+
+          // Populate date field
+          const dateInput = this.querySelector("#input-race-edit-date");
+          if (dateInput) {
+            const d = this.race.date ? new Date(this.race.date) : new Date();
+            const pad = (num) => String(num).padStart(2, "0");
+            const dateVal = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            dateInput.value = dateVal;
+          }
+
+          // Initialize the initial snapshot after all modal fields have been populated
+          this.initialRaceSnapshot = this.getCurrentStateSnapshot();
+          this.checkPendingChanges();
+
+          // Show the Bootstrap modal
+          const modalEl = this.querySelector("#modal-edit-race");
+          if (modalEl) {
+            let modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (!modalInstance) {
+              modalInstance = new bootstrap.Modal(modalEl);
+            }
+            modalInstance.show();
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load data for edit modal:", err);
+        });
     };
 
     this._pilotSelectedListener = (e) => {
       const { driverId, carId } = e.detail;
       if (!this.race) return;
       if (!this.race.pilots) this.race.pilots = [];
-      
+
       this.race.pilots.push({ id: driverId, carId: carId || null });
-      
+
       this.populatePilots();
 
       // Notify the separate add-pilot modal of the update
-      window.dispatchEvent(new CustomEvent('racePilotsUpdated', {
-        detail: { pilots: this.race.pilots }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("racePilotsUpdated", {
+          detail: { pilots: this.race.pilots },
+        }),
+      );
 
       this.checkPendingChanges();
     };
@@ -103,48 +107,58 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
             snapshotObj.quali = this.race.quali;
             this.initialRaceSnapshot = JSON.stringify(snapshotObj);
           } catch (err) {
-            console.error('Error updating initial race snapshot:', err);
+            console.error("Error updating initial race snapshot:", err);
           }
         }
       }
       this.checkPendingChanges();
     };
 
-    window.addEventListener('languageChanged', this._langListener);
-    window.addEventListener('requestEditRaceName', this._editRequestListener);
-    window.addEventListener('racePilotSelected', this._pilotSelectedListener);
-    window.addEventListener('raceQualiUpdated', this._qualiUpdatedListener);
+    window.addEventListener("languageChanged", this._langListener);
+    window.addEventListener("requestEditRaceName", this._editRequestListener);
+    window.addEventListener("racePilotSelected", this._pilotSelectedListener);
+    window.addEventListener("raceQualiUpdated", this._qualiUpdatedListener);
   }
 
   disconnectedCallback() {
     if (this._langListener) {
-      window.removeEventListener('languageChanged', this._langListener);
+      window.removeEventListener("languageChanged", this._langListener);
     }
     if (this._editRequestListener) {
-      window.removeEventListener('requestEditRaceName', this._editRequestListener);
+      window.removeEventListener(
+        "requestEditRaceName",
+        this._editRequestListener,
+      );
     }
     if (this._pilotSelectedListener) {
-      window.removeEventListener('racePilotSelected', this._pilotSelectedListener);
+      window.removeEventListener(
+        "racePilotSelected",
+        this._pilotSelectedListener,
+      );
     }
     if (this._qualiUpdatedListener) {
-      window.removeEventListener('raceQualiUpdated', this._qualiUpdatedListener);
+      window.removeEventListener(
+        "raceQualiUpdated",
+        this._qualiUpdatedListener,
+      );
     }
   }
 
   populateDropdowns() {
-    const trackSelect = this.querySelector('#select-race-edit-track');
+    const trackSelect = this.querySelector("#select-race-edit-track");
 
     if (trackSelect) {
-      trackSelect.innerHTML = '';
-      
+      trackSelect.innerHTML = "";
+
       // Default option
-      const defaultOption = document.createElement('option');
-      defaultOption.value = '';
-      defaultOption.textContent = window.t('registrations.default_track') || 'Pista Padrão';
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent =
+        window.t("registrations.default_track") || "Pista Padrão";
       trackSelect.appendChild(defaultOption);
 
-      this.tracks.forEach(track => {
-        const option = document.createElement('option');
+      this.tracks.forEach((track) => {
+        const option = document.createElement("option");
         option.value = track.id;
         option.textContent = track.name;
         trackSelect.appendChild(option);
@@ -154,7 +168,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       if (this.race && this.race.trackId) {
         trackSelect.value = this.race.trackId;
       } else {
-        trackSelect.value = '';
+        trackSelect.value = "";
       }
     }
 
@@ -163,54 +177,64 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
   }
 
   populatePilots() {
-    const pilotsContainer = this.querySelector('#race-edit-pilots-list');
+    const pilotsContainer = this.querySelector("#race-edit-pilots-list");
     if (!pilotsContainer) return;
 
-    pilotsContainer.innerHTML = '';
-    const racePilots = (this.race && this.race.pilots) ? this.race.pilots : [];
+    pilotsContainer.innerHTML = "";
+    const racePilots = this.race && this.race.pilots ? this.race.pilots : [];
 
     // Render all current pilots in the race as horizontal capsule pills
-    racePilots.forEach(pilot => {
-      const pilotId = typeof pilot === 'object' ? pilot.id : pilot;
-      const carId = typeof pilot === 'object' ? pilot.carId : null;
+    racePilots.forEach((pilot) => {
+      const pilotId = typeof pilot === "object" ? pilot.id : pilot;
+      const carId = typeof pilot === "object" ? pilot.carId : null;
 
-      const driverObj = this.drivers.find(d => d.id === pilotId);
-      const carObj = carId && this.cars ? this.cars.find(c => c.id === carId) : null;
-      
-      const name = driverObj ? (driverObj.nickname || driverObj.name) : (pilot.nickname || pilot.name || pilot);
-      const photoUrl = driverObj ? driverObj.photo : (pilot.photo || '');
-      const carName = carObj ? carObj.name : '';
+      const driverObj = this.drivers.find((d) => d.id === pilotId);
+      const carObj =
+        carId && this.cars ? this.cars.find((c) => c.id === carId) : null;
+
+      const name = driverObj
+        ? driverObj.nickname || driverObj.name
+        : pilot.nickname || pilot.name || pilot;
+      const photoUrl = driverObj ? driverObj.photo : pilot.photo || "";
+      const carName = carObj ? carObj.name : "";
 
       // Create pill capsule using shared SlotRaceDriverPill component
-      const pill = document.createElement('slotrace-driver-pill');
+      const pill = document.createElement("slotrace-driver-pill");
       pill.setParams({
         pilotId: pilotId,
         name: name,
         photoUrl: photoUrl,
         carName: carName,
         onRemove: () => {
-          const confirmModalEl = this.querySelector('#modal-confirm-remove-pilot');
+          const confirmModalEl = this.querySelector(
+            "#modal-confirm-remove-pilot",
+          );
           if (confirmModalEl) {
-            const nameEl = confirmModalEl.querySelector('#remove-pilot-confirm-name');
+            const nameEl = confirmModalEl.querySelector(
+              "#remove-pilot-confirm-name",
+            );
             if (nameEl) {
               nameEl.textContent = name;
             }
 
-            let confirmModalInstance = bootstrap.Modal.getInstance(confirmModalEl);
+            let confirmModalInstance =
+              bootstrap.Modal.getInstance(confirmModalEl);
             if (!confirmModalInstance) {
               confirmModalInstance = new bootstrap.Modal(confirmModalEl);
             }
             confirmModalInstance.show();
 
-            const actionBtn = confirmModalEl.querySelector('#btn-confirm-remove-pilot-action');
+            const actionBtn = confirmModalEl.querySelector(
+              "#btn-confirm-remove-pilot-action",
+            );
             if (actionBtn) {
               const newActionBtn = actionBtn.cloneNode(true);
               actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
 
-              newActionBtn.addEventListener('click', () => {
+              newActionBtn.addEventListener("click", () => {
                 // Remove from race pilots list
-                this.race.pilots = this.race.pilots.filter(p => {
-                  const id = typeof p === 'object' ? p.id : p;
+                this.race.pilots = this.race.pilots.filter((p) => {
+                  const id = typeof p === "object" ? p.id : p;
                   return id !== pilotId;
                 });
 
@@ -218,9 +242,11 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 this.populatePilots();
 
                 // Notify the separate add-pilot modal of the update
-                window.dispatchEvent(new CustomEvent('racePilotsUpdated', {
-                  detail: { pilots: this.race.pilots }
-                }));
+                window.dispatchEvent(
+                  new CustomEvent("racePilotsUpdated", {
+                    detail: { pilots: this.race.pilots },
+                  }),
+                );
 
                 this.checkPendingChanges();
 
@@ -228,88 +254,95 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
               });
             }
           }
-        }
+        },
       });
 
       pilotsContainer.appendChild(pill);
     });
 
     // Add the circular "+" button to add more pilots at the end
-    const addButton = document.createElement('button');
-    addButton.type = 'button';
-    addButton.id = 'btn-race-edit-add-pilot';
-    addButton.className = 'rounded-circle border border-secondary-subtle d-flex align-items-center justify-content-center bg-body-secondary shadow-sm text-primary mb-1';
-    addButton.style.width = '48px';
-    addButton.style.height = '48px';
-    addButton.style.borderWidth = '2px';
-    addButton.style.borderStyle = 'dashed';
-    addButton.style.fontSize = '1.3rem';
-    addButton.title = window.t('registrations.new_driver') || 'Adicionar Piloto';
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.id = "btn-race-edit-add-pilot";
+    addButton.className =
+      "rounded-circle border border-secondary-subtle d-flex align-items-center justify-content-center bg-body-secondary shadow-sm text-primary mb-1";
+    addButton.style.width = "48px";
+    addButton.style.height = "48px";
+    addButton.style.borderWidth = "2px";
+    addButton.style.borderStyle = "dashed";
+    addButton.style.fontSize = "1.3rem";
+    addButton.title =
+      window.t("registrations.new_driver") || "Adicionar Piloto";
     addButton.innerHTML = `<i class="mdi mdi-plus"></i>`;
 
-    addButton.addEventListener('click', () => {
+    addButton.addEventListener("click", () => {
       // Dispatches event to launch the separate mini modal component
-      window.dispatchEvent(new CustomEvent('requestOpenAddPilot', {
-        detail: { race: this.race, drivers: this.drivers }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("requestOpenAddPilot", {
+          detail: { race: this.race, drivers: this.drivers },
+        }),
+      );
     });
 
     pilotsContainer.appendChild(addButton);
 
     // Call qualifying table population
-    const qualiTableComponent = this.querySelector('#race-edit-quali-table-component');
+    const qualiTableComponent = this.querySelector(
+      "#race-edit-quali-table-component",
+    );
     if (qualiTableComponent) {
       if (racePilots.length === 0) {
-        qualiTableComponent.classList.add('d-none');
+        qualiTableComponent.classList.add("d-none");
       } else {
-        qualiTableComponent.classList.remove('d-none');
+        qualiTableComponent.classList.remove("d-none");
         qualiTableComponent.setParams(this.race, this.drivers, this.cars);
       }
     }
   }
 
-
-
   setupEvents() {
-    const form = this.querySelector('#form-edit-race');
-    const modalEl = this.querySelector('#modal-edit-race');
-    const trackSelect = this.querySelector('#select-race-edit-track');
+    const form = this.querySelector("#form-edit-race");
+    const modalEl = this.querySelector("#modal-edit-race");
+    const trackSelect = this.querySelector("#select-race-edit-track");
 
     if (form && modalEl) {
       // Prevent form submission on Enter keypress
-      form.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+      form.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
           e.preventDefault();
         }
       });
 
       // Bind input/change listeners to detect changes to inputs
-      form.addEventListener('input', () => this.checkPendingChanges());
-      form.addEventListener('change', () => this.checkPendingChanges());
+      form.addEventListener("input", () => this.checkPendingChanges());
+      form.addEventListener("change", () => this.checkPendingChanges());
 
       // Close button on header
-      const closeBtn = this.querySelector('#btn-close-edit-race');
+      const closeBtn = this.querySelector("#btn-close-edit-race");
       if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
+        closeBtn.addEventListener("click", () => {
           this.handleCloseAttempt();
         });
       }
 
       // Cancel button on footer
-      const cancelBtn = this.querySelector('#btn-cancel-edit-race');
+      const cancelBtn = this.querySelector("#btn-cancel-edit-race");
       if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
+        cancelBtn.addEventListener("click", () => {
           this.handleCloseAttempt();
         });
       }
 
       // Discard changes confirmation button
-      const discardBtn = this.querySelector('#btn-confirm-discard-changes');
+      const discardBtn = this.querySelector("#btn-confirm-discard-changes");
       if (discardBtn) {
-        discardBtn.addEventListener('click', () => {
-          const confirmCloseModalEl = this.querySelector('#modal-confirm-close-edit');
+        discardBtn.addEventListener("click", () => {
+          const confirmCloseModalEl = this.querySelector(
+            "#modal-confirm-close-edit",
+          );
           if (confirmCloseModalEl) {
-            const confirmCloseInstance = bootstrap.Modal.getInstance(confirmCloseModalEl);
+            const confirmCloseInstance =
+              bootstrap.Modal.getInstance(confirmCloseModalEl);
             if (confirmCloseInstance) {
               confirmCloseInstance.hide();
             }
@@ -318,24 +351,30 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         });
       }
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (!this.race) return;
 
-        const typeSelect = this.querySelector('#select-race-edit-type');
-        const selectedType = typeSelect ? typeSelect.value : 'grand_prix';
+        const typeSelect = this.querySelector("#select-race-edit-type");
+        const selectedType = typeSelect ? typeSelect.value : "grand_prix";
 
-        const nameInput = this.querySelector('#input-race-edit-name');
-        const trackSelectElement = this.querySelector('#select-race-edit-track');
-        const selectedTrackId = trackSelectElement ? trackSelectElement.value : '';
-        const dateInput = this.querySelector('#input-race-edit-date');
+        const nameInput = this.querySelector("#input-race-edit-name");
+        const trackSelectElement = this.querySelector(
+          "#select-race-edit-track",
+        );
+        const selectedTrackId = trackSelectElement
+          ? trackSelectElement.value
+          : "";
+        const dateInput = this.querySelector("#input-race-edit-date");
 
-        const newName = nameInput ? nameInput.value.trim() : '';
-        
+        const newName = nameInput ? nameInput.value.trim() : "";
+
         let selectedDateISO = this.race.date || new Date().toISOString();
         if (dateInput && dateInput.value) {
-          const origDate = this.race.date ? new Date(this.race.date) : new Date();
-          const [year, month, day] = dateInput.value.split('-').map(Number);
+          const origDate = this.race.date
+            ? new Date(this.race.date)
+            : new Date();
+          const [year, month, day] = dateInput.value.split("-").map(Number);
           origDate.setFullYear(year);
           origDate.setMonth(month - 1);
           origDate.setDate(day);
@@ -343,66 +382,71 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         }
 
         // Find selected track name
-        let selectedTrackName = window.t('registrations.default_track') || 'Pista Padrão';
+        let selectedTrackName =
+          window.t("registrations.default_track") || "Pista Padrão";
         if (selectedTrackId) {
-          const trackObj = this.tracks.find(t => t.id === selectedTrackId);
+          const trackObj = this.tracks.find((t) => t.id === selectedTrackId);
           if (trackObj) {
             selectedTrackName = trackObj.name;
           }
         }
 
-        window.electronAPI.db.get('races').then(races => {
-          const racesList = races || [];
-          const updatedList = racesList.map(r => {
-            if (r.id === this.race.id) {
-              return {
-                ...r,
-                name: newName || r.name,
-                type: selectedType,
-                trackId: selectedTrackId,
-                trackName: selectedTrackName,
-                date: selectedDateISO,
-                pilots: this.race.pilots || [],
-                quali: this.race.quali || []
-              };
+        window.electronAPI.db
+          .get("races")
+          .then((races) => {
+            const racesList = races || [];
+            const updatedList = racesList.map((r) => {
+              if (r.id === this.race.id) {
+                return {
+                  ...r,
+                  name: newName || r.name,
+                  type: selectedType,
+                  trackId: selectedTrackId,
+                  trackName: selectedTrackName,
+                  date: selectedDateISO,
+                  pilots: this.race.pilots || [],
+                  quali: this.race.quali || [],
+                };
+              }
+              return r;
+            });
+            return window.electronAPI.db.set("races", updatedList);
+          })
+          .then((success) => {
+            if (success) {
+              window.recalculateDriversRacesCount();
+              const modalInstance = bootstrap.Modal.getInstance(modalEl);
+              if (modalInstance) {
+                modalInstance.hide();
+              }
+              window.dispatchEvent(new CustomEvent("raceListChanged"));
             }
-            return r;
+          })
+          .catch((err) => {
+            console.error("Failed to update race details in database:", err);
           });
-          return window.electronAPI.db.set('races', updatedList);
-        }).then(success => {
-          if (success) {
-            window.recalculateDriversRacesCount();
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) {
-              modalInstance.hide();
-            }
-            window.dispatchEvent(new CustomEvent('raceListChanged'));
-          }
-        }).catch(err => {
-          console.error('Failed to update race details in database:', err);
-        });
       });
     }
   }
 
   getCurrentStateSnapshot() {
-    if (!this.race) return '';
+    if (!this.race) return "";
 
-    const typeSelect = this.querySelector('#select-race-edit-type');
-    const selectedType = typeSelect ? typeSelect.value : 'grand_prix';
+    const typeSelect = this.querySelector("#select-race-edit-type");
+    const selectedType = typeSelect ? typeSelect.value : "grand_prix";
 
-    const nameInput = this.querySelector('#input-race-edit-name');
-    const newName = nameInput ? nameInput.value.trim() : '';
+    const nameInput = this.querySelector("#input-race-edit-name");
+    const newName = nameInput ? nameInput.value.trim() : "";
 
-    const trackSelect = this.querySelector('#select-race-edit-track');
-    const selectedTrackId = trackSelect ? trackSelect.value : '';
+    const trackSelect = this.querySelector("#select-race-edit-track");
+    const selectedTrackId = trackSelect ? trackSelect.value : "";
 
-    const dateInput = this.querySelector('#input-race-edit-date');
+    const dateInput = this.querySelector("#input-race-edit-date");
     let selectedDateISO = this.race.date || new Date().toISOString();
     if (dateInput && dateInput.value) {
       try {
         const origDate = this.race.date ? new Date(this.race.date) : new Date();
-        const [year, month, day] = dateInput.value.split('-').map(Number);
+        const [year, month, day] = dateInput.value.split("-").map(Number);
         origDate.setFullYear(year);
         origDate.setMonth(month - 1);
         origDate.setDate(day);
@@ -421,12 +465,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       trackId: selectedTrackId,
       date: selectedDateISO,
       pilots: pilots,
-      quali: quali
+      quali: quali,
     });
   }
 
   checkPendingChanges() {
-    const submitBtn = this.querySelector('#btn-submit-edit-race');
+    const submitBtn = this.querySelector("#btn-submit-edit-race");
     if (!submitBtn) return;
 
     const currentSnapshot = this.getCurrentStateSnapshot();
@@ -439,9 +483,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     const hasChanges = currentSnapshot !== this.initialRaceSnapshot;
 
     if (hasChanges) {
-      const confirmCloseModalEl = this.querySelector('#modal-confirm-close-edit');
+      const confirmCloseModalEl = this.querySelector(
+        "#modal-confirm-close-edit",
+      );
       if (confirmCloseModalEl) {
-        let confirmCloseModalInstance = bootstrap.Modal.getInstance(confirmCloseModalEl);
+        let confirmCloseModalInstance =
+          bootstrap.Modal.getInstance(confirmCloseModalEl);
         if (!confirmCloseModalInstance) {
           confirmCloseModalInstance = new bootstrap.Modal(confirmCloseModalEl);
         }
@@ -453,7 +500,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
   }
 
   closeEditModal() {
-    const modalEl = this.querySelector('#modal-edit-race');
+    const modalEl = this.querySelector("#modal-edit-race");
     if (modalEl) {
       const modalInstance = bootstrap.Modal.getInstance(modalEl);
       if (modalInstance) {
@@ -486,9 +533,8 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-edit-race-title" style="font-size: 1.1rem;">
                 <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
-                ${window.t('registrations.races_modal.edit_title') || 'Editar Corrida'}
+                ${window.t("registrations.races_modal.edit_title") || "Editar Corrida"}
               </h5>
-              <button type="button" class="btn-close" id="btn-close-edit-race" aria-label="Close"></button>
             </div>
             
             <form id="form-edit-race">
@@ -508,15 +554,15 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   <!-- Nome col-4 -->
                   <div class="col-4">
                     <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
-                      ${window.t('registrations.modal.name_label') || 'Nome'}
+                      ${window.t("registrations.modal.name_label") || "Nome"}
                     </label>
-                    <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t('registrations.new_race') || 'Nome da Corrida'}">
+                    <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
                   </div>
 
                   <!-- Pista col-3 -->
                   <div class="col-3">
                     <label for="select-race-edit-track" class="form-label fw-semibold text-secondary small">
-                      ${window.t('registrations.races_modal.track_label') || 'Pista Utilizada'}
+                      ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
                     </label>
                     <select id="select-race-edit-track" class="form-select">
                       <!-- Options loaded dynamically -->
@@ -526,7 +572,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   <!-- Data col-2 -->
                   <div class="col-2">
                     <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
-                      ${window.t('registrations.races_modal.date_label') || 'Data'}
+                      ${window.t("registrations.races_modal.date_label") || "Data"}
                     </label>
                     <input type="date" id="input-race-edit-date" class="form-control" required>
                   </div>
@@ -536,7 +582,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 <div class="row mt-4">
                   <div class="col-12">
                     <label class="form-label fw-semibold text-secondary small mb-2">
-                      ${window.t('registrations.drivers') || 'Pilotos'}
+                      ${window.t("registrations.drivers") || "Pilotos"}
                     </label>
                     <div id="race-edit-pilots-list" class="d-flex align-items-center gap-2 flex-wrap py-1">
                       <!-- Rendered dynamically -->
@@ -550,11 +596,11 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
               
               <div class="d-flex justify-content-end gap-2 p-3 border-top border-secondary-subtle">
                 <button type="button" id="btn-cancel-edit-race" class="btn btn-secondary px-3 fw-semibold">
-                  ${window.t('registrations.modal.cancel_button') || 'Cancelar'}
+                  ${window.t("registrations.modal.cancel_button") || "Cancelar"}
                 </button>
                 <button type="submit" id="btn-submit-edit-race" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
                   <i class="mdi mdi-content-save-outline fs-5"></i>
-                  ${window.t('registrations.races_modal.save_button') || 'Salvar Alterações'}
+                  ${window.t("registrations.races_modal.save_button") || "Salvar Alterações"}
                 </button>
               </div>
             </form>
@@ -614,4 +660,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
   }
 }
 
-customElements.define('slotrace-registrations-races-edit-modal', SlotRaceRegistrationsRacesEditModal);
+customElements.define(
+  "slotrace-registrations-races-edit-modal",
+  SlotRaceRegistrationsRacesEditModal,
+);

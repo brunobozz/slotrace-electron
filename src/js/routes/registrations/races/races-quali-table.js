@@ -81,7 +81,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
               <i class="mdi mdi-timer-outline fs-6 me-2"></i>
               <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.go_qualify_button') || 'Go Qualify'}</span>
             </button>
-            <button type="button" id="btn-clear-quali" class="btn btn-sm btn-danger d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm" title="${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}" style="outline: none; box-shadow: none;">
+            <button type="button" id="btn-clear-quali" class="btn btn-sm btn-danger d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm d-none" title="${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}" style="outline: none; box-shadow: none;">
               <i class="mdi mdi-refresh fs-6 me-2"></i>
               <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}</span>
             </button>
@@ -180,6 +180,16 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
         q.lapTimes = [];
       }
     });
+
+    const hasLaps = this.race.quali.some(q => q.laps > 0 || (q.lapTimes && q.lapTimes.length > 0));
+    const clearBtn = this.querySelector('#btn-clear-quali');
+    if (clearBtn) {
+      if (hasLaps) {
+        clearBtn.classList.remove('d-none');
+      } else {
+        clearBtn.classList.add('d-none');
+      }
+    }
 
     // Sort: lower bestLapTime wins (0/empty goes to the bottom, tied 0s sorted by inclusion order in racePilots)
     const sortedQuali = [...this.race.quali].sort((a, b) => {
