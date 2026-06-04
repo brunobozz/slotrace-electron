@@ -229,7 +229,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
         diffHtml = `<span class="text-secondary label-quali-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
       } else {
         const diff = currentBest - leaderTime;
-        diffHtml = `<span class="diff-time-has fw-semibold label-quali-diff" style="font-size: 1.05rem; font-family: monospace;">+${diff.toFixed(3)}</span>`;
+        diffHtml = `<span class="diff-time-has fw-semibold label-quali-diff" style="font-size: 1.05rem; font-family: monospace;">+${diff.toFixed(4)}</span>`;
       }
 
       const isExpanded = this.expandedPilotIds && this.expandedPilotIds.has(item.pilotId);
@@ -279,7 +279,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
           ${diffHtml}
         </td>
         <td class="align-middle text-end">
-          <span class="label-quali-best-time px-2" style="font-size: 1.05rem;">${item.bestLapTime ? parseFloat(item.bestLapTime).toFixed(3) : '-'}</span>
+          <span class="label-quali-best-time px-2" style="font-size: 1.05rem;">${item.bestLapTime ? parseFloat(item.bestLapTime).toFixed(4) : '-'}</span>
         </td>
         <td class="align-middle text-center">
           <button type="button" class="btn btn-sm btn-link text-secondary btn-toggle-laps p-1" data-pilot-id="${item.pilotId}" title="Ver tempos de voltas" style="outline: none; box-shadow: none;">
@@ -367,7 +367,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
           updateBestIndexStyles(!!record.bestLapIndex);
         }
         if (labelBestTime) {
-          labelBestTime.textContent = record.bestLapTime ? parseFloat(record.bestLapTime).toFixed(3) : '-';
+          labelBestTime.textContent = record.bestLapTime ? parseFloat(record.bestLapTime).toFixed(4) : '-';
           updateBestTimeStyles(!!record.bestLapTime);
         }
         if (labelDiff) {
@@ -377,7 +377,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
             updateDiffStyles(false);
           } else {
             const diff = currentBest - leaderTime;
-            labelDiff.textContent = diff >= 0 ? `+${diff.toFixed(3)}` : `+0.000`;
+            labelDiff.textContent = diff >= 0 ? `+${diff.toFixed(4)}` : `+0.0000`;
             updateDiffStyles(true);
           }
         }

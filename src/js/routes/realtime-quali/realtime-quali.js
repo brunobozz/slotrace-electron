@@ -12,6 +12,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._lapStartTime = null; // performance.now() when current lap started
     this._pausedState = null; // Which state to resume to after pause
     this._firstLapMarked = false; // First click only starts the lap, no time recorded
+    this._isShuffling = false;
 
     this._goQualifyListener = (e) => {
       const { race } = e.detail;
@@ -32,6 +33,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       this._updateDriverPanel();
     };
     this._onConfigChanged = (e) => this._handleConfigChanged(e.detail);
+    this._onShuffleOrder = () => this._handleShuffleOrder();
 
     window.addEventListener("qualiSessionStart", this._onStart);
     window.addEventListener("qualiSessionPause", this._onPause);
@@ -40,6 +42,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.addEventListener("qualiSessionFinish", this._onFinish);
     window.addEventListener("qualiLaneChanged", this._onLaneChanged);
     window.addEventListener("qualiConfigChanged", this._onConfigChanged);
+    window.addEventListener("requestShuffleOrder", this._onShuffleOrder);
 
     // Running lap timer loop
     this._runningLoopActive = true;
@@ -58,6 +61,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener("qualiSessionFinish", this._onFinish);
     window.removeEventListener("qualiLaneChanged", this._onLaneChanged);
     window.removeEventListener("qualiConfigChanged", this._onConfigChanged);
+    window.removeEventListener("requestShuffleOrder", this._onShuffleOrder);
     if (this._autoSaveTimeout) {
       clearTimeout(this._autoSaveTimeout);
     }
@@ -114,11 +118,20 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       interval: this.race?.interval !== undefined ? this.race.interval : 10,
     };
 
-    // Initialize pilot queue and current pilot from race.pilots order
+    // Initialize pilot queue and current pilot using saved qualiOrder if present, else original race.pilots order
     const racePilots = this.race && this.race.pilots ? this.race.pilots : [];
-    this._pilotQueue = racePilots.map((p) =>
-      typeof p === "object" ? p.id : p,
-    );
+    const currentPilotIds = racePilots.map((p) => typeof p === "object" ? p.id : p);
+
+    let sessionOrder = [];
+    if (this.race && this.race.qualiOrder && Array.isArray(this.race.qualiOrder)) {
+      const savedOrder = this.race.qualiOrder.filter(id => currentPilotIds.includes(id));
+      const newPilots = currentPilotIds.filter(id => !savedOrder.includes(id));
+      sessionOrder = [...savedOrder, ...newPilots];
+    } else {
+      sessionOrder = [...currentPilotIds];
+    }
+
+    this._pilotQueue = [...sessionOrder];
 
     if (this._pilotQueue.length > 0) {
       this._currentPilotId = this._pilotQueue.shift();
@@ -386,7 +399,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
   _updateToolbarState() {
     const toolbar = this.querySelector("quali-toolbar");
-    if (toolbar) toolbar.setState(this._state);
+    if (toolbar) toolbar.setState(this._state, this._isShuffling);
   }
 
   _updateDriverPanel() {
@@ -474,6 +487,8 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       drivers: this.drivers,
       lane: this._sessionConfig.lane || 1,
       laneColors,
+      state: this._state,
+      isShuffling: this._isShuffling,
     });
   }
 
@@ -510,16 +525,29 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
     const queue = this.querySelector("quali-queue");
     if (queue) {
-      const allPilots = racePilots.map((p) =>
-        typeof p === "object" ? p : { id: p, carId: null },
-      );
+      const currentPilotIds = racePilots.map((p) => typeof p === "object" ? p.id : p);
+      let sessionOrder = [];
+      if (this.race.qualiOrder && Array.isArray(this.race.qualiOrder)) {
+        const savedOrder = this.race.qualiOrder.filter(id => currentPilotIds.includes(id));
+        const newPilots = currentPilotIds.filter(id => !savedOrder.includes(id));
+        sessionOrder = [...savedOrder, ...newPilots];
+      } else {
+        sessionOrder = [...currentPilotIds];
+      }
+
+      const orderedPilots = sessionOrder.map(id => {
+        return racePilots.find(p => (typeof p === "object" ? p.id : p) === id);
+      }).filter(Boolean).map(p => typeof p === "object" ? p : { id: p, carId: null });
+
       const track = this.getTrackForRace();
       const laneColors = track ? track.laneColors : null;
       queue.setData({
-        pendingPilots: allPilots,
+        pendingPilots: orderedPilots,
         drivers: this.drivers,
         lane: this._sessionConfig.lane || 1,
         laneColors,
+        state: this._state,
+        isShuffling: this._isShuffling,
       });
     }
   }
@@ -553,6 +581,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
           races[raceIdx].lane = this.race.lane;
           // Also save quali data in case any lap time changed or was modified
           races[raceIdx].quali = this.race.quali;
+          races[raceIdx].qualiOrder = this.race.qualiOrder;
 
           await window.electronAPI.db.set("races", races);
           console.log("Quali session config auto-saved successfully!");
@@ -561,6 +590,85 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         console.error("Failed to auto-save quali config:", e);
       }
     }, 2000);
+  }
+
+  _handleShuffleOrder() {
+    if (this._state !== "idle" || this._isShuffling) return;
+
+    this._isShuffling = true;
+
+    // Update UI states to disable buttons/inputs
+    this._updateToolbarState();
+    this._updateQueue();
+
+    const racePilots = this.race.pilots || [];
+    const currentPilotIds = racePilots.map((p) => typeof p === "object" ? p.id : p);
+
+    if (currentPilotIds.length <= 1) {
+      this._isShuffling = false;
+      this._updateToolbarState();
+      this._updateQueue();
+      return;
+    }
+
+    const intervalTime = 150;
+    const duration = 5000;
+    let elapsed = 0;
+
+    const intervalId = setInterval(() => {
+      // Generate temporary random order for the 5-second animation
+      const tempOrder = this._shuffleArray(currentPilotIds);
+      const tempPendingPilots = tempOrder.map(id => {
+        return racePilots.find(p => (typeof p === "object" ? p.id : p) === id);
+      }).filter(Boolean).map(p => typeof p === "object" ? p : { id: p, carId: null });
+
+      const queue = this.querySelector("quali-queue");
+      if (queue) {
+        const track = this.getTrackForRace();
+        const laneColors = track ? track.laneColors : null;
+        queue.setData({
+          pendingPilots: tempPendingPilots,
+          drivers: this.drivers,
+          lane: this._sessionConfig.lane || 1,
+          laneColors,
+          state: this._state,
+          isShuffling: true
+        });
+      }
+
+      elapsed += intervalTime;
+      if (elapsed >= duration) {
+        clearInterval(intervalId);
+
+        // Final random order
+        const finalOrder = this._shuffleArray(currentPilotIds);
+        this.race.qualiOrder = finalOrder;
+
+        // Auto save to database
+        this._triggerAutoSave();
+
+        // Reset the session queue using the new order
+        this._resetSession();
+
+        this._isShuffling = false;
+
+        // Re-enable and update all UI elements
+        this._updateToolbarState();
+        this._updateDriverPanel();
+        this._updateLaps();
+        this._updateStandings();
+        this._updateQueue();
+      }
+    }, intervalTime);
+  }
+
+  _shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
   showModal() {

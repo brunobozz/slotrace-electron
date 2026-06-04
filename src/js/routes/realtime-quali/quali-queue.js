@@ -18,6 +18,8 @@ class QualiQueue extends HTMLElement {
     this.drivers = [];
     this.startIndex = 1;
     this.lane = 1;
+    this.state = "idle";
+    this.isShuffling = false;
     this.innerHTML = "";
 
     this._langListener = () => {
@@ -32,12 +34,14 @@ class QualiQueue extends HTMLElement {
     }
   }
 
-  setData({ pendingPilots, drivers, startIndex, lane, laneColors }) {
+  setData({ pendingPilots, drivers, startIndex, lane, laneColors, state, isShuffling }) {
     this.pendingPilots = pendingPilots || [];
     this.drivers = drivers || [];
     this.startIndex = startIndex || 1;
     this.lane = lane || 1;
     this.laneColors = laneColors || null;
+    this.state = state || "idle";
+    this.isShuffling = isShuffling || false;
     this.render();
   }
 
@@ -85,13 +89,18 @@ class QualiQueue extends HTMLElement {
       })
       .join("");
 
+    const isShuffleDisabled = this.state !== "idle" || this.isShuffling;
     this.innerHTML = `
       <div class="d-flex flex-column h-100">
         <!-- Title -->
-        <div class="border-bottom border-top border-secondary-subtle p-2">
-          <div class="text-uppercase text-body-secondary text-center fw-bold" style="letter-spacing: 0.1rem;">
+        <div class="d-flex align-items-center justify-content-between border-bottom border-top border-secondary-subtle py-2 px-3">
+          <div class="text-uppercase text-body-secondary fw-bold" style="letter-spacing: 0.1rem;">
             ${title}
           </div>
+          <button id="btn-queue-shuffle" class="btn btn-sm text-primary shadow-none border-0" style="outline: none;" ${isShuffleDisabled ? "disabled" : ""}>
+            <i class="mdi mdi-shuffle"></i>
+            <span>${window.t("realtime_quali.queue.shuffle") || "Sortear"}</span>
+          </button>
         </div>
 
         <!-- Table Body (Scrollable) -->
@@ -104,6 +113,17 @@ class QualiQueue extends HTMLElement {
         </div>
       </div>
     `;
+
+    this._bindEvents();
+  }
+
+  _bindEvents() {
+    const shuffleBtn = this.querySelector("#btn-queue-shuffle");
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("requestShuffleOrder"));
+      });
+    }
   }
 }
 

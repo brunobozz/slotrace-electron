@@ -231,6 +231,7 @@ window.localeStrings.pt = {
       title: "PRÓXIMOS",
       pilot: "Piloto",
       lane: "Fenda",
+      shuffle: "Sortear",
     },
     laps: {
       title: "TEMPOS DAS VOLTAS",

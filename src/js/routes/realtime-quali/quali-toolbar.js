@@ -3,6 +3,7 @@ class QualiToolbar extends HTMLElement {
     this._race = null;
     this._track = null;
     this._state = "idle"; // idle | qualifying | paused | interval
+    this._isShuffling = false;
 
     this._langListener = () => {
       this.render();
@@ -24,8 +25,9 @@ class QualiToolbar extends HTMLElement {
     this.render();
   }
 
-  setState(state) {
+  setState(state, isShuffling = false) {
     this._state = state;
+    this._isShuffling = isShuffling;
     this._updateButtons();
   }
 
@@ -235,18 +237,19 @@ class QualiToolbar extends HTMLElement {
     if (!btnStart) return;
 
     const hasPilots = this._hasPilots();
+    const isShuffling = this._isShuffling;
 
     switch (this._state) {
       case "idle":
         btnStart.classList.remove("d-none");
-        btnStart.disabled = !hasPilots;
+        btnStart.disabled = !hasPilots || isShuffling;
         btnStart.querySelector("i").className = "mdi mdi-play";
         btnStart.querySelector("i").nextSibling.textContent =
           " " + (window.t("realtime_quali.toolbar.start") || "Start");
         btnPause?.classList.add("d-none");
         btnLap?.classList.add("d-none");
         btnFinish?.classList.add("d-none");
-        inputs.forEach((el) => (el.disabled = false));
+        inputs.forEach((el) => (el.disabled = isShuffling));
         break;
 
       case "qualifying":
@@ -259,7 +262,7 @@ class QualiToolbar extends HTMLElement {
 
       case "paused":
         btnStart.classList.remove("d-none");
-        btnStart.disabled = false;
+        btnStart.disabled = isShuffling;
         btnStart.querySelector("i").className = "mdi mdi-play";
         btnStart.querySelector("i").nextSibling.textContent =
           " " + (window.t("realtime_quali.toolbar.resume") || "Resume");

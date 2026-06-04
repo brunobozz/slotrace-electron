@@ -164,7 +164,7 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}`;
         pill.innerHTML = `
           <span class="lap-badge-index">#${lapIndex + 1}</span>
-          <input type="number" step="0.001" min="0" class="lap-badge-input input-lap-time" value="${lapTime || ""}" placeholder="0.000" data-lap-index="${lapIndex}">
+          <input type="number" step="0.0001" min="0" class="lap-badge-input input-lap-time" value="${lapTime || ""}" placeholder="0.0000" data-lap-index="${lapIndex}">
           <i class="mdi mdi-close lap-badge-delete btn-delete-lap" data-lap-index="${lapIndex}"></i>
         `;
 
