@@ -3,18 +3,22 @@ class SlotRaceRealtimeRaceQueue extends HTMLElement {
     this.deckQueue = [];
     this.drivers = [];
     this.pilotStoppedZones = {};
+    this.laneColors = [];
     this.render();
   }
 
-  setData({ deckQueue, drivers, pilotStoppedZones }) {
+  setData({ deckQueue, drivers, pilotStoppedZones, laneColors }) {
     this.deckQueue = deckQueue || [];
     this.drivers = drivers || [];
     this.pilotStoppedZones = pilotStoppedZones || {};
+    this.laneColors = laneColors || [];
     this.render();
   }
 
   render() {
     let deckQueueHtml = "";
+    const lane1Color = this.laneColors && this.laneColors[0] ? this.laneColors[0] : '#ff3b30';
+
     if (this.deckQueue.length > 0) {
       deckQueueHtml = this.deckQueue
         .map((pid, idx) => {
@@ -36,7 +40,7 @@ class SlotRaceRealtimeRaceQueue extends HTMLElement {
               }
             </style>
             <div class="next-driver d-flex flex-grow-1 align-items-center justify-content-center gap-2 p-2 border-end">
-              ${pos == 1 ? `<i class="mdi mdi-circle text-primary fs-2"></i>` : ``}
+              ${pos == 1 ? `<i class="mdi mdi-circle fs-2" style="color: ${lane1Color};"></i>` : ``}
               <!--<div class="rounded-circle overflow-hidden border border-secondary-subtle flex-shrink-0" style="width: 32px; height: 32px;">
                 ${photoUrl ? `<img src="${photoUrl}" class="w-100 h-100 object-fit-cover">` : `<div class="w-100 h-100 d-flex align-items-center justify-content-center"><i class="mdi mdi-account text-secondary" style="font-size: 0.8rem;"></i></div>`}
               </div>-->

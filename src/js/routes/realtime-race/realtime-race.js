@@ -790,6 +790,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
         deckQueue: this._deckQueue,
         drivers: this.drivers,
         pilotStoppedZones: this._pilotStoppedZones,
+        laneColors: this._laneColors,
       });
     }
   }
