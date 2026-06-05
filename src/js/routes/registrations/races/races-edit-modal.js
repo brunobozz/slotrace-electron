@@ -567,11 +567,16 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           opacity: 1 !important;
           pointer-events: auto !important;
         }
-
+        #form-edit-race {
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          overflow: hidden;
+        }
       </style>
 
       <div class="modal fade" id="modal-edit-race" tabindex="-1" aria-labelledby="modal-edit-race-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
           <div class="modal-content border-secondary-subtle">
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
