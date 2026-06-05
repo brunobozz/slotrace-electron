@@ -1042,13 +1042,13 @@ class SlotRaceRealtimeRace extends HTMLElement {
               <div class="d-flex flex-column flex-grow-1" style="width: 65%; min-height: 0;">
                 <slotrace-realtime-race-session class="h-100"></slotrace-realtime-race-session>
                 <!-- DECK queue section -->
-                <slotrace-realtime-race-queue id="race-session-queue-component" class="mt-auto" style="min-height: 140px; display: flex; flex-direction: column;"></slotrace-realtime-race-queue>
+                <slotrace-realtime-race-queue id="race-session-queue-component"></slotrace-realtime-race-queue>
               </div>
 
               <!-- STANDINGS -->
               <div class="d-flex flex-column overflow-y-auto border-start border-secondary-subtle flex-shrink-0" style="width: 35%; min-width: 380px; min-height: 0; !important;">
                 <!-- Standings Table section -->
-                <slotrace-realtime-race-standings id="race-session-standings-component" class="flex-grow-1 mb-3" style="min-height: 0; display: flex; flex-direction: column;"></slotrace-realtime-race-standings>
+                <slotrace-realtime-race-standings id="race-session-standings-component" class="flex-grow-1" style="min-height: 0; display: flex; flex-direction: column;"></slotrace-realtime-race-standings>
               </div>
             </div>
           </div>

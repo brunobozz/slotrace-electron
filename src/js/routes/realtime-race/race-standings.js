@@ -126,7 +126,7 @@ class SlotRaceRealtimeRaceStandings extends HTMLElement {
       .join("");
 
     this.innerHTML = `
-      <div class="flex-grow-1 mb-3" style="min-height: 0; display: flex; flex-direction: column; height: 100%;">
+      <div class="flex-grow-1" style="min-height: 0; display: flex; flex-direction: column; height: 100%;">
         <div class="border-bottom border-secondary-subtle p-2">
           <div class="text-uppercase text-body-secondary text-center fw-bold" style="letter-spacing: 0.1rem;">
             CLASSIFICAÇÃO GERAL
