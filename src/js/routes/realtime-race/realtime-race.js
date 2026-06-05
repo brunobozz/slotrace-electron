@@ -21,13 +21,17 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
     this._sessionFirstLapMarked = {}; // { pilotId: boolean }
     this._sessionLapStartTime = {}; // { pilotId: performance.now() }
+    this._sessionLaps = {}; // { pilotId: number }
+    this._pilotAccumulatedLapTime = {}; // { pilotId: number }
     this._pauseTimeStart = null;
     this._pilotStoppedZones = {}; // { pilotId: zone }
 
     this._goRaceListener = (e) => {
       const { race } = e.detail;
+      const isSameRace = this.race && String(this.race.id) === String(race.id);
+      const canResumeInMemory = isSameRace && this._state === "paused";
       this.race = race;
-      this.loadDataAndRender();
+      this.loadDataAndRender(canResumeInMemory);
     };
     window.addEventListener("requestGoRace", this._goRaceListener);
 
@@ -62,40 +66,38 @@ class SlotRaceRealtimeRace extends HTMLElement {
       }
     };
 
-    this._saveResultsListener = async () => {
-      if (this.race) {
-        this.race.raceSession = this.raceSession;
-
-        try {
-          const races = (await window.electronAPI.db.get("races")) || [];
-          const idx = races.findIndex((r) => r.id === this.race.id);
-          if (idx !== -1) {
-            races[idx].raceSession = this.raceSession;
-            await window.electronAPI.db.set("races", races);
-            console.log(
-              `[Database] Saved race results for ID: ${this.race.id}`,
-            );
-          }
-        } catch (err) {
-          console.error("Failed to save race results to database:", err);
-        }
-      }
-
-      const modalEl = this.querySelector("#modal-realtime-race");
-      if (modalEl) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-          modalInstance.hide();
-        }
-      }
-
-      window.dispatchEvent(new CustomEvent("raceListChanged"));
-    };
+    // Auto-saved automatically on stops
 
     this._startListener = () => this.startSession();
     this._pauseListener = () => this.pauseSession();
     this._resumeListener = () => this.resumeSession();
-    this._resetListener = () => this.resetSession(true, false);
+    this._resetListener = async () => {
+      const confirmacao = window.confirm(
+        "Tem certeza que deseja zerar a corrida? Todas as voltas e tempos acumulados serão apagados!",
+      );
+      if (!confirmacao) return;
+
+      if (this.race) {
+        this.race.raceSession = [];
+        this.race.activeSessionState = null;
+        try {
+          const races = (await window.electronAPI.db.get("races")) || [];
+          const idx = races.findIndex((r) => r.id === this.race.id);
+          if (idx !== -1) {
+            races[idx].raceSession = [];
+            races[idx].activeSessionState = null;
+            await window.electronAPI.db.set("races", races);
+            console.log(
+              `[Database] Cleared race results for reset ID: ${this.race.id}`,
+            );
+          }
+        } catch (err) {
+          console.error("Failed to clear database results on reset:", err);
+        }
+      }
+
+      this.resetSession(true, false);
+    };
 
     this._simulateLapListener = (e) => {
       const { laneNum } = e.detail;
@@ -107,7 +109,6 @@ class SlotRaceRealtimeRace extends HTMLElement {
     window.addEventListener("raceSessionResume", this._resumeListener);
     window.addEventListener("raceSessionReset", this._resetListener);
     window.addEventListener("raceConfigSaved", this._configSavedListener);
-    window.addEventListener("raceSaveResults", this._saveResultsListener);
     this.addEventListener("requestSimulateLap", this._simulateLapListener);
 
     // Keyboard telemetry triggers (Keys 1-8)
@@ -145,7 +146,6 @@ class SlotRaceRealtimeRace extends HTMLElement {
     window.removeEventListener("raceSessionResume", this._resumeListener);
     window.removeEventListener("raceSessionReset", this._resetListener);
     window.removeEventListener("raceConfigSaved", this._configSavedListener);
-    window.removeEventListener("raceSaveResults", this._saveResultsListener);
     window.removeEventListener("keydown", this._keydownListener);
     this.removeEventListener("requestSimulateLap", this._simulateLapListener);
   }
@@ -234,6 +234,9 @@ class SlotRaceRealtimeRace extends HTMLElement {
     this._currentSessionIndex = 1;
     this._pauseTimeStart = null;
     this._pilotStoppedZones = {};
+    if (!preserveExisting) {
+      this._pilotAccumulatedLapTime = {};
+    }
 
     this.setupStartingRotation();
 
@@ -317,11 +320,39 @@ class SlotRaceRealtimeRace extends HTMLElement {
   resetSessionTelemetryFlags() {
     this._sessionFirstLapMarked = {};
     this._sessionLapStartTime = {};
+    this._sessionLaps = {};
     for (let l = 1; l <= this._lanesCount; l++) {
       const pid = this._laneAssignments[l];
       if (pid) {
-        this._sessionFirstLapMarked[pid] = false;
+        const record = this.raceSession.find(
+          (r) => String(r.pilotId) === String(pid),
+        );
+        const hasLapsInRace =
+          record && record.lapTimes && record.lapTimes.length > 0;
+        this._sessionFirstLapMarked[pid] = hasLapsInRace;
         this._sessionLapStartTime[pid] = null;
+        this._sessionLaps[pid] = 0;
+      }
+    }
+  }
+
+  initializeHeatStartTimes(startTime) {
+    for (let l = 1; l <= this._lanesCount; l++) {
+      const pid = this._laneAssignments[l];
+      if (pid) {
+        const record = this.raceSession.find(
+          (r) => String(r.pilotId) === String(pid),
+        );
+        const hasLapsInRace =
+          record && record.lapTimes && record.lapTimes.length > 0;
+        if (hasLapsInRace) {
+          this._sessionFirstLapMarked[pid] = true;
+          const accTime = this._pilotAccumulatedLapTime[pid] || 0;
+          this._sessionLapStartTime[pid] = startTime - accTime * 1000;
+        } else {
+          this._sessionFirstLapMarked[pid] = false;
+          this._sessionLapStartTime[pid] = null;
+        }
       }
     }
   }
@@ -340,6 +371,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
     this._state = "running";
     this.resetSessionTelemetryFlags();
+    this.initializeHeatStartTimes(performance.now());
 
     const timer = this.querySelector("slotrace-timer");
     if (timer) {
@@ -363,6 +395,8 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
     this.updateHeaderState("paused");
     this.updateChildComponents();
+
+    this.saveRaceSessionData();
   }
 
   resumeSession() {
@@ -384,10 +418,13 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
     const timer = this.querySelector("slotrace-timer");
     if (timer) {
+      timer._mode = "down";
       if (this._state === "running") {
         timer.setColor("#adff2f");
+        timer._onFinish = () => this.handleSessionTimeUp();
       } else {
         timer.setColor("#ffc107");
+        timer._onFinish = () => this.startNextSession();
       }
       timer.resume();
     }
@@ -413,6 +450,12 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
     const lapTime = (now - this._sessionLapStartTime[pilotId]) / 1000;
     this._sessionLapStartTime[pilotId] = now;
+
+    // Record lap in current session laps
+    if (this._sessionLaps[pilotId] === undefined) {
+      this._sessionLaps[pilotId] = 0;
+    }
+    this._sessionLaps[pilotId]++;
 
     // Record lap
     const record = this.raceSession.find(
@@ -443,6 +486,22 @@ class SlotRaceRealtimeRace extends HTMLElement {
   async handleSessionTimeUp() {
     this._state = "paused";
     this.updateHeaderState("paused");
+
+    const now = performance.now();
+    for (let laneNum = 1; laneNum <= this._lanesCount; laneNum++) {
+      const pilotId = this._laneAssignments[laneNum];
+      if (pilotId) {
+        if (
+          this._sessionFirstLapMarked[pilotId] &&
+          this._sessionLapStartTime[pilotId]
+        ) {
+          this._pilotAccumulatedLapTime[pilotId] =
+            (now - this._sessionLapStartTime[pilotId]) / 1000;
+        } else {
+          this._pilotAccumulatedLapTime[pilotId] = 0;
+        }
+      }
+    }
 
     // Add current fenda to completed list for active pilots
     for (let laneNum = 1; laneNum <= this._lanesCount; laneNum++) {
@@ -568,6 +627,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
         this._state = "interval";
         this.updateHeaderState("interval");
         this.updateChildComponents();
+        this.saveRaceSessionData();
 
         const timer = this.querySelector("slotrace-timer");
         if (timer) {
@@ -586,6 +646,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
   startNextSession() {
     this._state = "running";
     this.updateHeaderState("running");
+    this.initializeHeatStartTimes(performance.now());
     this.updateChildComponents();
 
     const timer = this.querySelector("slotrace-timer");
@@ -654,6 +715,8 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
     const timer = this.querySelector("slotrace-timer");
     if (timer) timer.reset();
+
+    this.saveRaceSessionData();
   }
 
   updateHeaderState(state) {
@@ -698,6 +761,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
         laneAssignments: this._laneAssignments,
         laneColors: this._laneColors,
         sessionFirstLapMarked: this._sessionFirstLapMarked,
+        sessionLaps: this._sessionLaps,
         raceSession: this.raceSession,
         pilots: this.pilots,
         drivers: this.drivers,
@@ -730,7 +794,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
     }
   }
 
-  async loadDataAndRender() {
+  async loadDataAndRender(canResumeInMemory = false) {
     let tracks = [];
     try {
       this.drivers = (await window.electronAPI.db.get("drivers")) || [];
@@ -742,7 +806,9 @@ class SlotRaceRealtimeRace extends HTMLElement {
       tracks = [];
     }
 
-    this.render();
+    if (!this.querySelector("#modal-realtime-race")) {
+      this.render();
+    }
     this.showModal();
 
     this.tracks = tracks;
@@ -779,8 +845,59 @@ class SlotRaceRealtimeRace extends HTMLElement {
     this.pilots = this.race?.pilots || [];
     this._totalSessions = Math.max(this.pilots.length, this._lanesCount);
 
-    // Reset session, preserving existing progress
-    this.resetSession(true, true);
+    if (canResumeInMemory) {
+      const timer = this.querySelector("slotrace-timer");
+      if (timer) {
+        timer.setColor("#ffc107"); // Yellow color for paused state
+        timer.updateDisplay();
+      }
+      this.updateHeaderState("paused");
+      this.updateChildComponents();
+    } else if (this.race && this.race.activeSessionState) {
+      // Restore from persistent activeSessionState
+      const stateObj = this.race.activeSessionState;
+      this._state = stateObj.state || "paused";
+      this._pausedState = stateObj.pausedState || "running";
+      this._currentSessionIndex = stateObj.currentSessionIndex || 1;
+      this._laneAssignments = stateObj.laneAssignments || {};
+      this._deckQueue = stateObj.deckQueue || [];
+      this._completedLanes = stateObj.completedLanes || {};
+      this._pilotStoppedZones = stateObj.pilotStoppedZones || {};
+      this._pilotAccumulatedLapTime = stateObj.pilotAccumulatedLapTime || {};
+      this._sessionLaps = stateObj.sessionLaps || {};
+      this._sessionFirstLapMarked = stateObj.sessionFirstLapMarked || {};
+
+      this._pauseTimeStart = performance.now();
+      const currentLapElapsed = stateObj.pilotCurrentLapElapsed || {};
+
+      this._sessionLapStartTime = {};
+      for (let pid in this._sessionFirstLapMarked) {
+        if (this._sessionFirstLapMarked[pid]) {
+          const elapsed = currentLapElapsed[pid] || 0;
+          this._sessionLapStartTime[pid] =
+            this._pauseTimeStart - elapsed * 1000;
+        } else {
+          this._sessionLapStartTime[pid] = null;
+        }
+      }
+
+      this.raceSession = this.race.raceSession || [];
+
+      const timer = this.querySelector("slotrace-timer");
+      if (timer) {
+        timer.setColor("#ffc107");
+        timer.seconds =
+          stateObj.remainingSeconds !== undefined
+            ? stateObj.remainingSeconds
+            : this._timePerLane;
+        timer.updateDisplay();
+      }
+      this.updateHeaderState("paused");
+      this.updateChildComponents();
+    } else {
+      // Reset session, preserving existing progress
+      this.resetSession(true, true);
+    }
 
     const header = this.querySelector("slotrace-realtime-race-header");
     if (header && this.race) {
@@ -800,6 +917,81 @@ class SlotRaceRealtimeRace extends HTMLElement {
     }
   }
 
+  getPilotCurrentLapElapsed(pid, now) {
+    if (
+      !this._sessionFirstLapMarked ||
+      !this._sessionFirstLapMarked[pid] ||
+      !this._sessionLapStartTime[pid]
+    ) {
+      return 0;
+    }
+    const baseTime =
+      this._state === "paused" && this._pauseTimeStart
+        ? this._pauseTimeStart
+        : now;
+    return Math.max(0, (baseTime - this._sessionLapStartTime[pid]) / 1000);
+  }
+
+  async saveRaceSessionData() {
+    if (!this.race) return;
+    this.race.raceSession = this.raceSession;
+
+    // Serialize active session state if in progress
+    if (
+      this._state === "paused" ||
+      this._state === "running" ||
+      this._state === "interval"
+    ) {
+      const timer = this.querySelector("slotrace-timer");
+      const remainingSeconds = timer ? timer.seconds : this._timePerLane;
+
+      const pilotCurrentLapElapsed = {};
+      const now = performance.now();
+      for (let l = 1; l <= this._lanesCount; l++) {
+        const pid = this._laneAssignments[l];
+        if (pid) {
+          pilotCurrentLapElapsed[pid] = this.getPilotCurrentLapElapsed(
+            pid,
+            now,
+          );
+        }
+      }
+
+      this.race.activeSessionState = {
+        state: "paused", // Always restore in paused state
+        pausedState: this._pausedState || this._state,
+        currentSessionIndex: this._currentSessionIndex,
+        laneAssignments: this._laneAssignments,
+        deckQueue: this._deckQueue,
+        completedLanes: this._completedLanes,
+        pilotStoppedZones: this._pilotStoppedZones,
+        pilotAccumulatedLapTime: this._pilotAccumulatedLapTime,
+        sessionLaps: this._sessionLaps,
+        sessionFirstLapMarked: this._sessionFirstLapMarked,
+        remainingSeconds: remainingSeconds,
+        pilotCurrentLapElapsed: pilotCurrentLapElapsed,
+      };
+    } else {
+      this.race.activeSessionState = null;
+    }
+
+    try {
+      const races = (await window.electronAPI.db.get("races")) || [];
+      const idx = races.findIndex((r) => r.id === this.race.id);
+      if (idx !== -1) {
+        races[idx].raceSession = this.raceSession;
+        races[idx].activeSessionState = this.race.activeSessionState;
+        await window.electronAPI.db.set("races", races);
+        console.log(
+          `[Database] Auto-saved race results and active state for ID: ${this.race.id}`,
+        );
+      }
+    } catch (err) {
+      console.error("Failed to auto-save race results:", err);
+    }
+    window.dispatchEvent(new CustomEvent("raceListChanged"));
+  }
+
   showModal() {
     const modalEl = this.querySelector("#modal-realtime-race");
     if (modalEl) {
@@ -809,10 +1001,15 @@ class SlotRaceRealtimeRace extends HTMLElement {
       }
 
       modalEl.addEventListener("hidden.bs.modal", () => {
+        if (this._state === "running" || this._state === "interval") {
+          this._pausedState = this._state;
+          this._state = "paused";
+        }
+        this.saveRaceSessionData();
+
         const timer = this.querySelector("slotrace-timer");
         if (timer) {
-          timer.stop();
-          timer.reset();
+          timer.pause();
         }
         const header = this.querySelector("slotrace-realtime-race-header");
         if (header) {
@@ -839,33 +1036,26 @@ class SlotRaceRealtimeRace extends HTMLElement {
             <slotrace-realtime-race-header></slotrace-realtime-race-header>
             
             <!-- Content area: 2 columns -->
-            <div class="modal-body flex-grow-1 p-0 d-flex overflow-hidden">
-              <div class="d-flex flex-row h-100 overflow-hidden w-100 p-3 gap-3">
-                
-                <!-- Left: Active Lanes Grid -->
-                <div class="d-flex flex-column flex-grow-1 overflow-y-auto pr-2" style="width: 65%; min-height: 0;">
-                  <slotrace-realtime-race-session class="flex-grow-1 d-flex flex-column"></slotrace-realtime-race-session>
-                </div>
+            <div class="modal-body d-flex flex-grow-1 p-0">
 
-                <!-- Right: Standings & Deck queue -->
-                <div class="d-flex flex-column overflow-y-auto px-1 border-start border-secondary-subtle flex-shrink-0" style="width: 35%; min-width: 380px; min-height: 0; padding-left: 15px !important;">
-                  
-                  <!-- Bateria info header -->
-                  <div class="d-flex align-items-center justify-content-between mb-3 bg-body-tertiary p-2.5 rounded border border-secondary-subtle">
-                    <span id="race-session-info-title" class="fw-bold text-white fs-5">AGUARDANDO INÍCIO</span>
-                    <div id="race-session-info-badge">
-                      <span class="badge bg-secondary text-light px-3 py-1.5 fw-bold rounded-pill text-uppercase">Aguardando</span>
-                    </div>
+              <!-- SESSION -->
+              <div class="d-flex flex-column flex-grow-1" style="width: 65%; min-height: 0;">
+                <slotrace-realtime-race-session class="h-100"></slotrace-realtime-race-session>
+              </div>
+
+              <!-- STANDINGS & DECK -->
+              <div class="d-flex flex-column overflow-y-auto px-1 border-start border-secondary-subtle flex-shrink-0" style="width: 35%; min-width: 380px; min-height: 0; padding-left: 15px !important;">
+                <!-- Bateria info header -->
+                <div class="d-flex align-items-center justify-content-between mb-3 bg-body-tertiary p-2.5 rounded border border-secondary-subtle">
+                  <span id="race-session-info-title" class="fw-bold text-white fs-5">AGUARDANDO INÍCIO</span>
+                  <div id="race-session-info-badge">
+                    <span class="badge bg-secondary text-light px-3 py-1.5 fw-bold rounded-pill text-uppercase">Aguardando</span>
                   </div>
-
-                  <!-- Standings Table section -->
-                  <slotrace-realtime-race-standings id="race-session-standings-component" class="flex-grow-1 mb-3" style="min-height: 0; display: flex; flex-direction: column;"></slotrace-realtime-race-standings>
-
-                  <!-- DECK queue section -->
-                  <slotrace-realtime-race-queue id="race-session-queue-component" class="mt-auto" style="min-height: 140px; display: flex; flex-direction: column;"></slotrace-realtime-race-queue>
-
                 </div>
-
+                <!-- Standings Table section -->
+                <slotrace-realtime-race-standings id="race-session-standings-component" class="flex-grow-1 mb-3" style="min-height: 0; display: flex; flex-direction: column;"></slotrace-realtime-race-standings>
+                <!-- DECK queue section -->
+                <slotrace-realtime-race-queue id="race-session-queue-component" class="mt-auto" style="min-height: 140px; display: flex; flex-direction: column;"></slotrace-realtime-race-queue>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
     this._laneAssignments = {};
     this._laneColors = [];
     this._sessionFirstLapMarked = {};
+    this._sessionLaps = {};
     this.raceSession = [];
     this.pilots = [];
     this.drivers = [];
@@ -15,6 +16,7 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
     laneAssignments,
     laneColors,
     sessionFirstLapMarked,
+    sessionLaps,
     raceSession,
     pilots,
     drivers,
@@ -24,6 +26,7 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
     this._laneAssignments = laneAssignments || {};
     this._laneColors = laneColors || [];
     this._sessionFirstLapMarked = sessionFirstLapMarked || {};
+    this._sessionLaps = sessionLaps || {};
     this.raceSession = raceSession || [];
     this.pilots = pilots || [];
     this.drivers = drivers || [];
@@ -34,11 +37,85 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
 
   render() {
     // 1. Active Lanes Grid cards
-    let laneCardsHtml = "";
-    let cardWidth = "100%";
-
+    const lanes = [];
     for (let laneNum = 1; laneNum <= this._lanesCount; laneNum++) {
       const pilotId = this._laneAssignments[laneNum];
+      lanes.push({ laneNum, pilotId });
+    }
+
+    const getSessionMetrics = (record, laps) => {
+      if (!record || !record.lapTimes || laps === 0) {
+        return {
+          best: Infinity,
+          last: null,
+          total: Infinity,
+        };
+      }
+      const sessionTimes = record.lapTimes.slice(-laps);
+      const validTimes = sessionTimes.filter((t) => (parseFloat(t) || 0) > 0);
+      const best = validTimes.length > 0 ? Math.min(...validTimes) : Infinity;
+      const last =
+        sessionTimes.length > 0 ? sessionTimes[sessionTimes.length - 1] : null;
+      const total = sessionTimes.reduce(
+        (sum, t) => sum + (parseFloat(t) || 0),
+        0,
+      );
+      return { best, last, total };
+    };
+
+    lanes.sort((a, b) => {
+      if (a.pilotId && !b.pilotId) return -1;
+      if (!a.pilotId && b.pilotId) return 1;
+      if (!a.pilotId && !b.pilotId) return a.laneNum - b.laneNum;
+
+      const lapsA =
+        this._sessionLaps && this._sessionLaps[a.pilotId] !== undefined
+          ? this._sessionLaps[a.pilotId]
+          : 0;
+      const lapsB =
+        this._sessionLaps && this._sessionLaps[b.pilotId] !== undefined
+          ? this._sessionLaps[b.pilotId]
+          : 0;
+
+      if (lapsA !== lapsB) {
+        return lapsB - lapsA;
+      }
+
+      const recordA = this.raceSession.find(
+        (r) => String(r.pilotId) === String(a.pilotId),
+      );
+      const recordB = this.raceSession.find(
+        (r) => String(r.pilotId) === String(b.pilotId),
+      );
+
+      const metricsA = getSessionMetrics(recordA, lapsA);
+      const metricsB = getSessionMetrics(recordB, lapsB);
+
+      if (metricsA.total !== metricsB.total) {
+        return metricsA.total - metricsB.total;
+      }
+
+      if (metricsA.best !== metricsB.best) {
+        return metricsA.best - metricsB.best;
+      }
+
+      return a.laneNum - b.laneNum;
+    });
+
+    this.innerHTML = `
+      <div id="lanes-container" class="d-flex flex-column flex-grow-1 h-100 overflow-y-auto">
+        <table class="table w-100 mb-0">
+          <th style="width: 25%;" class="text-center">Piloto</th>
+          <th style="width: 30%;" class="text-center">Última</th>
+          <th style="width: 30%;" class="text-center">Melhor</th>
+          <th style="width: 15%;" class="text-center">Voltas</th>
+        </table>
+      </div>
+    `;
+
+    const container = this.querySelector("#lanes-container");
+
+    lanes.forEach(({ laneNum, pilotId }) => {
       const laneColor = this._laneColors[laneNum - 1] || "#ffffff";
 
       if (pilotId) {
@@ -65,77 +142,35 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
         const record = this.raceSession.find(
           (r) => String(r.pilotId) === String(pilotId),
         );
-        const totalLaps = record ? record.laps : 0;
+        const currentSessionLaps =
+          this._sessionLaps && this._sessionLaps[pilotId] !== undefined
+            ? this._sessionLaps[pilotId]
+            : 0;
 
-        // Find best lap in this heat
+        const metrics = getSessionMetrics(record, currentSessionLaps);
         const bestTime =
-          record && record.bestLapTime > 0
-            ? record.bestLapTime.toFixed(4) + "s"
-            : "—";
+          metrics.best !== Infinity ? metrics.best.toFixed(4) : "—";
         const lastTime =
-          record && record.lapTimes.length > 0
-            ? record.lapTimes[record.lapTimes.length - 1].toFixed(4) + "s"
+          record && record.lapTimes && record.lapTimes.length > 0
+            ? record.lapTimes[record.lapTimes.length - 1].toFixed(4)
             : "—";
 
-        const hasFirstLap = this._sessionFirstLapMarked[pilotId];
-        const telemetryStatusHtml = hasFirstLap
-          ? `<span class="badge bg-success bg-opacity-10 text-success border border-success-subtle fw-semibold rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">Cronômetro Ativo</span>`
-          : `<span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle fw-semibold rounded-pill px-2 py-0.5" style="font-size: 0.72rem;">Aguardando 1ª Passagem</span>`;
-
-        laneCardsHtml += `
-          <div class="d-flex flex-column justify-content-between w-100 h-100">
-            <!-- Card Driver: Monospace telemetry indicators -->
-            <div class="flex-grow-1 row text-center mx-0 rounded p-2 border border-secondary-subtle" style="border-left: 10px solid ${laneColor} !important;">
-              <div class="col-4 border-end border-secondary-subtle px-1">
-                <!-- Card Middle: Pilot & Car info -->
-                <div class="d-flex align-items-center gap-3 my-2">
-                  <div class="rounded-circle overflow-hidden bg-body-secondary border border-secondary-subtle" style="width: 52px; height: 52px;">
-                  ${photoUrl ? `<img src="${photoUrl}" class="w-100 h-100 object-fit-cover">` : `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary"><i class="mdi mdi-account text-secondary fs-3"></i></div>`}
-                  </div>
-                  <div class="flex-grow-1 overflow-hidden">
-                  <div class="fw-bold text-body-emphasis fs-4 text-truncate">${pilotName}</div>
-                  <div class="text-body-secondary small fw-medium text-truncate" style="opacity: 0.85;">${carObj ? carObj.name : "Sem carro"}</div>
-                </div>
-              </div>
-              </div>  
-              <div class="col-2 border-end border-secondary-subtle px-1">
-                <div class="text-secondary small fw-semibold">VOLTAS</div>
-                <div class="fw-bold fs-2 text-white font-monospace">${totalLaps}</div>
-              </div>
-              <div class="col-2 border-end border-secondary-subtle px-1">
-                <div class="text-secondary small fw-semibold">ÚLTIMA</div>
-                <div id="lane-current-time-${laneNum}" class="fw-bold fs-4 text-warning font-monospace py-1" style="word-break: keep-all; white-space: nowrap;">${lastTime}</div>
-              </div>
-              <div class="col-2 border-end border-secondary-subtle px-1">
-                <div class="text-secondary small fw-semibold">MELHOR</div>
-                <div class="fw-bold fs-4 text-success font-monospace py-1" style="word-break: keep-all; white-space: nowrap;">${bestTime}</div>
-              </div>
-              <div class="col-2 px-1">
-                <button type="button" class="btn btn-lg btn-outline-secondary rounded-pill fw-bold" onclick="this.closest('slotrace-realtime-race-session').dispatchEvent(new CustomEvent('requestSimulateLap', { bubbles: true, detail: { laneNum: ${laneNum} } }))">
-                  <i class="mdi mdi-plus-circle"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
+        const card = document.createElement(
+          "slotrace-realtime-race-session-card",
+        );
+        card.setData({
+          laneNum,
+          laneColor,
+          pilotName,
+          photoUrl,
+          carName: carObj ? carObj.name : "Sem carro",
+          currentSessionLaps,
+          lastTime,
+          bestTime,
+        });
+        container.appendChild(card);
       }
-    }
-
-    this.innerHTML = `
-      <style>
-        .lane-card {
-          transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
-        .lane-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
-        }
-      </style>
-
-      <div class="d-flex flex-column gap-3 pb-3">
-        ${laneCardsHtml}
-      </div>
-    `;
+    });
   }
 }
 
