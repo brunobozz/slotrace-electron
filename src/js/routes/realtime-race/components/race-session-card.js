@@ -44,7 +44,7 @@ class SlotRaceRealtimeRaceSessionCard extends HTMLElement {
       "d-flex flex-column justify-content-between w-100 h-100 lane-card";
 
     this.innerHTML = `
-      <div class="flex-grow-1 d-flex align-items-center justify-content-between w-100 text-center mx-0 p-2 border-bottom border-secondary-subtle" style="border-left: 10px solid ${this._laneColor} !important;">
+      <div class="flex-grow-1 d-flex align-items-center justify-content-between w-100 text-center mx-0 px-2 border-bottom border-secondary-subtle" style="border-left: 10px solid ${this._laneColor} !important;">
         <table class="table table-lg table-borderless w-100 h-100 mb-0">
           <tr style="cursor: pointer;" id="tr-simulate-lap-${this._laneNum}">
             <td style="width:25%;" class="py-0 align-middle border-end border-secondary-subtle">
@@ -70,9 +70,7 @@ class SlotRaceRealtimeRaceSessionCard extends HTMLElement {
   }
 
   _bindEvents() {
-    const trSimulate = this.querySelector(
-      `#tr-simulate-lap-${this._laneNum}`,
-    );
+    const trSimulate = this.querySelector(`#tr-simulate-lap-${this._laneNum}`);
     if (trSimulate) {
       trSimulate.addEventListener("click", () => {
         this.dispatchEvent(
