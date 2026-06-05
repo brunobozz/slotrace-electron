@@ -58,7 +58,7 @@ class SlotRaceRealtimeRaceSessionCard extends HTMLElement {
                 </div>
               </div>
             </td>
-            <td style="width:30%; color: ${this._laneColor};" class="py-0 align-middle border-end border-secondary-subtle text-center font-monospace fw-bold display-2">${this._lastTime}</td>
+            <td id="lane-current-time-${this._laneNum}" style="width:30%; color: ${this._laneColor};" class="py-0 align-middle border-end border-secondary-subtle text-center font-monospace fw-bold display-2">${this._lastTime}</td>
             <td style="width:30%; color: ${this._laneColor};" class="py-0 align-middle border-end border-secondary-subtle text-center font-monospace fw-bold display-2">${this._bestTime}</td>
             <td style="width:15%; color: ${this._laneColor};" class="py-0 align-middle font-monospace fw-bold display-2">${this._currentSessionLaps}</td>
           </tr>
