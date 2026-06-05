@@ -1044,14 +1044,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
               </div>
 
               <!-- STANDINGS & DECK -->
-              <div class="d-flex flex-column overflow-y-auto px-1 border-start border-secondary-subtle flex-shrink-0" style="width: 35%; min-width: 380px; min-height: 0; padding-left: 15px !important;">
-                <!-- Bateria info header -->
-                <div class="d-flex align-items-center justify-content-between mb-3 bg-body-tertiary p-2.5 rounded border border-secondary-subtle">
-                  <span id="race-session-info-title" class="fw-bold text-white fs-5">AGUARDANDO INÍCIO</span>
-                  <div id="race-session-info-badge">
-                    <span class="badge bg-secondary text-light px-3 py-1.5 fw-bold rounded-pill text-uppercase">Aguardando</span>
-                  </div>
-                </div>
+              <div class="d-flex flex-column overflow-y-auto border-start border-secondary-subtle flex-shrink-0" style="width: 35%; min-width: 380px; min-height: 0; !important;">
                 <!-- Standings Table section -->
                 <slotrace-realtime-race-standings id="race-session-standings-component" class="flex-grow-1 mb-3" style="min-height: 0; display: flex; flex-direction: column;"></slotrace-realtime-race-standings>
                 <!-- DECK queue section -->

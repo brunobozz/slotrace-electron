@@ -88,15 +88,10 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
         (r) => String(r.pilotId) === String(b.pilotId),
       );
 
-      const metricsA = getSessionMetrics(recordA, lapsA);
-      const metricsB = getSessionMetrics(recordB, lapsB);
-
-      if (metricsA.total !== metricsB.total) {
-        return metricsA.total - metricsB.total;
-      }
-
-      if (metricsA.best !== metricsB.best) {
-        return metricsA.best - metricsB.best;
+      const zoneA = parseFloat(recordA?.finalZone) || 0;
+      const zoneB = parseFloat(recordB?.finalZone) || 0;
+      if (zoneA !== zoneB) {
+        return zoneB - zoneA;
       }
 
       return a.laneNum - b.laneNum;

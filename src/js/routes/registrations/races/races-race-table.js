@@ -95,8 +95,8 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
                 <th class="text-start" style="width: 20%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
                 <th class="text-start" style="width: 20%;">${window.t('registrations.modal.car_caps_label') || 'Carro'}</th>
                 <th style="width: 10%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
-                <th style="width: 15%;">TEMPO TOTAL</th>
-                <th class="text-end" style="width: 13%;">${window.t('registrations.modal.diff_label') || 'DIFERENÇA'}</th>
+                <th style="width: 10%;">ZONA</th>
+                <th class="text-end" style="width: 15%;">${window.t('registrations.modal.diff_label') || 'DIFERENÇA'}</th>
                 <th class="text-end" style="width: 12%;">MELHOR</th>
                 <th style="width: 5%;"></th>
               </tr>
@@ -205,19 +205,20 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         return lapsB - lapsA;
       }
 
-      const timeA = a.lapTimes ? a.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0) : 0;
-      const timeB = b.lapTimes ? b.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0) : 0;
-
-      if (timeA !== timeB) {
-        if (timeA === 0) return 1;
-        if (timeB === 0) return -1;
-        return timeA - timeB;
-      }
-
       const zoneA = parseFloat(a.finalZone) || 0;
       const zoneB = parseFloat(b.finalZone) || 0;
       if (zoneA !== zoneB) {
         return zoneB - zoneA;
+      }
+
+      // Tie breaker: qualifying best lap time (fastest first, zeros at bottom)
+      const qA = this.race.quali ? this.race.quali.find(q => String(q.pilotId) === String(a.pilotId)) : null;
+      const qB = this.race.quali ? this.race.quali.find(q => String(q.pilotId) === String(b.pilotId)) : null;
+      const qTimeA = qA && parseFloat(qA.bestLapTime) > 0 ? parseFloat(qA.bestLapTime) : Infinity;
+      const qTimeB = qB && parseFloat(qB.bestLapTime) > 0 ? parseFloat(qB.bestLapTime) : Infinity;
+
+      if (qTimeA !== qTimeB) {
+        return qTimeA - qTimeB;
       }
 
       const idxA = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === a.pilotId);
@@ -252,10 +253,6 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         positionHtml = `<span class="fw-bold text-secondary-emphasis" style="font-size: 0.85rem;">${index + 1}º</span>`;
       }
 
-      // Calculate total time
-      const totalTime = item.lapTimes ? item.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0) : 0;
-      const totalTimeStr = totalTime > 0 ? totalTime.toFixed(4) : '-';
-
       // Calculate difference
       let diffHtml = `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
       const currentLaps = parseInt(item.laps) || 0;
@@ -265,9 +262,6 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
           const lapsDiff = leaderLaps - currentLaps;
           const label = lapsDiff === 1 ? 'Volta' : 'Voltas';
           diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${lapsDiff} ${label}</span>`;
-        } else if (currentLaps === leaderLaps && totalTime > 0 && leaderTime > 0) {
-          const timeDiff = totalTime - leaderTime;
-          diffHtml = `<span class="diff-time-has fw-semibold label-race-diff" style="font-size: 1.05rem; font-family: monospace;">+${timeDiff.toFixed(4)}</span>`;
         }
       }
 
@@ -322,10 +316,10 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
           `}
         </td>
         <td class="align-middle">
-          <span class="fw-semibold text-body-emphasis label-race-laps" style="font-size: 0.95rem;">${item.laps}${item.finalZone > 0 ? ` (Z: ${item.finalZone})` : ""}</span>
+          <span class="fw-semibold text-body-emphasis label-race-laps" style="font-size: 0.95rem;">${item.laps}</span>
         </td>
         <td class="align-middle">
-          <span class="label-race-total-time ${totalTime > 0 ? 'fw-semibold text-body-emphasis font-monospace' : 'text-secondary'}" style="font-size: 0.95rem;">${totalTimeStr}</span>
+          <span class="label-race-zone fw-semibold ${item.finalZone > 0 ? 'text-body-emphasis' : 'text-secondary'}" style="font-size: 0.95rem;">${item.finalZone > 0 ? item.finalZone : "-"}</span>
         </td>
         <td class="align-middle text-end">
           ${diffHtml}
@@ -354,7 +348,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       `;
 
       const labelLaps = row.querySelector('.label-race-laps');
-      const labelTotalTime = row.querySelector('.label-race-total-time');
+      const labelZone = row.querySelector('.label-race-zone');
       const labelBestTime = row.querySelector('.label-race-best');
       const labelDiff = row.querySelector('.label-race-diff');
 
@@ -413,13 +407,9 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
 
         // Update row labels in real-time
         if (labelLaps) labelLaps.textContent = record.laps;
-        if (labelTotalTime) {
-          labelTotalTime.textContent = calcTotal > 0 ? calcTotal.toFixed(4) : '-';
-          if (calcTotal > 0) {
-            labelTotalTime.className = 'label-race-total-time fw-semibold text-body-emphasis font-monospace';
-          } else {
-            labelTotalTime.className = 'label-race-total-time text-secondary';
-          }
+        if (labelZone) {
+          labelZone.textContent = record.finalZone > 0 ? record.finalZone : '-';
+          labelZone.className = record.finalZone > 0 ? 'label-race-zone fw-semibold text-body-emphasis' : 'label-race-zone fw-semibold text-secondary';
         }
         if (labelBestTime) {
           labelBestTime.textContent = record.bestLapTime ? parseFloat(record.bestLapTime).toFixed(4) : '-';
@@ -435,10 +425,9 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
               const lbl = lapsDiff === 1 ? 'Volta' : 'Voltas';
               labelDiff.textContent = `+${lapsDiff} ${lbl}`;
               updateDiffStyles(true, false);
-            } else if (record.laps === leaderLaps && calcTotal > 0 && leaderTime > 0) {
-              const timeDiff = calcTotal - leaderTime;
-              labelDiff.textContent = `+${timeDiff.toFixed(4)}`;
-              updateDiffStyles(true, true);
+            } else {
+              labelDiff.textContent = '-';
+              updateDiffStyles(false, false);
             }
           }
         }
