@@ -2,6 +2,54 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 
+let SerialPort = null;
+let ReadlineParser = null;
+
+try {
+  const sp = require('serialport');
+  SerialPort = sp.SerialPort;
+  if (sp.ReadlineParser) {
+    ReadlineParser = sp.ReadlineParser;
+  } else {
+    ReadlineParser = require('@serialport/parser-readline').ReadlineParser;
+  }
+} catch (err) {
+  console.warn('[Serial] serialport module failed to load:', err.message);
+}
+
+let serialPortInstance = null;
+let mockInterval = null;
+let currentPortPath = null;
+let currentBaudRate = null;
+
+async function closeActivePort() {
+  if (mockInterval) {
+    clearInterval(mockInterval);
+    mockInterval = null;
+  }
+  if (serialPortInstance) {
+    return new Promise((resolve) => {
+      try {
+        if (serialPortInstance.isOpen) {
+          serialPortInstance.close(() => {
+            serialPortInstance = null;
+            resolve();
+          });
+        } else {
+          serialPortInstance = null;
+          resolve();
+        }
+      } catch (err) {
+        console.error('Error closing serial port:', err);
+        serialPortInstance = null;
+        resolve();
+      }
+    });
+  }
+  return Promise.resolve();
+}
+
+
 // Set user-facing and directory application name explicitly to SlotRace
 app.name = 'SlotRace';
 
@@ -135,6 +183,123 @@ app.whenReady().then(async () => {
     event.returnValue = app.getVersion();
   });
 
+  // Helper to notify renderer of status changes
+  function notifyStatusChanged(sender, status) {
+    if (sender && !sender.isDestroyed()) {
+      sender.send('serial-status-changed', {
+        status: status,
+        path: currentPortPath,
+        baudRate: currentBaudRate
+      });
+    }
+  }
+
+  // Register Serial IPC handlers
+  ipcMain.handle('serial-list-ports', async () => {
+    if (SerialPort) {
+      try {
+        const ports = await SerialPort.list();
+        return ports;
+      } catch (err) {
+        console.error('[Serial] Failed to list ports:', err);
+        return [];
+      }
+    } else {
+      console.warn('[Serial] SerialPort module not loaded. Cannot list ports.');
+      return [];
+    }
+  });
+
+  ipcMain.handle('serial-status', () => {
+    const status = serialPortInstance && serialPortInstance.isOpen ? 'connected' : (mockInterval ? 'connected' : 'disconnected');
+    return {
+      status,
+      path: currentPortPath,
+      baudRate: currentBaudRate
+    };
+  });
+
+  ipcMain.handle('serial-disconnect', async (event) => {
+    await closeActivePort();
+    notifyStatusChanged(event.sender, 'disconnected');
+    currentPortPath = null;
+    currentBaudRate = null;
+    return true;
+  });
+
+  ipcMain.handle('serial-connect', async (event, path, baudRate) => {
+    await closeActivePort();
+
+    currentPortPath = path;
+    currentBaudRate = baudRate;
+
+    if (path === 'SIMULAÇÃO') {
+      mockInterval = setInterval(() => {
+        if (event.sender && !event.sender.isDestroyed()) {
+          const mockEvents = [
+            `LANE:1;TIME:${(2.5 + Math.random() * 2).toFixed(4)}`,
+            `LANE:2;TIME:${(2.5 + Math.random() * 2).toFixed(4)}`,
+            `LANE:3;TIME:${(2.5 + Math.random() * 2).toFixed(4)}`,
+            `LANE:4;TIME:${(2.5 + Math.random() * 2).toFixed(4)}`,
+            `PING;STATUS:OK`
+          ];
+          const randEvent = mockEvents[Math.floor(Math.random() * mockEvents.length)];
+          event.sender.send('serial-data', randEvent);
+        }
+      }, 2000);
+
+      notifyStatusChanged(event.sender, 'connected');
+      return { success: true, mode: 'simulation' };
+    }
+
+    if (!SerialPort || !ReadlineParser) {
+      return { success: false, error: 'Módulo SerialPort nativo não carregado ou indisponível.' };
+    }
+
+    return new Promise((resolve) => {
+      try {
+        serialPortInstance = new SerialPort({
+          path: path,
+          baudRate: parseInt(baudRate) || 9600,
+          autoOpen: false
+        });
+
+        const parser = serialPortInstance.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+        parser.on('data', (data) => {
+          if (event.sender && !event.sender.isDestroyed()) {
+            event.sender.send('serial-data', data);
+          }
+        });
+
+        serialPortInstance.open((err) => {
+          if (err) {
+            console.error('[Serial] Error opening port:', err);
+            resolve({ success: false, error: err.message });
+          } else {
+            notifyStatusChanged(event.sender, 'connected');
+            resolve({ success: true, mode: 'hardware' });
+          }
+        });
+
+        serialPortInstance.on('close', () => {
+          notifyStatusChanged(event.sender, 'disconnected');
+        });
+
+        serialPortInstance.on('error', (err) => {
+          console.error('[Serial] Port error:', err);
+          if (event.sender && !event.sender.isDestroyed()) {
+            event.sender.send('serial-data', `[ERRO] ${err.message}`);
+          }
+        });
+
+      } catch (err) {
+        console.error('[Serial] Connection exception:', err);
+        resolve({ success: false, error: err.message });
+      }
+    });
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -142,4 +307,8 @@ app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', async () => {
+  await closeActivePort();
 });

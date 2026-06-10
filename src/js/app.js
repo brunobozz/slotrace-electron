@@ -255,5 +255,22 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('Failed to load theme configuration on startup:', err);
   });
 
+  // Global Serial Sensor listener
+  if (window.electronAPI && window.electronAPI.serial) {
+    window.electronAPI.serial.onData((data) => {
+      if (typeof data === 'string') {
+        const trimmed = data.trim();
+        // Match pattern F1, F2, F3, etc.
+        const match = trimmed.match(/^F(\d+)$/);
+        if (match) {
+          const lane = parseInt(match[1], 10);
+          window.dispatchEvent(new CustomEvent('serial-sensor-triggered', {
+            detail: { lane }
+          }));
+        }
+      }
+    });
+  }
+
   handleRoute();
 });
