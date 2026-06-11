@@ -104,11 +104,21 @@ class SlotRaceRealtimeRace extends HTMLElement {
       this.triggerLapForLane(laneNum);
     };
 
+    this._onSensorTriggered = (e) => {
+      const { lane } = e.detail;
+      if (this._state === "running") {
+        if (lane <= this._lanesCount) {
+          this.triggerLapForLane(lane);
+        }
+      }
+    };
+
     window.addEventListener("raceSessionStart", this._startListener);
     window.addEventListener("raceSessionPause", this._pauseListener);
     window.addEventListener("raceSessionResume", this._resumeListener);
     window.addEventListener("raceSessionReset", this._resetListener);
     window.addEventListener("raceConfigSaved", this._configSavedListener);
+    window.addEventListener("serial-sensor-triggered", this._onSensorTriggered);
     this.addEventListener("requestSimulateLap", this._simulateLapListener);
 
     // Keyboard telemetry triggers (Keys 1-8)
@@ -147,6 +157,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
     window.removeEventListener("raceSessionReset", this._resetListener);
     window.removeEventListener("raceConfigSaved", this._configSavedListener);
     window.removeEventListener("keydown", this._keydownListener);
+    window.removeEventListener("serial-sensor-triggered", this._onSensorTriggered);
     this.removeEventListener("requestSimulateLap", this._simulateLapListener);
   }
 
