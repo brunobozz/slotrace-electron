@@ -51,11 +51,6 @@ class SlotRaceRegistrations extends HTMLElement {
             <div id="subview-tracks" class="subview-section d-none fade-in">
               <slotrace-registrations-tracks></slotrace-registrations-tracks>
             </div>
-
-            <!-- Races Sub-view -->
-            <div id="subview-races" class="subview-section d-none fade-in">
-              <slotrace-registrations-races></slotrace-registrations-races>
-            </div>
           </div>
         </div>
       </div>
@@ -65,9 +60,11 @@ class SlotRaceRegistrations extends HTMLElement {
     this.updateSubRoute(this._activeSubRoute);
   }
 
-  // Method called to switch between internal subviews
   updateSubRoute(subRoute) {
     this._activeSubRoute = subRoute || "drivers";
+    if (this._activeSubRoute === "races") {
+      this._activeSubRoute = "drivers";
+    }
     const subviews = this.querySelectorAll(".subview-section");
 
     // Toggle active nested view visibility

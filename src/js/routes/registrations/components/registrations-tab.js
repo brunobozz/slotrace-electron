@@ -42,12 +42,6 @@ class SlotRaceRegistrationsTab extends HTMLElement {
             <span>${window.t("registrations.tracks")}</span>
           </a>
         </li>
-        <li class="nav-item" role="presentation">
-          <a class="nav-link d-flex align-items-center justify-content-center gap-2" id="subnav-races" href="#registrations/races" role="tab">
-            <i class="mdi mdi-flag-checkered fs-5"></i>
-            <span>${window.t("registrations.races")}</span>
-          </a>
-        </li>
       </ul>
     `;
 
@@ -60,24 +54,16 @@ class SlotRaceRegistrationsTab extends HTMLElement {
     const subnavDrivers = this.querySelector("#subnav-drivers");
     const subnavCars = this.querySelector("#subnav-cars");
     const subnavTracks = this.querySelector("#subnav-tracks");
-    const subnavRaces = this.querySelector("#subnav-races");
 
     if (subnavDrivers && subnavCars && subnavTracks) {
       subnavDrivers.classList.remove("active");
       subnavCars.classList.remove("active");
       subnavTracks.classList.remove("active");
-      if (subnavRaces) {
-        subnavRaces.classList.remove("active");
-      }
 
       if (activeSubRoute === "cars") {
         subnavCars.classList.add("active");
       } else if (activeSubRoute === "tracks") {
         subnavTracks.classList.add("active");
-      } else if (activeSubRoute === "races") {
-        if (subnavRaces) {
-          subnavRaces.classList.add("active");
-        }
       } else {
         subnavDrivers.classList.add("active");
       }

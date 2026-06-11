@@ -25,6 +25,11 @@ class SlotRaceSidebarMenu extends HTMLElement {
       route: "#dashboard",
     },
     {
+      name: "registrations.races",
+      icon: "mdi mdi-flag-checkered",
+      route: "#races",
+    },
+    {
       name: "navbar.registrations",
       icon: "mdi mdi-clipboard-text-outline",
       route: "#registrations",
