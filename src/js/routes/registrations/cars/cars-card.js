@@ -35,7 +35,7 @@ class SlotRaceRegistrationsCarsCard extends HTMLElement {
     const ownerName = ownerDriver ? (ownerDriver.nickname || ownerDriver.name) : '';
 
     this.innerHTML = `
-      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover">
+      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm">
         <div class="card-body p-3 d-flex flex-column justify-content-between">
           
           <!-- 16:9 Landscape Car Image -->

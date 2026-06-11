@@ -24,7 +24,7 @@ class SlotRaceRegistrationsDriversCard extends HTMLElement {
     const bestLapsCount = driver.best_laps !== undefined ? driver.best_laps : 0;
 
     this.innerHTML = `
-      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover">
+      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm">
         <div class="card-body p-3 d-flex flex-column justify-content-between">
           
           <!-- Top Section: Avatar + Driver Info -->

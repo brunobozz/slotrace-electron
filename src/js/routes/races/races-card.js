@@ -40,7 +40,7 @@ class SlotRaceRegistrationsRacesCard extends HTMLElement {
     const winnerName = race.winner || "";
 
     this.innerHTML = `
-      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover overflow-hidden">
+      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm overflow-hidden">
         
         <!-- Checkered Header Banner -->
         <div class="position-relative overflow-hidden" style="height: 50px; background: repeating-conic-gradient(#1a1a1a 0% 25%, #2d2d2d 0% 50%) 50% / 20px 20px;">

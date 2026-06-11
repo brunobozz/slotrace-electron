@@ -108,7 +108,7 @@ class SlotRaceRegistrationsTracksCard extends HTMLElement {
     }
 
     this.innerHTML = `
-      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm transition-hover">
+      <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm">
         <div class="card-body p-3 d-flex flex-column justify-content-between">
           
           <!-- 16:9 Widescreen Track Image -->
