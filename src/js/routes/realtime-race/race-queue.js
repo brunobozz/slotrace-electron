@@ -51,7 +51,8 @@ class SlotRaceRealtimeRaceQueue extends HTMLElement {
         })
         .join("");
     } else {
-      deckQueueHtml = `<div class="w-100 text-center py-2 text-secondary border border-dashed rounded border-secondary-subtle small fw-medium">Nenhum piloto no deck de espera.</div>`;
+      const noDriversText = window.t ? window.t("realtime_race.queue.no_drivers") : "Nenhum piloto no deck de espera.";
+      deckQueueHtml = `<div class="w-100 text-center py-2 text-secondary border border-dashed rounded border-secondary-subtle small fw-medium">${noDriversText}</div>`;
     }
 
     this.innerHTML = `

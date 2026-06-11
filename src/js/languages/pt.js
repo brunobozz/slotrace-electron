@@ -239,6 +239,11 @@ window.localeStrings.pt = {
       title: "TEMPOS DAS VOLTAS",
     },
   },
+  realtime_race: {
+    queue: {
+      no_drivers: "Nenhum piloto no deck de espera.",
+    },
+  },
   settings: {
     title: "Configurações",
     desc: "Configure as definições do seu sistema SlotRace offline e hardware conectado.",
