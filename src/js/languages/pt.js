@@ -272,6 +272,6 @@ window.localeStrings.pt = {
     },
   },
   footer: {
-    developed_by: "Desenv. por",
+    developed_by: "Desenvolvido por",
   },
 };
