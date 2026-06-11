@@ -115,10 +115,34 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       this.checkPendingChanges();
     };
 
+    this._listChangedListener = async () => {
+      if (!this.race) return;
+      const modalEl = this.querySelector("#modal-edit-race");
+      if (modalEl && modalEl.classList.contains("show")) {
+        try {
+          const races = (await window.electronAPI.db.get("races")) || [];
+          const updatedRace = races.find((r) => String(r.id) === String(this.race.id));
+          if (updatedRace) {
+            this.race.raceSession = updatedRace.raceSession || [];
+            this.race.quali = updatedRace.quali || [];
+            this.race.pilots = updatedRace.pilots || [];
+
+            this.populatePilots();
+
+            this.initialRaceSnapshot = this.getCurrentStateSnapshot();
+            this.checkPendingChanges();
+          }
+        } catch (err) {
+          console.error("Failed to reload race data on raceListChanged:", err);
+        }
+      }
+    };
+
     window.addEventListener("languageChanged", this._langListener);
     window.addEventListener("requestEditRaceName", this._editRequestListener);
     window.addEventListener("racePilotSelected", this._pilotSelectedListener);
     window.addEventListener("raceQualiUpdated", this._qualiUpdatedListener);
+    window.addEventListener("raceListChanged", this._listChangedListener);
   }
 
   disconnectedCallback() {
@@ -142,6 +166,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         "raceQualiUpdated",
         this._qualiUpdatedListener,
       );
+    }
+    if (this._listChangedListener) {
+      window.removeEventListener("raceListChanged", this._listChangedListener);
     }
   }
 
@@ -540,11 +567,16 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           opacity: 1 !important;
           pointer-events: auto !important;
         }
-
+        #form-edit-race {
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          overflow: hidden;
+        }
       </style>
 
       <div class="modal fade" id="modal-edit-race" tabindex="-1" aria-labelledby="modal-edit-race-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
           <div class="modal-content border-secondary-subtle">
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">

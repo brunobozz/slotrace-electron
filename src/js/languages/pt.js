@@ -180,6 +180,7 @@ window.localeStrings.pt = {
       date_label: "Data",
       laps_title: "Tempos das Voltas",
       add_lap_button: "Adicionar Volta",
+      zone_label: "Zona",
       no_laps_registered:
         'Nenhuma volta registrada para este piloto. Clique em "Adicionar Volta" para começar.',
       quali: {

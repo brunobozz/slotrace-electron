@@ -18,6 +18,9 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
     if (this._langListener) {
       window.removeEventListener("languageChanged", this._langListener);
     }
+    if (this._zoneTimeout) {
+      clearTimeout(this._zoneTimeout);
+    }
   }
 
   setParams(item, onChangeCallback, isPole) {
@@ -133,10 +136,18 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
           ${window.t("registrations.races_modal.laps_title") || "Tempos das Voltas"}
           <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem; font-family: monospace;">${this.item.lapTimes.length}</span>
         </span>
-        <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 fw-semibold shadow-sm">
-          <i class="mdi mdi-plus"></i>
-          ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <div class="input-group input-group-sm" style="width: 120px;">
+            <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
+              ${window.t("registrations.races_modal.zone_label") || "Zona"}
+            </span>
+            <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ''}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
+          </div>
+          <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 fw-semibold shadow-sm">
+            <i class="mdi mdi-plus"></i>
+            ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}
+          </button>
+        </div>
       </div>
       
       <div class="laps-list-container d-flex flex-wrap gap-2 align-items-center pt-2 px-1" id="laps-list-container">
@@ -202,6 +213,37 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         }
 
         lapsListContainer.appendChild(pill);
+      });
+    }
+
+    // Zone Input logic
+    const zoneInput = this.querySelector(`#input-zone-${this.item.pilotId}`);
+    if (zoneInput) {
+      const updateZone = (val) => {
+        this.item.finalZone = val;
+        if (this.onChangeCallback) {
+          this.onChangeCallback();
+        }
+      };
+
+      zoneInput.addEventListener("keyup", (e) => {
+        if (this._zoneTimeout) {
+          clearTimeout(this._zoneTimeout);
+        }
+        this._zoneTimeout = setTimeout(() => {
+          const val = parseFloat(e.target.value) || 0;
+          updateZone(val);
+        }, 1000);
+      });
+
+      zoneInput.addEventListener("change", (e) => {
+        if (this._zoneTimeout) {
+          clearTimeout(this._zoneTimeout);
+        }
+        const val = parseFloat(e.target.value) || 0;
+        if (this.item.finalZone !== val) {
+          updateZone(val);
+        }
       });
     }
 

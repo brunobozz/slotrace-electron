@@ -255,20 +255,22 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('Failed to load theme configuration on startup:', err);
   });
 
-  handleRoute();
-
-  // Temporary development auto-open for realtime-race modal
-  setTimeout(async () => {
-    try {
-      const races = await window.electronAPI.db.get('races');
-      if (races && races.length > 0) {
-        const targetRace = races.find(r => r.name && r.name.toLowerCase().includes("pai e filho")) || races[0];
-        window.dispatchEvent(new CustomEvent('requestGoRace', {
-          detail: { race: targetRace }
-        }));
+  // Global Serial Sensor listener
+  if (window.electronAPI && window.electronAPI.serial) {
+    window.electronAPI.serial.onData((data) => {
+      if (typeof data === 'string') {
+        const trimmed = data.trim();
+        // Match pattern F1, F2, F3, etc.
+        const match = trimmed.match(/^F(\d+)$/);
+        if (match) {
+          const lane = parseInt(match[1], 10);
+          window.dispatchEvent(new CustomEvent('serial-sensor-triggered', {
+            detail: { lane }
+          }));
+        }
       }
-    } catch (e) {
-      console.error("Failed to auto-open realtime-race:", e);
-    }
-  }, 800);
+    });
+  }
+
+  handleRoute();
 });

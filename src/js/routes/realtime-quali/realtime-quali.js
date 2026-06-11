@@ -37,6 +37,17 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._onConfigChanged = (e) => this._handleConfigChanged(e.detail);
     this._onShuffleOrder = () => this._handleShuffleOrder();
     this._onSelectTelemetryPilot = (e) => this._handleSelectTelemetryPilot(e);
+    this._onSensorTriggered = (e) => {
+      const { lane } = e.detail;
+      // Mark lap if we are qualifying and the triggered lane matches the configured session lane
+      if (
+        this._state === "qualifying" &&
+        this._currentPilotId &&
+        lane === parseInt(this._sessionConfig.lane, 10)
+      ) {
+        this._handleMarkLap();
+      }
+    };
 
     window.addEventListener("qualiSessionStart", this._onStart);
     window.addEventListener("qualiSessionPause", this._onPause);
@@ -47,6 +58,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.addEventListener("qualiConfigChanged", this._onConfigChanged);
     window.addEventListener("requestShuffleOrder", this._onShuffleOrder);
     window.addEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
+    window.addEventListener("serial-sensor-triggered", this._onSensorTriggered);
 
     // Running lap timer loop
     this._runningLoopActive = true;
@@ -67,6 +79,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener("qualiConfigChanged", this._onConfigChanged);
     window.removeEventListener("requestShuffleOrder", this._onShuffleOrder);
     window.removeEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
+    window.removeEventListener("serial-sensor-triggered", this._onSensorTriggered);
     if (this._autoSaveTimeout) {
       clearTimeout(this._autoSaveTimeout);
     }

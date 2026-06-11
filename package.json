@@ -1,6 +1,6 @@
 {
   "name": "slotrace",
-  "version": "0.1.31",
+  "version": "0.1.44",
   "description": "SlotRace Control Panel - offline application using Electron and Bootstrap 5",
   "main": "main.js",
   "scripts": {
@@ -18,6 +18,7 @@
     "electron": "^31.0.0"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47"
+    "@mdi/font": "^7.4.47",
+    "serialport": "^13.0.0"
   }
 }
