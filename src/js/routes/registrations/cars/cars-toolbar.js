@@ -4,10 +4,10 @@ class SlotRaceRegistrationsCarsToolbar extends HTMLElement {
     this.setupEvents();
 
     this._langListener = () => {
-      const searchVal = this.querySelector("#input-car-search")?.value || "";
+      const searchVal = this.querySelector("#car-search")?.value || "";
       this.render();
       this.setupEvents();
-      const input = this.querySelector("#input-car-search");
+      const input = this.querySelector("#car-search");
       if (input) {
         input.value = searchVal;
       }
@@ -25,12 +25,7 @@ class SlotRaceRegistrationsCarsToolbar extends HTMLElement {
     this.innerHTML = `
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
         <!-- Search Input Left -->
-        <div class="d-flex align-items-center form-control search-wrapper-cardless border border-secondary-subtle rounded" style="max-width: 300px; width: 100%;">
-          <span class="bg-transparent border-0 pe-1 ps-1">
-            <i class="mdi mdi-magnify fs-5"></i>
-          </span>
-          <input type="text" id="input-car-search" class="form-control bg-transparent border-0 text-body-emphasis ps-1 pe-3 py-2 flex-grow-1" placeholder="${window.t("registrations.search_car_placeholder") || "Pesquisar carro..."}" style="outline: none; box-shadow: none; border: 0px !important;">
-        </div>
+        <slotrace-search-input id="car-search" placeholder-key="registrations.search_car_placeholder" filter-event="carFilterChanged" style="width: 100%; max-width: 300px;"></slotrace-search-input>
 
         <!-- Action Button Right -->
         <button id="btn-new-car" class="btn btn-lg btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
@@ -42,22 +37,7 @@ class SlotRaceRegistrationsCarsToolbar extends HTMLElement {
   }
 
   setupEvents() {
-    const input = this.querySelector("#input-car-search");
     const btnNew = this.querySelector("#btn-new-car");
-
-    if (input) {
-      let debounceTimeout;
-      input.addEventListener("input", (e) => {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
-          window.dispatchEvent(
-            new CustomEvent("carFilterChanged", {
-              detail: { query: e.target.value },
-            }),
-          );
-        }, 1000);
-      });
-    }
 
     if (btnNew) {
       btnNew.addEventListener("click", () => {
