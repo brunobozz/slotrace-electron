@@ -35,7 +35,7 @@ class SlotRaceSidebar extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <aside class="d-flex flex-column align-items-stretch flex-shrink-0 text-white bg-body-tertiary border-end border-secondary-subtle h-100 p-4" style="width: 260px;">
+      <aside class="d-flex flex-column align-items-stretch flex-shrink-0 text-white bg-body-tertiary border-end border-secondary-subtle h-100 p-4" style="width: 300px;">
         <!-- Top: Logo -->
         <div class="d-flex flex-column mb-4">
           <slotrace-logo></slotrace-logo>
