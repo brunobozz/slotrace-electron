@@ -5,6 +5,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     this.editTrackRecordTime = "";
     this.editTrackRecordPilotId = "";
     this.initialStateSnapshot = "";
+    this._isCropping = false;
 
     this.render();
     this.setupEvents();
@@ -165,6 +166,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     // Restore the main modal when the crop modal is closed to prevent double backdrops/overlap
     if (cropModalEl) {
       cropModalEl.addEventListener("hidden.bs.modal", () => {
+        this._isCropping = false;
         const mainModalEl = this.querySelector("#modal-new-track");
         if (mainModalEl) {
           let mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
@@ -324,6 +326,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
 
       // Reset form and cache on modal hide
       modalEl.addEventListener("hidden.bs.modal", () => {
+        if (this._isCropping) return;
         form.reset();
         form.classList.remove("was-validated");
         this.trackPhotoBase64 = "";
@@ -370,6 +373,7 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
       if (mainModalEl) {
         const mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
         if (mainModalInstance) {
+          this._isCropping = true;
           mainModalInstance.hide();
         }
       }

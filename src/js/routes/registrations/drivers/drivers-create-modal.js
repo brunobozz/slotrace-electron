@@ -2,6 +2,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
   connectedCallback() {
     this.editDriverId = '';
     this.driverPhotoBase64 = '';
+    this._isCropping = false;
     
     this.render();
     this.setupEvents();
@@ -100,6 +101,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
     // Restore the main modal when the crop modal is closed to prevent double backdrops/overlap
     if (cropModalEl) {
       cropModalEl.addEventListener('hidden.bs.modal', () => {
+        this._isCropping = false;
         const mainModalEl = this.querySelector('#modal-new-driver');
         if (mainModalEl) {
           let mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
@@ -186,6 +188,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
 
       // Clear form inputs and photo preview cache when modal is closed
       modalEl.addEventListener('hidden.bs.modal', () => {
+        if (this._isCropping) return;
         form.reset();
         form.classList.remove('was-validated');
         this.driverPhotoBase64 = '';
@@ -224,6 +227,7 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
       if (mainModalEl) {
         const mainModalInstance = bootstrap.Modal.getInstance(mainModalEl);
         if (mainModalInstance) {
+          this._isCropping = true;
           mainModalInstance.hide();
         }
       }
