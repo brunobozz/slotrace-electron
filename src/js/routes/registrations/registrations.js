@@ -27,13 +27,6 @@ class SlotRaceRegistrations extends HTMLElement {
     this.innerHTML = `
       <div class="container pt-4 fade-in">
         
-        <!-- Navigation Tabs (Top) -->
-        <div class="row">
-          <div class="col-12">
-            <slotrace-registrations-tab></slotrace-registrations-tab>
-          </div>
-        </div>
-
         <!-- Active View Content -->
         <div class="row">
           <div class="col-12">

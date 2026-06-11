@@ -33,6 +33,23 @@ class SlotRaceSidebarMenu extends HTMLElement {
       name: "navbar.registrations",
       icon: "mdi mdi-clipboard-text-outline",
       route: "#registrations",
+      children: [
+        {
+          name: "registrations.drivers",
+          icon: "mdi mdi-account-outline",
+          route: "#registrations/drivers",
+        },
+        {
+          name: "registrations.cars",
+          icon: "mdi mdi-car-sports",
+          route: "#registrations/cars",
+        },
+        {
+          name: "registrations.tracks",
+          icon: "mdi mdi-road-variant",
+          route: "#registrations/tracks",
+        },
+      ],
     },
     {
       name: "navbar.settings",
@@ -44,24 +61,51 @@ class SlotRaceSidebarMenu extends HTMLElement {
   render() {
     this.innerHTML = `
     <div class="d-flex flex-column gap-2">
-      ${this.menu
-        .map(
-          (item) => `
-            <a 
-              class="btn text-primary d-flex align-items-center gap-2 py-2 px-3 fw-medium"
-              data-route="${item.route}"
-              href="${item.route}"
-            >
-              <i class="${item.icon} fs-5"></i>
-              <span>${window.t(item.name)}</span>
-            </a>
-          `,
-        )
-        .join("")}
+      ${this.menu.map((item) => this.renderMenuItem(item)).join("")}
     </div>
   `;
 
     this.updateActiveState();
+  }
+
+  renderMenuItem(item) {
+    const hasChildren = item.children?.length;
+
+    return `
+    <div class="d-flex flex-column gap-1">
+      <a 
+        class="btn text-primary d-flex align-items-center gap-2 py-2 px-3 fw-medium"
+        data-route="${item.route}"
+        href="${item.route}"
+      >
+        <i class="${item.icon} fs-5"></i>
+        <span>${window.t(item.name)}</span>
+      </a>
+
+      ${
+        hasChildren
+          ? `
+            <div class="d-flex flex-column gap-1 ms-4">
+              ${item.children.map((child) => this.renderSubmenuItem(child)).join("")}
+            </div>
+          `
+          : ""
+      }
+    </div>
+  `;
+  }
+
+  renderSubmenuItem(item) {
+    return `
+    <a 
+      class="btn text-primary d-flex align-items-center gap-2 py-2 px-3 fw-medium"
+      data-route="${item.route}"
+      href="${item.route}"
+    >
+      <i class="${item.icon} fs-6"></i>
+      <span>${window.t(item.name)}</span>
+    </a>
+  `;
   }
 
   updateActiveState() {
