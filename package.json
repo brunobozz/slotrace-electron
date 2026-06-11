@@ -1,6 +1,6 @@
 {
   "name": "slotrace",
-  "version": "0.1.44",
+  "version": "0.1.45",
   "description": "SlotRace Control Panel - offline application using Electron and Bootstrap 5",
   "main": "main.js",
   "scripts": {
@@ -14,6 +14,19 @@
   ],
   "author": "",
   "license": "ISC",
+  "build": {
+    "appId": "com.slotrace.control",
+    "productName": "SlotRace Control",
+    "win": {
+      "icon": "src/assets/icon.ico"
+    },
+    "mac": {
+      "icon": "src/assets/icon.icns"
+    },
+    "linux": {
+      "icon": "src/assets/icon.png"
+    }
+  },
   "devDependencies": {
     "electron": "^31.0.0"
   },
