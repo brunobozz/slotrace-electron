@@ -20,10 +20,10 @@
     <!-- Application Controller -->
     <script src="js/app.js" defer></script>
     <!-- JS Components -->
-    <script src="js/components/navbar.js" defer></script>
-    <script src="js/components/navbar-menu.js" defer></script>
+    <script src="js/components/sidebar.js" defer></script>
+    <script src="js/components/sidebar-menu.js" defer></script>
     <script src="js/components/header.js" defer></script>
-    <script src="js/components/footer.js" defer></script>
+    <script src="js/components/navbar-footer.js" defer></script>
     <script src="js/components/driver-pill.js" defer></script>
     <script src="js/components/logo.js" defer></script>
     <script src="js/components/timer.js" defer></script>
@@ -109,36 +109,36 @@
     <script src="js/routes/settings/preferences/preferences.js" defer></script>
     <script src="js/routes/settings/connections/connections.js" defer></script>
   </head>
-  <body>
-    <!-- Modular Navbar -->
-    <slotrace-navbar></slotrace-navbar>
+  <body class="d-flex flex-row overflow-hidden" style="height: 100vh; width: 100vw; margin: 0;">
+    <!-- Left Sidebar -->
+    <slotrace-sidebar class="h-100 flex-shrink-0"></slotrace-sidebar>
 
-    <!-- SPA Views -->
-    <main class="container-fluid px-4 flex-grow-1">
-      <!-- Dashboard View -->
-      <div id="view-dashboard" class="view-section">
-        <slotrace-dashboard></slotrace-dashboard>
-      </div>
+    <!-- Main Content wrapper -->
+    <div class="d-flex flex-column flex-grow-1 overflow-y-auto h-100">
+      <!-- SPA Views -->
+      <main class="container-fluid px-4 py-4 flex-grow-1">
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view-section">
+          <slotrace-dashboard></slotrace-dashboard>
+        </div>
 
-      <!-- Registrations View -->
-      <div id="view-registrations" class="view-section d-none">
-        <slotrace-registrations></slotrace-registrations>
-      </div>
+        <!-- Registrations View -->
+        <div id="view-registrations" class="view-section d-none">
+          <slotrace-registrations></slotrace-registrations>
+        </div>
 
-      <!-- Settings View -->
-      <div id="view-settings" class="view-section d-none">
-        <slotrace-settings></slotrace-settings>
-      </div>
-    </main>
+        <!-- Settings View -->
+        <div id="view-settings" class="view-section d-none">
+          <slotrace-settings></slotrace-settings>
+        </div>
+      </main>
+    </div>
 
     <!-- Realtime Quali Fullscreen (standalone component) -->
     <slotrace-realtime-quali></slotrace-realtime-quali>
 
     <!-- Realtime Race Fullscreen (standalone component) -->
     <slotrace-realtime-race></slotrace-realtime-race>
-
-    <!-- Modular Footer -->
-    <slotrace-footer class="d-block"></slotrace-footer>
 
     <!-- Local Bootstrap 5 JS -->
     <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
