@@ -1,28 +1,36 @@
 class SlotRaceSettingsInformations extends HTMLElement {
   connectedCallback() {
+    this._localLogo = ""; // Store Base64 string for the logo
     this.render();
+    this.setupEvents();
     
-    // Initialize input value asynchronously from the Node.js database on first load
-    const input = this.querySelector("#input-local-name");
-    if (input) {
-      window.electronAPI.db.get('settings').then(settings => {
-        if (settings && settings.local_name) {
-          input.value = settings.local_name;
+    // Initialize input values asynchronously from the Node.js database on first load
+    window.electronAPI.db.get('settings').then(settings => {
+      if (settings) {
+        const nameInput = this.querySelector("#input-local-name");
+        if (nameInput && settings.local_name) {
+          nameInput.value = settings.local_name;
         }
-      }).catch(err => {
-        console.error('Failed to load settings from database:', err);
-      });
-    }
+        if (settings.local_logo) {
+          this._localLogo = settings.local_logo;
+          this._updateLogoPreview();
+        }
+      }
+    }).catch(err => {
+      console.error('Failed to load settings from database:', err);
+    });
 
     this._langListener = () => {
-      const inputEl = this.querySelector("#input-local-name");
-      const currentVal = inputEl ? inputEl.value : '';
+      const nameInput = this.querySelector("#input-local-name");
+      const currentNameVal = nameInput ? nameInput.value : '';
       
       this.render();
+      this.setupEvents();
+      this._updateLogoPreview();
       
-      const newInputEl = this.querySelector("#input-local-name");
-      if (newInputEl) {
-        newInputEl.value = currentVal;
+      const newNameInput = this.querySelector("#input-local-name");
+      if (newNameInput) {
+        newNameInput.value = currentNameVal;
       }
     };
     window.addEventListener('languageChanged', this._langListener);
@@ -34,11 +42,54 @@ class SlotRaceSettingsInformations extends HTMLElement {
     }
   }
 
+  _updateLogoPreview() {
+    const previewContainer = this.querySelector("#logo-preview-container");
+    if (!previewContainer) return;
+
+    if (this._localLogo) {
+      previewContainer.innerHTML = `
+        <div class="position-relative d-inline-block border border-secondary-subtle rounded p-2 bg-dark-subtle mb-3">
+          <img src="${this._localLogo}" style="max-height: 100px; max-width: 200px; object-fit: contain;" alt="Preview Logo">
+          <button type="button" id="btn-remove-logo" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" title="Remover Logo">
+            <i class="mdi mdi-close" style="font-size: 12px; line-height: 1;"></i>
+          </button>
+        </div>
+      `;
+
+      // Bind remove logo action
+      const btnRemove = this.querySelector("#btn-remove-logo");
+      if (btnRemove) {
+        btnRemove.addEventListener("click", () => {
+          this._localLogo = "";
+          this._updateLogoPreview();
+          const fileInput = this.querySelector("#input-local-logo");
+          if (fileInput) {
+            fileInput.value = "";
+          }
+        });
+      }
+    } else {
+      previewContainer.innerHTML = `
+        <div class="text-secondary small mb-3 border border-secondary-subtle rounded p-3 text-center bg-dark-subtle" style="border-style: dashed !important; max-width: 200px;">
+          Nenhum logo customizado
+        </div>
+      `;
+    }
+  }
+
   render() {
     this.innerHTML = `
       <slotrace-settings-header title="${window.t('settings.menu.informations')}" icon="mdi-information-outline"></slotrace-settings-header>
       
       <form id="form-local-name" class="needs-validation fade-in" novalidate>
+        <!-- Club Logo Field -->
+        <div class="mb-4">
+          <label for="input-local-logo" class="form-label fw-semibold text-secondary small">Logo do Local (PNG transparente)</label>
+          <div id="logo-preview-container"></div>
+          <input type="file" id="input-local-logo" class="form-control p-2.5" accept="image/png">
+        </div>
+
+        <!-- Local Name Field -->
         <div class="mb-4">
           <label for="input-local-name" class="form-label fw-semibold text-secondary small">${window.t('settings.informations.local_name_label')}</label>
           <input type="text" class="form-control p-2.5" id="input-local-name" placeholder="${window.t('settings.informations.local_name_placeholder')}" required>
@@ -63,12 +114,34 @@ class SlotRaceSettingsInformations extends HTMLElement {
         </div>
       </div>
     `;
+    this._updateLogoPreview();
+  }
 
-    // Re-bind form submission and validation
+  setupEvents() {
     const form = this.querySelector("#form-local-name");
-    const input = this.querySelector("#input-local-name");
-    
-    if (form && input) {
+    const nameInput = this.querySelector("#input-local-name");
+    const fileInput = this.querySelector("#input-local-logo");
+
+    if (fileInput) {
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.type !== "image/png") {
+            alert("Por favor, selecione apenas imagens no formato PNG com fundo transparente.");
+            fileInput.value = "";
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            this._localLogo = event.target.result;
+            this._updateLogoPreview();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    if (form && nameInput) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (!form.checkValidity()) {
@@ -76,17 +149,19 @@ class SlotRaceSettingsInformations extends HTMLElement {
           return;
         }
 
-        const value = input.value.trim();
+        const nameValue = nameInput.value.trim();
         
         // Save asynchronously by merging with existing settings in local database
         window.electronAPI.db.get('settings').then(settings => {
           const updatedSettings = settings || {};
-          updatedSettings.local_name = value;
+          updatedSettings.local_name = nameValue;
+          updatedSettings.local_logo = this._localLogo; // Save Base64 logo
           return window.electronAPI.db.set('settings', updatedSettings);
         }).then(success => {
           if (success) {
-            // Dispatch custom event to notify navbar reatively
-            window.dispatchEvent(new CustomEvent('localNameChanged', { detail: value }));
+            // Dispatch custom events to notify sidebar/navbar reactively
+            window.dispatchEvent(new CustomEvent('localNameChanged', { detail: nameValue }));
+            window.dispatchEvent(new CustomEvent('localLogoChanged', { detail: this._localLogo }));
 
             // Premium visual feedback directly on the save button
             const btn = this.querySelector("#btn-save-location");
