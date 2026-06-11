@@ -423,6 +423,11 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         minIndex = idx + 1;
       }
     });
+
+    if (minTime > 0 && (record.bestLapTime === 0 || minTime < record.bestLapTime)) {
+      record.bestLapTimeSetAt = Date.now();
+    }
+
     record.bestLapTime = minTime;
     record.bestLapIndex = minIndex;
   }

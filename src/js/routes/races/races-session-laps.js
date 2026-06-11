@@ -23,10 +23,11 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
     }
   }
 
-  setParams(item, onChangeCallback, isPole) {
+  setParams(item, onChangeCallback, isPole, hideZone) {
     this.item = item;
     this.onChangeCallback = onChangeCallback;
     this.isPole = isPole || false;
+    this.hideZone = hideZone || false;
     this.render();
   }
 
@@ -137,12 +138,14 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
           <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem; font-family: monospace;">${this.item.lapTimes.length}</span>
         </span>
         <div class="d-flex align-items-center gap-2">
-          <div class="input-group input-group-sm" style="width: 120px;">
-            <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
-              ${window.t("registrations.races_modal.zone_label") || "Zona"}
-            </span>
-            <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ''}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
-          </div>
+          ${this.hideZone ? "" : `
+            <div class="input-group input-group-sm" style="width: 120px;">
+              <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
+                ${window.t("registrations.races_modal.zone_label") || "Zona"}
+              </span>
+              <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ''}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
+            </div>
+          `}
           <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 fw-semibold shadow-sm">
             <i class="mdi mdi-plus"></i>
             ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}

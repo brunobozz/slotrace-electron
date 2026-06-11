@@ -35,6 +35,7 @@ class QualiStandings extends HTMLElement {
     const title = window.t("realtime_quali.standings.title") || "STANDINGS";
 
     // Sort: lowest bestLapTime first; zeros go to bottom; among zeros preserve quali array order
+    // If times are identical, the tie-breaker is who did it first (earlier bestLapTimeSetAt wins)
     const sorted = [...this.quali].sort((a, b) => {
       const timeA = parseFloat(a.bestLapTime) || 0;
       const timeB = parseFloat(b.bestLapTime) || 0;
@@ -46,6 +47,20 @@ class QualiStandings extends HTMLElement {
       }
       if (timeA === 0) return 1;
       if (timeB === 0) return -1;
+      
+      if (timeA === timeB) {
+        const setAtA = a.bestLapTimeSetAt || 0;
+        const setAtB = b.bestLapTimeSetAt || 0;
+        if (setAtA !== setAtB) {
+          if (setAtA === 0) return 1;
+          if (setAtB === 0) return -1;
+          return setAtA - setAtB;
+        }
+        const idxA = this.quali.indexOf(a);
+        const idxB = this.quali.indexOf(b);
+        return idxA - idxB;
+      }
+      
       return timeA - timeB;
     });
 

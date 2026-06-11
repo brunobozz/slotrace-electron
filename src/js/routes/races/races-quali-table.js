@@ -192,6 +192,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
     }
 
     // Sort: lower bestLapTime wins (0/empty goes to the bottom, tied 0s sorted by inclusion order in racePilots)
+    // If times are identical, the tie-breaker is who did it first (earlier bestLapTimeSetAt wins)
     const sortedQuali = [...this.race.quali].sort((a, b) => {
       const timeA = parseFloat(a.bestLapTime) || 0;
       const timeB = parseFloat(b.bestLapTime) || 0;
@@ -203,6 +204,20 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       }
       if (timeA === 0) return 1;
       if (timeB === 0) return -1;
+      
+      if (timeA === timeB) {
+        const setAtA = a.bestLapTimeSetAt || 0;
+        const setAtB = b.bestLapTimeSetAt || 0;
+        if (setAtA !== setAtB) {
+          if (setAtA === 0) return 1;
+          if (setAtB === 0) return -1;
+          return setAtA - setAtB;
+        }
+        const idxA = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === a.pilotId);
+        const idxB = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === b.pilotId);
+        return idxA - idxB;
+      }
+      
       return timeA - timeB;
     });
 
@@ -371,6 +386,10 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
           }
         });
         
+        if (minTime > 0 && (record.bestLapTime === 0 || minTime < record.bestLapTime)) {
+          record.bestLapTimeSetAt = Date.now();
+        }
+        
         record.bestLapTime = minTime;
         record.bestLapIndex = minIndex;
 
@@ -405,7 +424,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
         const isPole = index === 0 && currentBest > 0;
         sessionLapsEl.setParams(item, () => {
           recalculateQualiMetrics(item);
-        }, isPole);
+        }, isPole, true); // true for hideZone
       }
 
       // Chevron Toggle Button Listener
@@ -495,6 +514,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
                 laps: 0,
                 bestLapIndex: 0,
                 bestLapTime: 0,
+                bestLapTimeSetAt: 0,
                 lapTimes: []
               }));
 

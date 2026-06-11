@@ -92,12 +92,12 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             <thead class="bg-body-secondary border-bottom border-secondary-subtle text-secondary small text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">
               <tr>
                 <th class="text-start" style="width: 8%;">POS</th>
-                <th class="text-start" style="width: 20%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
-                <th class="text-start" style="width: 20%;">${window.t('registrations.modal.car_caps_label') || 'Carro'}</th>
-                <th style="width: 10%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
-                <th style="width: 10%;">ZONA</th>
-                <th class="text-end" style="width: 15%;">${window.t('registrations.modal.diff_label') || 'DIFERENÇA'}</th>
-                <th class="text-end" style="width: 12%;">MELHOR</th>
+                 <th class="text-start" style="width: 20%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
+                 <th class="text-start" style="width: 20%;">${window.t('registrations.modal.car_caps_label') || 'Carro'}</th>
+                 <th style="width: 10%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
+                 <th style="width: 10%;">ZONA</th>
+                 <th class="text-center" style="width: 15%;">LÍDER</th>
+                 <th class="text-end" style="width: 12%;">MELHOR</th>
                 <th style="width: 5%;"></th>
               </tr>
             </thead>
@@ -221,6 +221,15 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         return qTimeA - qTimeB;
       }
 
+      // Tie-breaker for identical qualifying best lap times: who did it first
+      const setAtA = qA && qA.bestLapTimeSetAt || 0;
+      const setAtB = qB && qB.bestLapTimeSetAt || 0;
+      if (setAtA !== setAtB) {
+        if (setAtA === 0) return 1;
+        if (setAtB === 0) return -1;
+        return setAtA - setAtB;
+      }
+
       const idxA = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === a.pilotId);
       const idxB = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === b.pilotId);
       return idxA - idxB;
@@ -256,12 +265,27 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       // Calculate difference
       let diffHtml = `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
       const currentLaps = parseInt(item.laps) || 0;
+      const currentZone = parseFloat(item.finalZone) || 0;
 
-      if (index > 0 && currentLaps > 0 && leaderLaps > 0) {
-        if (currentLaps < leaderLaps) {
-          const lapsDiff = leaderLaps - currentLaps;
-          const label = lapsDiff === 1 ? 'Volta' : 'Voltas';
-          diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${lapsDiff} ${label}</span>`;
+      if (index > 0) {
+        const leaderZone = leader ? parseFloat(leader.finalZone) || 0 : 0;
+        const diffLaps = leaderLaps - currentLaps;
+        const hasLeaderZone = leaderZone > 0;
+
+        if (diffLaps === 0) {
+          if (hasLeaderZone) {
+            const diffZones = leaderZone - currentZone;
+            diffHtml = diffZones > 0 ? `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffZones}z</span>` : `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
+          } else {
+            diffHtml = `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
+          }
+        } else {
+          if (hasLeaderZone) {
+            const diffZones = leaderZone - currentZone;
+            diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffLaps}v / ${diffZones}z</span>`;
+          } else {
+            diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffLaps}v</span>`;
+          }
         }
       }
 
@@ -321,7 +345,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         <td class="align-middle">
           <span class="label-race-zone fw-semibold ${item.finalZone > 0 ? 'text-body-emphasis' : 'text-secondary'}" style="font-size: 0.95rem;">${item.finalZone > 0 ? item.finalZone : "-"}</span>
         </td>
-        <td class="align-middle text-end">
+        <td class="align-middle text-center">
           ${diffHtml}
         </td>
         <td class="align-middle text-end">
@@ -416,18 +440,38 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
           updateBestTimeStyles(!!record.bestLapTime);
         }
         if (labelDiff) {
-          if (index === 0 || record.laps === 0 || leaderLaps === 0) {
+          if (index === 0) {
             labelDiff.textContent = '-';
             updateDiffStyles(false, false);
           } else {
-            if (record.laps < leaderLaps) {
-              const lapsDiff = leaderLaps - record.laps;
-              const lbl = lapsDiff === 1 ? 'Volta' : 'Voltas';
-              labelDiff.textContent = `+${lapsDiff} ${lbl}`;
-              updateDiffStyles(true, false);
+            const currentZone = parseFloat(record.finalZone) || 0;
+            const leaderZone = leader ? parseFloat(leader.finalZone) || 0 : 0;
+            const diffLaps = leaderLaps - record.laps;
+            const hasLeaderZone = leaderZone > 0;
+
+            if (diffLaps === 0) {
+              if (hasLeaderZone) {
+                const diffZones = leaderZone - currentZone;
+                if (diffZones > 0) {
+                  labelDiff.textContent = `+${diffZones}z`;
+                  updateDiffStyles(true, false);
+                } else {
+                  labelDiff.textContent = '-';
+                  updateDiffStyles(false, false);
+                }
+              } else {
+                labelDiff.textContent = '-';
+                updateDiffStyles(false, false);
+              }
             } else {
-              labelDiff.textContent = '-';
-              updateDiffStyles(false, false);
+              if (hasLeaderZone) {
+                const diffZones = leaderZone - currentZone;
+                labelDiff.textContent = `+${diffLaps}v / ${diffZones}z`;
+                updateDiffStyles(true, false);
+              } else {
+                labelDiff.textContent = `+${diffLaps}v`;
+                updateDiffStyles(true, false);
+              }
             }
           }
         }
