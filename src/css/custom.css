@@ -144,8 +144,8 @@ body {
 /* Sidebar Custom Styling */
 slotrace-sidebar {
   display: block;
-  width: 260px;
-  min-width: 260px;
+  width: 300px;
+  min-width: 300px;
   height: 100%;
 }
 
