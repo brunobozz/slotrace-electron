@@ -94,10 +94,11 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
                 <th class="text-start" style="width: 8%;">POS</th>
                  <th class="text-start" style="width: 20%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
                  <th class="text-start" style="width: 20%;">${window.t('registrations.modal.car_caps_label') || 'Carro'}</th>
-                 <th style="width: 10%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
-                 <th style="width: 10%;">ZONA</th>
-                 <th class="text-center" style="width: 15%;">LÍDER</th>
-                 <th class="text-end" style="width: 12%;">MELHOR</th>
+                 <th style="width: 8%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
+                 <th style="width: 8%;">ZONA</th>
+                 <th class="text-center" style="width: 13%;">LÍDER</th>
+                 <th class="text-center" style="width: 13%;">RELATIVO</th>
+                 <th class="text-end" style="width: 10%;">MELHOR</th>
                 <th style="width: 5%;"></th>
               </tr>
             </thead>
@@ -264,6 +265,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
 
       // Calculate difference
       let diffHtml = `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
+      let relativeHtml = `<span class="text-secondary label-race-relative" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
       const currentLaps = parseInt(item.laps) || 0;
       const currentZone = parseFloat(item.finalZone) || 0;
 
@@ -280,12 +282,25 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             diffHtml = `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           }
         } else {
-          if (hasLeaderZone) {
-            const diffZones = leaderZone - currentZone;
-            diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffLaps}v / ${diffZones}z</span>`;
+          diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffLaps}v</span>`;
+        }
+
+        // Relative calculation
+        const pilotAhead = sortedRace[index - 1];
+        const lapsAhead = parseInt(pilotAhead.laps) || 0;
+        const zoneAhead = parseFloat(pilotAhead.finalZone) || 0;
+        const diffLapsAhead = lapsAhead - currentLaps;
+        const hasAheadZone = zoneAhead > 0;
+
+        if (diffLapsAhead === 0) {
+          if (hasAheadZone) {
+            const diffZonesAhead = zoneAhead - currentZone;
+            relativeHtml = diffZonesAhead > 0 ? `<span class="text-secondary-emphasis fw-semibold label-race-relative" style="font-size: 0.95rem;">+${diffZonesAhead}z</span>` : `<span class="text-secondary label-race-relative" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           } else {
-            diffHtml = `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffLaps}v</span>`;
+            relativeHtml = `<span class="text-secondary label-race-relative" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           }
+        } else {
+          relativeHtml = `<span class="text-secondary-emphasis fw-semibold label-race-relative" style="font-size: 0.95rem;">+${diffLapsAhead}v</span>`;
         }
       }
 
@@ -348,6 +363,9 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         <td class="align-middle text-center">
           ${diffHtml}
         </td>
+        <td class="align-middle text-center">
+          ${relativeHtml}
+        </td>
         <td class="align-middle text-end">
           ${bestTimeHtml}
         </td>
@@ -362,7 +380,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       accordionRow.id = `race-laps-row-${item.pilotId}`;
       accordionRow.className = `laps-accordion-row ${isExpanded ? '' : 'd-none'}`;
       accordionRow.innerHTML = `
-        <td colspan="8" class="p-0 text-start">
+        <td colspan="9" class="p-0 text-start">
           <div class="laps-collapse-container" style="overflow: hidden; transition: max-height 0.2s ease-out, opacity 0.2s ease-out; ${isExpanded ? 'max-height: none; opacity: 1;' : 'max-height: 0px; opacity: 0;'}">
             <div class="p-3">
               <slotrace-registrations-races-session-laps id="race-session-laps-${item.pilotId}"></slotrace-registrations-races-session-laps>
@@ -375,6 +393,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       const labelZone = row.querySelector('.label-race-zone');
       const labelBestTime = row.querySelector('.label-race-best');
       const labelDiff = row.querySelector('.label-race-diff');
+      const labelRelative = row.querySelector('.label-race-relative');
 
       const updateBestTimeStyles = (hasValue) => {
         if (!labelBestTime) return;
@@ -405,6 +424,22 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         } else {
           labelDiff.className = 'text-secondary label-race-diff';
           labelDiff.style.fontFamily = 'inherit';
+        }
+      };
+
+      const updateRelativeStyles = (hasValue, isTimeDiff) => {
+        if (!labelRelative) return;
+        if (hasValue) {
+          if (isTimeDiff) {
+            labelRelative.className = 'diff-time-has fw-semibold label-race-relative';
+            labelRelative.style.fontFamily = 'monospace';
+          } else {
+            labelRelative.className = 'text-secondary-emphasis fw-semibold label-race-relative';
+            labelRelative.style.fontFamily = 'inherit';
+          }
+        } else {
+          labelRelative.className = 'text-secondary label-race-relative';
+          labelRelative.style.fontFamily = 'inherit';
         }
       };
 
@@ -464,14 +499,41 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
                 updateDiffStyles(false, false);
               }
             } else {
-              if (hasLeaderZone) {
-                const diffZones = leaderZone - currentZone;
-                labelDiff.textContent = `+${diffLaps}v / ${diffZones}z`;
-                updateDiffStyles(true, false);
+              labelDiff.textContent = `+${diffLaps}v`;
+              updateDiffStyles(true, false);
+            }
+          }
+        }
+
+        if (labelRelative) {
+          if (index === 0) {
+            labelRelative.textContent = '-';
+            updateRelativeStyles(false, false);
+          } else {
+            const currentZone = parseFloat(record.finalZone) || 0;
+            const pilotAhead = sortedRace[index - 1];
+            const lapsAhead = parseInt(pilotAhead.laps) || 0;
+            const zoneAhead = parseFloat(pilotAhead.finalZone) || 0;
+            const diffLapsAhead = lapsAhead - record.laps;
+            const hasAheadZone = zoneAhead > 0;
+
+            if (diffLapsAhead === 0) {
+              if (hasAheadZone) {
+                const diffZonesAhead = zoneAhead - currentZone;
+                if (diffZonesAhead > 0) {
+                  labelRelative.textContent = `+${diffZonesAhead}z`;
+                  updateRelativeStyles(true, false);
+                } else {
+                  labelRelative.textContent = '-';
+                  updateRelativeStyles(false, false);
+                }
               } else {
-                labelDiff.textContent = `+${diffLaps}v`;
-                updateDiffStyles(true, false);
+                labelRelative.textContent = '-';
+                updateRelativeStyles(false, false);
               }
+            } else {
+              labelRelative.textContent = `+${diffLapsAhead}v`;
+              updateRelativeStyles(true, false);
             }
           }
         }
