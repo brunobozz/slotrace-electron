@@ -19,7 +19,7 @@ class SlotRaceRegistrationsRaces extends HTMLElement {
 
   render() {
     this.innerHTML = `
-    <div class="container pt-4 fade-in">  
+    <div>  
       <!-- Toolbar Component (Search + Add) -->
       <slotrace-registrations-races-toolbar class="d-block mb-3"></slotrace-registrations-races-toolbar>
 

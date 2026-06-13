@@ -25,26 +25,20 @@ class SlotRaceRegistrations extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <div class="container pt-4 fade-in">
+      <div>
+        <!-- Drivers Sub-view -->
+        <div id="subview-drivers" class="subview-section fade-in">
+          <slotrace-registrations-drivers></slotrace-registrations-drivers>
+        </div>
         
-        <!-- Active View Content -->
-        <div class="row">
-          <div class="col-12">
-            <!-- Drivers Sub-view -->
-            <div id="subview-drivers" class="subview-section fade-in">
-              <slotrace-registrations-drivers></slotrace-registrations-drivers>
-            </div>
-            
-            <!-- Cars Sub-view -->
-            <div id="subview-cars" class="subview-section d-none fade-in">
-              <slotrace-registrations-cars></slotrace-registrations-cars>
-            </div>
-            
-            <!-- Tracks Sub-view -->
-            <div id="subview-tracks" class="subview-section d-none fade-in">
-              <slotrace-registrations-tracks></slotrace-registrations-tracks>
-            </div>
-          </div>
+        <!-- Cars Sub-view -->
+        <div id="subview-cars" class="subview-section d-none fade-in">
+          <slotrace-registrations-cars></slotrace-registrations-cars>
+        </div>
+        
+        <!-- Tracks Sub-view -->
+        <div id="subview-tracks" class="subview-section d-none fade-in">
+          <slotrace-registrations-tracks></slotrace-registrations-tracks>
         </div>
       </div>
     `;

@@ -204,8 +204,12 @@ window.recalculateDriversRacesCount = function () {
     window.electronAPI.db.get("drivers"),
   ])
     .then(([races, drivers]) => {
+      if (!drivers) {
+        console.warn("recalculateDriversRacesCount: drivers list is null or undefined. Aborting update to prevent data loss.");
+        return;
+      }
       const racesList = races || [];
-      const driversList = drivers || [];
+      const driversList = drivers;
 
       driversList.forEach((driver) => {
         const count = racesList.filter((race) => {

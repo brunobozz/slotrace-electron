@@ -2,6 +2,22 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 
+let mainWindow = null;
+
+// Enforce single instance lock to prevent concurrent database access and corruption
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // Focus the existing window if a second instance is launched
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+
 let SerialPort = null;
 let ReadlineParser = null;
 
@@ -67,7 +83,9 @@ async function initDatabase() {
       // Old database exists! Copy it over to the new path.
       await fs.mkdir(path.dirname(dbPath), { recursive: true });
       const oldData = await fs.readFile(oldDbPath, 'utf8');
-      await fs.writeFile(dbPath, oldData, 'utf8');
+      const tmpPath = dbPath + '.tmp';
+      await fs.writeFile(tmpPath, oldData, 'utf8');
+      await fs.rename(tmpPath, dbPath);
       console.log('[Migration] Database successfully migrated from slotrace-electron to SlotRace!');
       return;
     } catch (migrateErr) {
@@ -84,7 +102,9 @@ async function initDatabase() {
     };
     try {
       await fs.mkdir(path.dirname(dbPath), { recursive: true });
-      await fs.writeFile(dbPath, JSON.stringify(defaultData, null, 2), 'utf8');
+      const tmpPath = dbPath + '.tmp';
+      await fs.writeFile(tmpPath, JSON.stringify(defaultData, null, 2), 'utf8');
+      await fs.rename(tmpPath, dbPath);
       console.log('Database initialized successfully at:', dbPath);
     } catch (writeErr) {
       console.error('Failed to initialize database file:', writeErr);
@@ -93,7 +113,7 @@ async function initDatabase() {
 }
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
     icon: path.join(__dirname, 'src', 'assets', 'icon.png'),
@@ -151,33 +171,32 @@ app.whenReady().then(async () => {
         return db[key];
       } catch (err) {
         console.error('Error reading database key:', key, err);
-        return null;
+        throw err;
       }
-    }).catch(err => {
-      console.error('Database queue error on get:', err);
-      return null;
     });
-    dbQueue = nextOp.then(() => {}); // advance the queue
+    dbQueue = nextOp.catch(() => {}); // advance the queue even on error
     return nextOp;
   });
 
   ipcMain.handle('db-set', (event, key, value) => {
     const nextOp = dbQueue.then(async () => {
+      const tmpPath = dbPath + '.tmp';
       try {
         const data = await fs.readFile(dbPath, 'utf8');
         const db = JSON.parse(data);
         db[key] = value;
-        await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf8');
+        await fs.writeFile(tmpPath, JSON.stringify(db, null, 2), 'utf8');
+        await fs.rename(tmpPath, dbPath);
         return true;
       } catch (err) {
         console.error('Error writing database key:', key, err);
-        return false;
+        try {
+          await fs.unlink(tmpPath);
+        } catch (_) {}
+        throw err;
       }
-    }).catch(err => {
-      console.error('Database queue error on set:', err);
-      return false;
     });
-    dbQueue = nextOp.then(() => {}); // advance the queue
+    dbQueue = nextOp.catch(() => {}); // advance the queue even on error
     return nextOp;
   });
 
