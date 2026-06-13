@@ -3,6 +3,7 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
     super();
     this.race = null;
     this.tracks = [];
+    this.selectedTrackId = "";
   }
 
   connectedCallback() {
@@ -17,18 +18,35 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
       }
     };
 
+    this._trackSelectedListener = (e) => {
+      const { trackId } = e.detail;
+      this.selectedTrackId = trackId || "";
+      this.renderTrackPreview();
+      this.dispatchEvent(
+        new CustomEvent("raceFormInput", {
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    };
+
     window.addEventListener("languageChanged", this._langListener);
+    window.addEventListener("raceTrackSelected", this._trackSelectedListener);
   }
 
   disconnectedCallback() {
     if (this._langListener) {
       window.removeEventListener("languageChanged", this._langListener);
     }
+    if (this._trackSelectedListener) {
+      window.removeEventListener("raceTrackSelected", this._trackSelectedListener);
+    }
   }
 
   setParams(race, tracks) {
     this.race = race;
     this.tracks = tracks || [];
+    this.selectedTrackId = race ? race.trackId || "" : "";
     this.render();
     this.setupEvents();
     this.populateForm();
@@ -49,32 +67,8 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
       nameInput.value = this.race.name || "";
     }
 
-    // Populate track options
-    const trackSelect = this.querySelector("#select-race-edit-track");
-    if (trackSelect) {
-      trackSelect.innerHTML = "";
-
-      // Default option
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent =
-        window.t("registrations.default_track") || "Pista Padrão";
-      trackSelect.appendChild(defaultOption);
-
-      this.tracks.forEach((track) => {
-        const option = document.createElement("option");
-        option.value = track.id;
-        option.textContent = track.name;
-        trackSelect.appendChild(option);
-      });
-
-      // Select active track
-      if (this.race.trackId) {
-        trackSelect.value = this.race.trackId;
-      } else {
-        trackSelect.value = "";
-      }
-    }
+    // Render track selection preview
+    this.renderTrackPreview();
 
     // Populate date field
     const dateInput = this.querySelector("#input-race-edit-date");
@@ -86,6 +80,40 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
     }
   }
 
+  renderTrackPreview() {
+    const previewContainer = this.querySelector("#track-selector-preview");
+    if (!previewContainer) return;
+
+    const trackObj = this.tracks.find(
+      (t) => String(t.id) === String(this.selectedTrackId),
+    );
+
+    if (trackObj) {
+      const photoUrl = trackObj.photo || "";
+      previewContainer.innerHTML = `
+        ${
+          photoUrl
+            ? `<img src="${photoUrl}" class="w-100 h-100 object-fit-cover" style="transition: transform 0.2s ease;">`
+            : `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
+                 <i class="mdi mdi-go-kart-track text-secondary" style="font-size: 48px;"></i>
+               </div>`
+        }
+        <div class="position-absolute bottom-0 start-0 w-100 bg-black bg-opacity-75 text-white p-2 text-center text-truncate small fw-semibold" style="border-top: 1px solid rgba(255,255,255,0.15);">
+          ${trackObj.name}
+        </div>
+      `;
+    } else {
+      previewContainer.innerHTML = `
+        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-secondary gap-1 p-3">
+          <i class="mdi mdi-plus-circle-outline" style="font-size: 32px; line-height: 1;"></i>
+          <span class="small fw-semibold text-center" style="font-size: 0.8rem;">
+            ${window.t("registrations.default_track") || "Selecionar Pista"}
+          </span>
+        </div>
+      `;
+    }
+  }
+
   getValues() {
     const typeSelect = this.querySelector("#select-race-edit-type");
     const type = typeSelect ? typeSelect.value : "grand_prix";
@@ -93,8 +121,7 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
     const nameInput = this.querySelector("#input-race-edit-name");
     const name = nameInput ? nameInput.value.trim() : "";
 
-    const trackSelect = this.querySelector("#select-race-edit-track");
-    const trackId = trackSelect ? trackSelect.value : "";
+    const trackId = this.selectedTrackId || "";
 
     const dateInput = this.querySelector("#input-race-edit-date");
     let date = (this.race && this.race.date) || new Date().toISOString();
@@ -134,10 +161,33 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
         );
       });
     });
+
+    const preview = this.querySelector("#track-selector-preview");
+    if (preview) {
+      preview.addEventListener("click", () => {
+        window.dispatchEvent(
+          new CustomEvent("requestOpenSelectTrack", {
+            detail: {
+              tracks: this.tracks,
+              selectedTrackId: this.selectedTrackId,
+            },
+          }),
+        );
+      });
+    }
   }
 
   render() {
     this.innerHTML = `
+      <style>
+        #track-selector-preview:hover {
+          border-color: var(--bs-primary) !important;
+        }
+        #track-selector-preview:hover img {
+          transform: scale(1.03);
+        }
+      </style>
+
       <!-- Tipo -->
       <div>
         <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
@@ -156,22 +206,22 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
         <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
       </div>
 
-      <!-- Pista -->
-      <div>
-        <label for="select-race-edit-track" class="form-label fw-semibold text-secondary small">
-          ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
-        </label>
-        <select id="select-race-edit-track" class="form-select">
-          <!-- Options loaded dynamically -->
-        </select>
-      </div>
-
       <!-- Data -->
       <div>
         <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
           ${window.t("registrations.races_modal.date_label") || "Data"}
         </label>
         <input type="date" id="input-race-edit-date" class="form-control" required>
+      </div>
+
+      <!-- Pista -->
+      <div>
+        <label class="form-label fw-semibold text-secondary small mb-1.5">
+          ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
+        </label>
+        <div id="track-selector-preview" class="border border-secondary-subtle rounded-3 bg-body-secondary overflow-hidden position-relative shadow-sm" style="aspect-ratio: 16/9; cursor: pointer; transition: border-color 0.2s ease;">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
     `;
   }

@@ -34,6 +34,9 @@ class SlotRaceRegistrationsRaces extends HTMLElement {
 
       <!-- Add Pilot Mini Modal -->
       <slotrace-registrations-races-add-pilot-modal></slotrace-registrations-races-add-pilot-modal>
+
+      <!-- Select Track Mini Modal -->
+      <slotrace-registrations-races-add-track-modal></slotrace-registrations-races-add-track-modal>
     </div>`;
   }
 
