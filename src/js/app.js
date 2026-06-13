@@ -43,6 +43,8 @@ window.applyMainColor = function (hexColor) {
       --bs-btn-active-bg: ${activeHex} !important;
       --bs-btn-active-border-color: ${activeHex} !important;
       --bs-btn-focus-shadow-rgb: ${r}, ${g}, ${b} !important;
+      --bs-btn-disabled-bg: var(--bs-primary) !important;
+      --bs-btn-disabled-border-color: var(--bs-primary) !important;
     }
   `;
 };

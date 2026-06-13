@@ -25,6 +25,21 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       if (!this.race.quali) this.race.quali = [];
       if (!this.race.raceSession) this.race.raceSession = [];
 
+      // Clear expanded pilot drawers when loading a new race edit request
+      const qualiTableComponent = this.querySelector(
+        "#race-edit-quali-table-component",
+      );
+      if (qualiTableComponent && typeof qualiTableComponent.collapseAll === "function") {
+        qualiTableComponent.collapseAll();
+      }
+
+      const raceTableComponent = this.querySelector(
+        "#race-edit-race-table-component",
+      );
+      if (raceTableComponent && typeof raceTableComponent.collapseAll === "function") {
+        raceTableComponent.collapseAll();
+      }
+
       // Load tracks, drivers, and cars from the DB first, then populate the dropdowns
       Promise.all([
         window.electronAPI.db.get("tracks"),
@@ -121,7 +136,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       if (modalEl && modalEl.classList.contains("show")) {
         try {
           const races = (await window.electronAPI.db.get("races")) || [];
-          const updatedRace = races.find((r) => String(r.id) === String(this.race.id));
+          const updatedRace = races.find(
+            (r) => String(r.id) === String(this.race.id),
+          );
           if (updatedRace) {
             this.race.raceSession = updatedRace.raceSession || [];
             this.race.quali = updatedRace.quali || [];
@@ -131,6 +148,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
             this.initialRaceSnapshot = this.getCurrentStateSnapshot();
             this.checkPendingChanges();
+          } else {
+            // The race was deleted from the DB, close the edit modal now
+            this.closeEditModal();
           }
         } catch (err) {
           console.error("Failed to reload race data on raceListChanged:", err);
@@ -347,6 +367,26 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     const trackSelect = this.querySelector("#select-race-edit-track");
 
     if (form && modalEl) {
+      // Clear expanded pilot drawers when modal closes
+      const handleModalClose = () => {
+        const qualiTableComponent = this.querySelector(
+          "#race-edit-quali-table-component",
+        );
+        if (qualiTableComponent && typeof qualiTableComponent.collapseAll === "function") {
+          qualiTableComponent.collapseAll();
+        }
+
+        const raceTableComponent = this.querySelector(
+          "#race-edit-race-table-component",
+        );
+        if (raceTableComponent && typeof raceTableComponent.collapseAll === "function") {
+          raceTableComponent.collapseAll();
+        }
+      };
+
+      modalEl.addEventListener("hide.bs.modal", handleModalClose);
+      modalEl.addEventListener("hidden.bs.modal", handleModalClose);
+
       // Prevent form submission on Enter keypress
       form.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -371,6 +411,19 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       if (cancelBtn) {
         cancelBtn.addEventListener("click", () => {
           this.handleCloseAttempt();
+        });
+      }
+
+      // Delete button on footer
+      const deleteBtn = this.querySelector("#btn-delete-race");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => {
+          if (!this.race) return;
+          window.dispatchEvent(
+            new CustomEvent("requestDeleteRace", {
+              detail: { id: this.race.id, name: this.race.name },
+            }),
+          );
         });
       }
 
@@ -551,6 +604,20 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         modalInstance.hide();
       }
     }
+
+    const qualiTableComponent = this.querySelector(
+      "#race-edit-quali-table-component",
+    );
+    if (qualiTableComponent && typeof qualiTableComponent.collapseAll === "function") {
+      qualiTableComponent.collapseAll();
+    }
+
+    const raceTableComponent = this.querySelector(
+      "#race-edit-race-table-component",
+    );
+    if (raceTableComponent && typeof raceTableComponent.collapseAll === "function") {
+      raceTableComponent.collapseAll();
+    }
   }
 
   render() {
@@ -584,6 +651,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
                 ${window.t("registrations.races_modal.edit_title") || "Editar Corrida"}
               </h5>
+              <button type="button" id="btn-close-edit-race" class="btn-close" aria-label="Close"></button>
             </div>
             
             <form id="form-edit-race">
@@ -646,9 +714,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block mt-4 d-none"></slotrace-registrations-races-race-table>
               </div>
               
-              <div class="d-flex justify-content-end gap-2 p-3 border-top border-secondary-subtle">
-                <button type="button" id="btn-cancel-edit-race" class="btn btn-secondary px-3 fw-semibold">
-                  ${window.t("registrations.modal.cancel_button") || "Cancelar"}
+              <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary-subtle">
+                <button type="button" id="btn-delete-race" class="btn text-danger px-3 fw-semibold d-flex align-items-center gap-2" title="${window.t("registrations.modal.delete_button") || "Excluir"}">
+                  <i class="mdi mdi-trash-can-outline fs-5"></i>
                 </button>
                 <button type="submit" id="btn-submit-edit-race" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
                   <i class="mdi mdi-content-save-outline fs-5"></i>

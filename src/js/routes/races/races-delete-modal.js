@@ -75,7 +75,7 @@ class SlotRaceRegistrationsRacesDeleteModal extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <div class="modal fade" id="modal-delete-race" tabindex="-1" aria-labelledby="modal-delete-race-title" aria-hidden="true">
+      <div class="modal fade" id="modal-delete-race" tabindex="-1" aria-labelledby="modal-delete-race-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content border-secondary-subtle">
             

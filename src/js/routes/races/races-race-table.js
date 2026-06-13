@@ -1,10 +1,13 @@
 class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
-  connectedCallback() {
+  constructor() {
+    super();
     this.race = null;
     this.drivers = [];
     this.cars = [];
     this.expandedPilotIds = new Set();
+  }
 
+  connectedCallback() {
     this._langListener = () => {
       if (this.race && this.drivers) {
         this.render();
@@ -12,12 +15,12 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       }
     };
 
-    window.addEventListener('languageChanged', this._langListener);
+    window.addEventListener("languageChanged", this._langListener);
   }
 
   disconnectedCallback() {
     if (this._langListener) {
-      window.removeEventListener('languageChanged', this._langListener);
+      window.removeEventListener("languageChanged", this._langListener);
     }
   }
 
@@ -77,13 +80,12 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             Corrida
           </h6>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" id="btn-go-race" class="btn btn-sm btn-primary d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm" title="${window.t('registrations.races_modal.quali.go_race_button') || 'Correr'}" style="outline: none; box-shadow: none;">
-              <i class="mdi mdi-flag-checkered fs-6 me-2"></i>
-              <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.go_race_button') || 'Correr'}</span>
+            <button type="button" id="btn-clear-race" class="btn btn-sm btn-danger d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm d-none" title="${window.t("registrations.races_modal.quali.clear_quali_button") || "Zerar Tempos"}" style="outline: none; box-shadow: none;">
+              <i class="mdi mdi-refresh fs-6"></i>
             </button>
-            <button type="button" id="btn-clear-race" class="btn btn-sm btn-danger d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm d-none" title="${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}" style="outline: none; box-shadow: none;">
-              <i class="mdi mdi-refresh fs-6 me-2"></i>
-              <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t('registrations.races_modal.quali.clear_quali_button') || 'Zerar Tempos'}</span>
+            <button type="button" id="btn-go-race" class="btn btn-sm btn-primary d-flex align-items-center px-2.5 py-1 rounded-pill shadow-sm" title="${window.t("registrations.races_modal.quali.go_race_button") || "Correr"}" style="outline: none; box-shadow: none;">
+              <i class="mdi mdi-flag-checkered fs-6 me-2"></i>
+              <span class="fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.02em;">${window.t("registrations.races_modal.quali.go_race_button") || "Correr"}</span>
             </button>
           </div>
         </div>
@@ -92,9 +94,9 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             <thead class="bg-body-secondary border-bottom border-secondary-subtle text-secondary small text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">
               <tr>
                 <th class="text-start" style="width: 8%;">POS</th>
-                 <th class="text-start" style="width: 20%;">${window.t('registrations.modal.driver_caps_label') || 'Piloto'}</th>
-                 <th class="text-start" style="width: 20%;">${window.t('registrations.modal.car_caps_label') || 'Carro'}</th>
-                 <th style="width: 8%;">${window.t('registrations.modal.laps_label') || 'Voltas'}</th>
+                 <th class="text-start" style="width: 20%;">${window.t("registrations.modal.driver_caps_label") || "Piloto"}</th>
+                 <th class="text-start" style="width: 20%;">${window.t("registrations.modal.car_caps_label") || "Carro"}</th>
+                 <th style="width: 8%;">${window.t("registrations.modal.laps_label") || "Voltas"}</th>
                  <th style="width: 8%;">ZONA</th>
                  <th class="text-center" style="width: 13%;">LÍDER</th>
                  <th class="text-center" style="width: 13%;">RELATIVO</th>
@@ -137,63 +139,65 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
   }
 
   populateRaceTable() {
-    const tableBody = this.querySelector('#race-edit-race-table-body');
+    const tableBody = this.querySelector("#race-edit-race-table-body");
     if (!tableBody || !this.race) return;
 
     const racePilots = this.race.pilots || [];
 
     if (racePilots.length === 0) {
-      this.classList.add('d-none');
+      this.classList.add("d-none");
       return;
     }
 
-    this.classList.remove('d-none');
-    tableBody.innerHTML = '';
+    this.classList.remove("d-none");
+    tableBody.innerHTML = "";
 
     this.race.raceSession = this.race.raceSession || [];
 
     // Clean up stale raceSession records
-    this.race.raceSession = this.race.raceSession.filter(q => {
-      const id = typeof q.pilotId === 'object' ? q.pilotId.id : q.pilotId;
-      return racePilots.some(p => {
-        const pId = typeof p === 'object' ? p.id : p;
+    this.race.raceSession = this.race.raceSession.filter((q) => {
+      const id = typeof q.pilotId === "object" ? q.pilotId.id : q.pilotId;
+      return racePilots.some((p) => {
+        const pId = typeof p === "object" ? p.id : p;
         return pId === id;
       });
     });
 
     // Add missing raceSession records and ensure lapTimes exists on all records
-    racePilots.forEach(pilot => {
-      const pilotId = typeof pilot === 'object' ? pilot.id : pilot;
-      const exists = this.race.raceSession.some(q => q.pilotId === pilotId);
+    racePilots.forEach((pilot) => {
+      const pilotId = typeof pilot === "object" ? pilot.id : pilot;
+      const exists = this.race.raceSession.some((q) => q.pilotId === pilotId);
       if (!exists) {
         this.race.raceSession.push({
           pilotId: pilotId,
           laps: 0,
           bestLapIndex: 0,
           bestLapTime: 0,
-          lapTimes: []
+          lapTimes: [],
         });
       }
     });
 
-    this.race.raceSession.forEach(q => {
+    this.race.raceSession.forEach((q) => {
       if (!q.lapTimes) {
         q.lapTimes = [];
       }
     });
 
     // Show/hide clear button dynamically
-    const hasLaps = this.race.raceSession.some(q => q.laps > 0 || (q.lapTimes && q.lapTimes.length > 0));
-    const clearBtn = this.querySelector('#btn-clear-race');
+    const hasLaps = this.race.raceSession.some(
+      (q) => q.laps > 0 || (q.lapTimes && q.lapTimes.length > 0),
+    );
+    const clearBtn = this.querySelector("#btn-clear-race");
     if (clearBtn) {
       if (hasLaps) {
-        clearBtn.classList.remove('d-none');
+        clearBtn.classList.remove("d-none");
       } else {
-        clearBtn.classList.add('d-none');
+        clearBtn.classList.add("d-none");
       }
     }
 
-    // Sort: 
+    // Sort:
     // 1. More laps wins (descending)
     // 2. If laps are equal, smaller total elapsed time wins (ascending)
     // 3. If laps and times are equal, higher final zone wins (descending)
@@ -213,46 +217,71 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
       }
 
       // Tie breaker: qualifying best lap time (fastest first, zeros at bottom)
-      const qA = this.race.quali ? this.race.quali.find(q => String(q.pilotId) === String(a.pilotId)) : null;
-      const qB = this.race.quali ? this.race.quali.find(q => String(q.pilotId) === String(b.pilotId)) : null;
-      const qTimeA = qA && parseFloat(qA.bestLapTime) > 0 ? parseFloat(qA.bestLapTime) : Infinity;
-      const qTimeB = qB && parseFloat(qB.bestLapTime) > 0 ? parseFloat(qB.bestLapTime) : Infinity;
+      const qA = this.race.quali
+        ? this.race.quali.find((q) => String(q.pilotId) === String(a.pilotId))
+        : null;
+      const qB = this.race.quali
+        ? this.race.quali.find((q) => String(q.pilotId) === String(b.pilotId))
+        : null;
+      const qTimeA =
+        qA && parseFloat(qA.bestLapTime) > 0
+          ? parseFloat(qA.bestLapTime)
+          : Infinity;
+      const qTimeB =
+        qB && parseFloat(qB.bestLapTime) > 0
+          ? parseFloat(qB.bestLapTime)
+          : Infinity;
 
       if (qTimeA !== qTimeB) {
         return qTimeA - qTimeB;
       }
 
       // Tie-breaker for identical qualifying best lap times: who did it first
-      const setAtA = qA && qA.bestLapTimeSetAt || 0;
-      const setAtB = qB && qB.bestLapTimeSetAt || 0;
+      const setAtA = (qA && qA.bestLapTimeSetAt) || 0;
+      const setAtB = (qB && qB.bestLapTimeSetAt) || 0;
       if (setAtA !== setAtB) {
         if (setAtA === 0) return 1;
         if (setAtB === 0) return -1;
         return setAtA - setAtB;
       }
 
-      const idxA = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === a.pilotId);
-      const idxB = racePilots.findIndex(p => (typeof p === 'object' ? p.id : p) === b.pilotId);
+      const idxA = racePilots.findIndex(
+        (p) => (typeof p === "object" ? p.id : p) === a.pilotId,
+      );
+      const idxB = racePilots.findIndex(
+        (p) => (typeof p === "object" ? p.id : p) === b.pilotId,
+      );
       return idxA - idxB;
     });
 
     const leader = sortedRace[0];
     const leaderLaps = leader ? parseInt(leader.laps) || 0 : 0;
-    const leaderTime = leader && leader.lapTimes ? leader.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0) : 0;
+    const leaderTime =
+      leader && leader.lapTimes
+        ? leader.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0)
+        : 0;
 
     sortedRace.forEach((item, index) => {
-      const driverObj = this.drivers.find(d => d.id === item.pilotId);
-      const name = driverObj ? (driverObj.nickname || driverObj.name) : item.pilotId;
-      const photoUrl = driverObj ? driverObj.photo : '';
+      const driverObj = this.drivers.find((d) => d.id === item.pilotId);
+      const name = driverObj
+        ? driverObj.nickname || driverObj.name
+        : item.pilotId;
+      const photoUrl = driverObj ? driverObj.photo : "";
 
-      const racePilotObj = racePilots.find(p => (typeof p === 'object' ? p.id : p) === item.pilotId);
-      const carId = racePilotObj && typeof racePilotObj === 'object' ? racePilotObj.carId : null;
-      const carObj = carId && this.cars ? this.cars.find(c => c.id === carId) : null;
-      
-      const carName = carObj ? carObj.name : '';
-      const carPhotoUrl = carObj ? carObj.photo : '';
+      const racePilotObj = racePilots.find(
+        (p) => (typeof p === "object" ? p.id : p) === item.pilotId,
+      );
+      const carId =
+        racePilotObj && typeof racePilotObj === "object"
+          ? racePilotObj.carId
+          : null;
+      const carObj =
+        carId && this.cars ? this.cars.find((c) => c.id === carId) : null;
 
-      let positionHtml = '';
+      const carName = carObj ? carObj.name : "";
+      const carPhotoUrl = carObj ? carObj.photo : "";
+
+      let positionHtml = "";
       if (index === 0) {
         positionHtml = `<span class="badge bg-warning text-dark px-2.5 py-1.5 fw-bold shadow-sm" style="font-size: 0.75rem;"><i class="mdi mdi-trophy text-dark me-0.5"></i> 1º</span>`;
       } else if (index === 1) {
@@ -277,7 +306,10 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         if (diffLaps === 0) {
           if (hasLeaderZone) {
             const diffZones = leaderZone - currentZone;
-            diffHtml = diffZones > 0 ? `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffZones}z</span>` : `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
+            diffHtml =
+              diffZones > 0
+                ? `<span class="text-secondary-emphasis fw-semibold label-race-diff" style="font-size: 0.95rem;">+${diffZones}z</span>`
+                : `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           } else {
             diffHtml = `<span class="text-secondary label-race-diff" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           }
@@ -295,7 +327,10 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         if (diffLapsAhead === 0) {
           if (hasAheadZone) {
             const diffZonesAhead = zoneAhead - currentZone;
-            relativeHtml = diffZonesAhead > 0 ? `<span class="text-secondary-emphasis fw-semibold label-race-relative" style="font-size: 0.95rem;">+${diffZonesAhead}z</span>` : `<span class="text-secondary label-race-relative" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
+            relativeHtml =
+              diffZonesAhead > 0
+                ? `<span class="text-secondary-emphasis fw-semibold label-race-relative" style="font-size: 0.95rem;">+${diffZonesAhead}z</span>`
+                : `<span class="text-secondary label-race-relative" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           } else {
             relativeHtml = `<span class="text-secondary label-race-relative" style="font-size: 1.05rem; font-family: inherit;">-</span>`;
           }
@@ -314,51 +349,63 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         }, 0);
 
         const isPole = Math.abs(bestTime - overallBestLap) < 0.0001;
-        bestTimeHtml = `<span class="label-race-best px-2 font-monospace ${isPole ? 'fw-bold best-time-leader' : 'fw-bold best-time-others'}" style="font-size: 1.05rem;">${bestTime.toFixed(4)}</span>`;
+        bestTimeHtml = `<span class="label-race-best px-2 font-monospace ${isPole ? "fw-bold best-time-leader" : "fw-bold best-time-others"}" style="font-size: 1.05rem;">${bestTime.toFixed(4)}</span>`;
       }
 
       const isExpanded = this.expandedPilotIds.has(item.pilotId);
 
-      const row = document.createElement('tr');
+      const row = document.createElement("tr");
       row.innerHTML = `
         <td class="align-middle text-start">${positionHtml}</td>
         <td class="align-middle text-start">
           <div class="d-flex align-items-center gap-2.5">
             <div class="rounded-circle overflow-hidden bg-body-secondary flex-shrink-0 border border-secondary-subtle" style="width: 40px; height: 40px;">
-              ${photoUrl ? `
+              ${
+                photoUrl
+                  ? `
                 <img src="${photoUrl}" class="w-100 h-100 object-fit-cover">
-              ` : `
+              `
+                  : `
                 <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
                   <i class="mdi mdi-account text-secondary fs-4"></i>
                 </div>
-              `}
+              `
+              }
             </div>
             <span class="fw-bold text-body-emphasis small ms-2" style="font-size: 0.85rem;">${name}</span>
           </div>
         </td>
         <td class="align-middle text-start">
-          ${carObj ? `
+          ${
+            carObj
+              ? `
             <div class="d-flex align-items-center gap-2">
               <div class="rounded overflow-hidden bg-body-secondary flex-shrink-0 border border-secondary-subtle" style="width: 48px; height: 32px;">
-                ${carPhotoUrl ? `
+                ${
+                  carPhotoUrl
+                    ? `
                   <img src="${carPhotoUrl}" class="w-100 h-100 object-fit-cover">
-                ` : `
+                `
+                    : `
                   <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
                     <i class="mdi mdi-car text-secondary fs-6"></i>
                   </div>
-                `}
+                `
+                }
               </div>
               <span class="text-body-emphasis small fw-medium text-truncate" style="font-size: 0.8rem; max-width: 130px;" title="${carName}">${carName}</span>
             </div>
-          ` : `
+          `
+              : `
             <span class="text-secondary" style="font-size: 1.05rem; font-family: inherit; margin-left: 20px;">-</span>
-          `}
+          `
+          }
         </td>
         <td class="align-middle">
           <span class="fw-semibold text-body-emphasis label-race-laps" style="font-size: 0.95rem;">${item.laps}</span>
         </td>
         <td class="align-middle">
-          <span class="label-race-zone fw-semibold ${item.finalZone > 0 ? 'text-body-emphasis' : 'text-secondary'}" style="font-size: 0.95rem;">${item.finalZone > 0 ? item.finalZone : "-"}</span>
+          <span class="label-race-zone fw-semibold ${item.finalZone > 0 ? "text-body-emphasis" : "text-secondary"}" style="font-size: 0.95rem;">${item.finalZone > 0 ? item.finalZone : "-"}</span>
         </td>
         <td class="align-middle text-center">
           ${diffHtml}
@@ -371,17 +418,17 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         </td>
         <td class="align-middle text-center">
           <button type="button" class="btn btn-sm btn-link text-secondary btn-toggle-laps p-1" data-pilot-id="${item.pilotId}" title="Ver tempos de voltas" style="outline: none; box-shadow: none;">
-            <i class="mdi mdi-chevron-down fs-5" id="race-chevron-${item.pilotId}" style="display: inline-block; transition: transform 0.2s ease-in-out; ${isExpanded ? 'transform: rotate(180deg);' : ''}"></i>
+            <i class="mdi mdi-chevron-down fs-5" id="race-chevron-${item.pilotId}" style="display: inline-block; transition: transform 0.2s ease-in-out; ${isExpanded ? "transform: rotate(180deg);" : ""}"></i>
           </button>
         </td>
       `;
 
-      const accordionRow = document.createElement('tr');
+      const accordionRow = document.createElement("tr");
       accordionRow.id = `race-laps-row-${item.pilotId}`;
-      accordionRow.className = `laps-accordion-row ${isExpanded ? '' : 'd-none'}`;
+      accordionRow.className = `laps-accordion-row ${isExpanded ? "" : "d-none"}`;
       accordionRow.innerHTML = `
         <td colspan="9" class="p-0 text-start">
-          <div class="laps-collapse-container" style="overflow: hidden; transition: max-height 0.2s ease-out, opacity 0.2s ease-out; ${isExpanded ? 'max-height: none; opacity: 1;' : 'max-height: 0px; opacity: 0;'}">
+          <div class="laps-collapse-container" style="overflow: hidden; transition: max-height 0.2s ease-out, opacity 0.2s ease-out; ${isExpanded ? "max-height: none; opacity: 1;" : "max-height: 0px; opacity: 0;"}">
             <div class="p-3">
               <slotrace-registrations-races-session-laps id="race-session-laps-${item.pilotId}"></slotrace-registrations-races-session-laps>
             </div>
@@ -389,11 +436,11 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         </td>
       `;
 
-      const labelLaps = row.querySelector('.label-race-laps');
-      const labelZone = row.querySelector('.label-race-zone');
-      const labelBestTime = row.querySelector('.label-race-best');
-      const labelDiff = row.querySelector('.label-race-diff');
-      const labelRelative = row.querySelector('.label-race-relative');
+      const labelLaps = row.querySelector(".label-race-laps");
+      const labelZone = row.querySelector(".label-race-zone");
+      const labelBestTime = row.querySelector(".label-race-best");
+      const labelDiff = row.querySelector(".label-race-diff");
+      const labelRelative = row.querySelector(".label-race-relative");
 
       const updateBestTimeStyles = (hasValue) => {
         if (!labelBestTime) return;
@@ -402,12 +449,14 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
           if (t > 0 && (best === 0 || t < best)) return t;
           return best;
         }, 0);
-        const isPole = Math.abs((parseFloat(item.bestLapTime) || 0) - overallBestLap) < 0.0001;
+        const isPole =
+          Math.abs((parseFloat(item.bestLapTime) || 0) - overallBestLap) <
+          0.0001;
 
         if (hasValue) {
-          labelBestTime.className = `label-race-best px-2 font-monospace ${isPole ? 'fw-bold best-time-leader' : 'fw-bold best-time-others'}`;
+          labelBestTime.className = `label-race-best px-2 font-monospace ${isPole ? "fw-bold best-time-leader" : "fw-bold best-time-others"}`;
         } else {
-          labelBestTime.className = 'text-secondary label-race-best px-2';
+          labelBestTime.className = "text-secondary label-race-best px-2";
         }
       };
 
@@ -415,15 +464,16 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         if (!labelDiff) return;
         if (hasValue) {
           if (isTimeDiff) {
-            labelDiff.className = 'diff-time-has fw-semibold label-race-diff';
-            labelDiff.style.fontFamily = 'monospace';
+            labelDiff.className = "diff-time-has fw-semibold label-race-diff";
+            labelDiff.style.fontFamily = "monospace";
           } else {
-            labelDiff.className = 'text-secondary-emphasis fw-semibold label-race-diff';
-            labelDiff.style.fontFamily = 'inherit';
+            labelDiff.className =
+              "text-secondary-emphasis fw-semibold label-race-diff";
+            labelDiff.style.fontFamily = "inherit";
           }
         } else {
-          labelDiff.className = 'text-secondary label-race-diff';
-          labelDiff.style.fontFamily = 'inherit';
+          labelDiff.className = "text-secondary label-race-diff";
+          labelDiff.style.fontFamily = "inherit";
         }
       };
 
@@ -431,24 +481,26 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         if (!labelRelative) return;
         if (hasValue) {
           if (isTimeDiff) {
-            labelRelative.className = 'diff-time-has fw-semibold label-race-relative';
-            labelRelative.style.fontFamily = 'monospace';
+            labelRelative.className =
+              "diff-time-has fw-semibold label-race-relative";
+            labelRelative.style.fontFamily = "monospace";
           } else {
-            labelRelative.className = 'text-secondary-emphasis fw-semibold label-race-relative';
-            labelRelative.style.fontFamily = 'inherit';
+            labelRelative.className =
+              "text-secondary-emphasis fw-semibold label-race-relative";
+            labelRelative.style.fontFamily = "inherit";
           }
         } else {
-          labelRelative.className = 'text-secondary label-race-relative';
-          labelRelative.style.fontFamily = 'inherit';
+          labelRelative.className = "text-secondary label-race-relative";
+          labelRelative.style.fontFamily = "inherit";
         }
       };
 
       const recalculateRaceMetrics = (record) => {
         record.laps = record.lapTimes.length;
-        
+
         let minTime = 0;
         let minIndex = 0;
-        
+
         record.lapTimes.forEach((time, idx) => {
           const val = parseFloat(time) || 0;
           if (val > 0) {
@@ -458,25 +510,33 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             }
           }
         });
-        
+
         record.bestLapTime = minTime;
         record.bestLapIndex = minIndex;
 
-        const calcTotal = record.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0);
+        const calcTotal = record.lapTimes.reduce(
+          (sum, t) => sum + (parseFloat(t) || 0),
+          0,
+        );
 
         // Update row labels in real-time
         if (labelLaps) labelLaps.textContent = record.laps;
         if (labelZone) {
-          labelZone.textContent = record.finalZone > 0 ? record.finalZone : '-';
-          labelZone.className = record.finalZone > 0 ? 'label-race-zone fw-semibold text-body-emphasis' : 'label-race-zone fw-semibold text-secondary';
+          labelZone.textContent = record.finalZone > 0 ? record.finalZone : "-";
+          labelZone.className =
+            record.finalZone > 0
+              ? "label-race-zone fw-semibold text-body-emphasis"
+              : "label-race-zone fw-semibold text-secondary";
         }
         if (labelBestTime) {
-          labelBestTime.textContent = record.bestLapTime ? parseFloat(record.bestLapTime).toFixed(4) : '-';
+          labelBestTime.textContent = record.bestLapTime
+            ? parseFloat(record.bestLapTime).toFixed(4)
+            : "-";
           updateBestTimeStyles(!!record.bestLapTime);
         }
         if (labelDiff) {
           if (index === 0) {
-            labelDiff.textContent = '-';
+            labelDiff.textContent = "-";
             updateDiffStyles(false, false);
           } else {
             const currentZone = parseFloat(record.finalZone) || 0;
@@ -491,11 +551,11 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
                   labelDiff.textContent = `+${diffZones}z`;
                   updateDiffStyles(true, false);
                 } else {
-                  labelDiff.textContent = '-';
+                  labelDiff.textContent = "-";
                   updateDiffStyles(false, false);
                 }
               } else {
-                labelDiff.textContent = '-';
+                labelDiff.textContent = "-";
                 updateDiffStyles(false, false);
               }
             } else {
@@ -507,7 +567,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
 
         if (labelRelative) {
           if (index === 0) {
-            labelRelative.textContent = '-';
+            labelRelative.textContent = "-";
             updateRelativeStyles(false, false);
           } else {
             const currentZone = parseFloat(record.finalZone) || 0;
@@ -524,11 +584,11 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
                   labelRelative.textContent = `+${diffZonesAhead}z`;
                   updateRelativeStyles(true, false);
                 } else {
-                  labelRelative.textContent = '-';
+                  labelRelative.textContent = "-";
                   updateRelativeStyles(false, false);
                 }
               } else {
-                labelRelative.textContent = '-';
+                labelRelative.textContent = "-";
                 updateRelativeStyles(false, false);
               }
             } else {
@@ -539,71 +599,82 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         }
 
         // Notify parent modal of quali/laps updates
-        window.dispatchEvent(new CustomEvent('raceQualiUpdated'));
+        window.dispatchEvent(new CustomEvent("raceQualiUpdated"));
       };
 
-      const sessionLapsEl = accordionRow.querySelector(`#race-session-laps-${item.pilotId}`);
+      const sessionLapsEl = accordionRow.querySelector(
+        `#race-session-laps-${item.pilotId}`,
+      );
       if (sessionLapsEl) {
         const overallBestLap = sortedRace.reduce((best, q) => {
           const t = parseFloat(q.bestLapTime) || 0;
           if (t > 0 && (best === 0 || t < best)) return t;
           return best;
         }, 0);
-        const isPole = index === 0 && bestTime > 0 && Math.abs(bestTime - overallBestLap) < 0.0001;
+        const isPole =
+          index === 0 &&
+          bestTime > 0 &&
+          Math.abs(bestTime - overallBestLap) < 0.0001;
 
-        sessionLapsEl.setParams(item, () => {
-          recalculateRaceMetrics(item);
-        }, isPole);
+        sessionLapsEl.setParams(
+          item,
+          () => {
+            recalculateRaceMetrics(item);
+          },
+          isPole,
+        );
       }
 
       // Chevron Toggle Listener
-      const toggleBtn = row.querySelector('.btn-toggle-laps');
+      const toggleBtn = row.querySelector(".btn-toggle-laps");
       if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-          const container = accordionRow.querySelector('.laps-collapse-container');
-          const isOpen = !accordionRow.classList.contains('d-none');
+        toggleBtn.addEventListener("click", () => {
+          const container = accordionRow.querySelector(
+            ".laps-collapse-container",
+          );
+          const isOpen = !accordionRow.classList.contains("d-none");
           const chevron = row.querySelector(`#race-chevron-${item.pilotId}`);
-          
+
           if (isOpen) {
             if (container) {
-              container.style.maxHeight = container.scrollHeight + 'px';
+              container.style.maxHeight = container.scrollHeight + "px";
               container.offsetHeight; // reflow
-              container.style.maxHeight = '0px';
-              container.style.opacity = '0';
-              
+              container.style.maxHeight = "0px";
+              container.style.opacity = "0";
+
               const onTransitionEnd = () => {
-                accordionRow.classList.add('d-none');
+                accordionRow.classList.add("d-none");
                 this.expandedPilotIds.delete(item.pilotId);
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
-                
+                if (chevron) chevron.style.transform = "rotate(0deg)";
+
                 // Re-sort and re-render only when collapsing
                 this.populateRaceTable();
-                container.removeEventListener('transitionend', onTransitionEnd);
+                container.removeEventListener("transitionend", onTransitionEnd);
               };
-              container.addEventListener('transitionend', onTransitionEnd);
+              container.addEventListener("transitionend", onTransitionEnd);
             } else {
-              accordionRow.classList.add('d-none');
+              accordionRow.classList.add("d-none");
               this.expandedPilotIds.delete(item.pilotId);
-              if (chevron) chevron.style.transform = 'rotate(0deg)';
+              if (chevron) chevron.style.transform = "rotate(0deg)";
               this.populateRaceTable();
             }
           } else {
-            accordionRow.classList.remove('d-none');
+            accordionRow.classList.remove("d-none");
             this.expandedPilotIds.add(item.pilotId);
-            if (chevron) chevron.style.transform = 'rotate(180deg)';
-            
+            if (chevron) chevron.style.transform = "rotate(180deg)";
+
             if (container) {
-              container.style.maxHeight = '0px';
-              container.style.opacity = '0';
+              container.style.maxHeight = "0px";
+              container.style.opacity = "0";
               container.offsetHeight; // reflow
-              container.style.maxHeight = container.scrollHeight + 'px';
-              container.style.opacity = '1';
-              
+              container.style.maxHeight = container.scrollHeight + "px";
+              container.style.opacity = "1";
+
               const onTransitionEnd = () => {
-                container.style.maxHeight = 'none';
-                container.removeEventListener('transitionend', onTransitionEnd);
+                container.style.maxHeight = "none";
+                container.removeEventListener("transitionend", onTransitionEnd);
               };
-              container.addEventListener('transitionend', onTransitionEnd);
+              container.addEventListener("transitionend", onTransitionEnd);
             }
           }
         });
@@ -616,36 +687,39 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
 
   setupHeaderEvents() {
     // Clear button event listener
-    const clearBtn = this.querySelector('#btn-clear-race');
+    const clearBtn = this.querySelector("#btn-clear-race");
     if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        const confirmModalEl = this.querySelector('#modal-confirm-clear-race');
+      clearBtn.addEventListener("click", () => {
+        const confirmModalEl = this.querySelector("#modal-confirm-clear-race");
         if (confirmModalEl) {
-          let confirmModalInstance = bootstrap.Modal.getInstance(confirmModalEl);
+          let confirmModalInstance =
+            bootstrap.Modal.getInstance(confirmModalEl);
           if (!confirmModalInstance) {
             confirmModalInstance = new bootstrap.Modal(confirmModalEl);
           }
           confirmModalInstance.show();
 
-          const actionBtn = confirmModalEl.querySelector('#btn-confirm-clear-race-action');
+          const actionBtn = confirmModalEl.querySelector(
+            "#btn-confirm-clear-race-action",
+          );
           if (actionBtn) {
             const newActionBtn = actionBtn.cloneNode(true);
             actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
 
-            newActionBtn.addEventListener('click', () => {
+            newActionBtn.addEventListener("click", () => {
               // Clear race metrics for all pilots
-              this.race.raceSession = this.race.raceSession.map(q => ({
+              this.race.raceSession = this.race.raceSession.map((q) => ({
                 ...q,
                 laps: 0,
                 bestLapIndex: 0,
                 bestLapTime: 0,
-                lapTimes: []
+                lapTimes: [],
               }));
 
               this.populateRaceTable();
 
               // Notify parent modal of quali/laps updates to enable save button
-              window.dispatchEvent(new CustomEvent('raceQualiUpdated'));
+              window.dispatchEvent(new CustomEvent("raceQualiUpdated"));
 
               confirmModalInstance.hide();
             });
@@ -655,15 +729,25 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
     }
 
     // Setup Go Race Button listener
-    const goRaceBtn = this.querySelector('#btn-go-race');
+    const goRaceBtn = this.querySelector("#btn-go-race");
     if (goRaceBtn) {
-      goRaceBtn.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('requestGoRace', {
-          detail: { race: this.race }
-        }));
+      goRaceBtn.addEventListener("click", () => {
+        window.dispatchEvent(
+          new CustomEvent("requestGoRace", {
+            detail: { race: this.race },
+          }),
+        );
       });
     }
   }
+
+  collapseAll() {
+    this.expandedPilotIds.clear();
+    this.populateRaceTable();
+  }
 }
 
-customElements.define('slotrace-registrations-races-race-table', SlotRaceRegistrationsRacesRaceTable);
+customElements.define(
+  "slotrace-registrations-races-race-table",
+  SlotRaceRegistrationsRacesRaceTable,
+);
