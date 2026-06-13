@@ -29,14 +29,20 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       const qualiTableComponent = this.querySelector(
         "#race-edit-quali-table-component",
       );
-      if (qualiTableComponent && typeof qualiTableComponent.collapseAll === "function") {
+      if (
+        qualiTableComponent &&
+        typeof qualiTableComponent.collapseAll === "function"
+      ) {
         qualiTableComponent.collapseAll();
       }
 
       const raceTableComponent = this.querySelector(
         "#race-edit-race-table-component",
       );
-      if (raceTableComponent && typeof raceTableComponent.collapseAll === "function") {
+      if (
+        raceTableComponent &&
+        typeof raceTableComponent.collapseAll === "function"
+      ) {
         raceTableComponent.collapseAll();
       }
 
@@ -372,14 +378,20 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         const qualiTableComponent = this.querySelector(
           "#race-edit-quali-table-component",
         );
-        if (qualiTableComponent && typeof qualiTableComponent.collapseAll === "function") {
+        if (
+          qualiTableComponent &&
+          typeof qualiTableComponent.collapseAll === "function"
+        ) {
           qualiTableComponent.collapseAll();
         }
 
         const raceTableComponent = this.querySelector(
           "#race-edit-race-table-component",
         );
-        if (raceTableComponent && typeof raceTableComponent.collapseAll === "function") {
+        if (
+          raceTableComponent &&
+          typeof raceTableComponent.collapseAll === "function"
+        ) {
           raceTableComponent.collapseAll();
         }
       };
@@ -608,14 +620,20 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     const qualiTableComponent = this.querySelector(
       "#race-edit-quali-table-component",
     );
-    if (qualiTableComponent && typeof qualiTableComponent.collapseAll === "function") {
+    if (
+      qualiTableComponent &&
+      typeof qualiTableComponent.collapseAll === "function"
+    ) {
       qualiTableComponent.collapseAll();
     }
 
     const raceTableComponent = this.querySelector(
       "#race-edit-race-table-component",
     );
-    if (raceTableComponent && typeof raceTableComponent.collapseAll === "function") {
+    if (
+      raceTableComponent &&
+      typeof raceTableComponent.collapseAll === "function"
+    ) {
       raceTableComponent.collapseAll();
     }
   }
@@ -643,75 +661,80 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       </style>
 
       <div class="modal fade" id="modal-edit-race" tabindex="-1" aria-labelledby="modal-edit-race-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
           <div class="modal-content border-secondary-subtle">
             
             <div class="modal-header border-secondary-subtle bg-body-tertiary">
               <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-edit-race-title" style="font-size: 1.1rem;">
                 <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
-                ${window.t("registrations.races_modal.edit_title") || "Editar Corrida"}
+                Corrida
               </h5>
               <button type="button" id="btn-close-edit-race" class="btn-close" aria-label="Close"></button>
             </div>
             
             <form id="form-edit-race">
-              <div class="modal-body text-start py-4 fs-6">
-                <!-- 4 Inputs in 1 Row: Tipo (col-3), Nome (col-4), Pista (col-3), Data (col-2) -->
-                <div class="row g-3">
-                  <!-- Tipo col-3 -->
-                  <div class="col-3">
-                    <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
-                      Tipo de Corrida
-                    </label>
-                    <select id="select-race-edit-type" class="form-select">
-                      <option value="grand_prix">Grande Prêmio</option>
-                    </select>
-                  </div>
+              <div class="modal-body text-start fs-6 p-0">
+                <div class="d-flex h-100">
+                  <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3" style="min-width: 350px; max-width: 350px;">
+                    <!-- FORM -->
+                    
+                      <!-- Tipo -->
+                      <div>
+                        <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
+                          Tipo de Corrida
+                        </label>
+                        <select id="select-race-edit-type" class="form-select">
+                          <option value="grand_prix">Grande Prêmio</option>
+                        </select>
+                      </div>
 
-                  <!-- Nome col-4 -->
-                  <div class="col-4">
-                    <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
-                      ${window.t("registrations.modal.name_label") || "Nome"}
-                    </label>
-                    <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
-                  </div>
+                      <!-- Nome -->
+                      <div>
+                        <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
+                          ${window.t("registrations.modal.name_label") || "Nome"}
+                        </label>
+                        <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
+                      </div>
 
-                  <!-- Pista col-3 -->
-                  <div class="col-3">
-                    <label for="select-race-edit-track" class="form-label fw-semibold text-secondary small">
-                      ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
-                    </label>
-                    <select id="select-race-edit-track" class="form-select">
-                      <!-- Options loaded dynamically -->
-                    </select>
-                  </div>
+                      <!-- Pista -->
+                      <div>
+                        <label for="select-race-edit-track" class="form-label fw-semibold text-secondary small">
+                          ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
+                        </label>
+                        <select id="select-race-edit-track" class="form-select">
+                          <!-- Options loaded dynamically -->
+                        </select>
+                      </div>
 
-                  <!-- Data col-2 -->
-                  <div class="col-2">
-                    <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
-                      ${window.t("registrations.races_modal.date_label") || "Data"}
-                    </label>
-                    <input type="date" id="input-race-edit-date" class="form-control" required>
-                  </div>
-                </div>
+                      <!-- Data -->
+                      <div>
+                        <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
+                          ${window.t("registrations.races_modal.date_label") || "Data"}
+                        </label>
+                        <input type="date" id="input-race-edit-date" class="form-control" required>
+                      </div>
+                    
 
-                <!-- Pilots list col-12 -->
-                <div class="row mt-4">
-                  <div class="col-12">
-                    <label class="form-label fw-semibold text-secondary small mb-2">
-                      ${window.t("registrations.drivers") || "Pilotos"}
-                    </label>
-                    <div id="race-edit-pilots-list" class="d-flex align-items-center gap-2 flex-wrap py-1">
-                      <!-- Rendered dynamically -->
+                    <!-- Pilots list -->
+                    <div class="mt-4">
+                      <label class="form-label fw-semibold text-secondary small mb-2">
+                        ${window.t("registrations.drivers") || "Pilotos"}
+                      </label>
+                      <div id="race-edit-pilots-list" class="d-flex align-items-center gap-2 flex-wrap py-1">
+                        <!-- Rendered dynamically -->
+                      </div>
                     </div>
                   </div>
+                  
+                  <!-- TABLES AREA -->
+                  <div class="flex-grow-1 p-3 overflow-y-auto">
+                    <!-- Qualifying Standings Table Row -->
+                    <slotrace-registrations-races-quali-table id="race-edit-quali-table-component" class="d-block mb-4 d-none"></slotrace-registrations-races-quali-table>
+                  
+                    <!-- Race Standings Table Row -->
+                    <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block d-none"></slotrace-registrations-races-race-table>
+                  </div>
                 </div>
-
-                <!-- Qualifying Standings Table Row -->
-                <slotrace-registrations-races-quali-table id="race-edit-quali-table-component" class="d-block mt-4 d-none"></slotrace-registrations-races-quali-table>
-
-                <!-- Race Standings Table Row -->
-                <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block mt-4 d-none"></slotrace-registrations-races-race-table>
               </div>
               
               <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary-subtle">
