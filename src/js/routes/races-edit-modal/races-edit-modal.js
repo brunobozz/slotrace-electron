@@ -12,6 +12,13 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     this._langListener = () => {
       this.render();
       this.setupEvents();
+      if (this.race) {
+        const formComponent = this.querySelector("#race-edit-form-component");
+        if (formComponent) {
+          formComponent.setParams(this.race, this.tracks);
+        }
+        this.populateDropdowns();
+      }
       if (this.initialRaceSnapshot) {
         this.checkPendingChanges();
       }
@@ -57,28 +64,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           this.drivers = drivers || [];
           this.cars = cars || [];
 
+          const formComponent = this.querySelector("#race-edit-form-component");
+          if (formComponent) {
+            formComponent.setParams(this.race, this.tracks);
+          }
+
           this.populateDropdowns();
-
-          // Populate type field
-          const typeSelect = this.querySelector("#select-race-edit-type");
-          if (typeSelect) {
-            typeSelect.value = this.race.type || "grand_prix";
-          }
-
-          // Populate name field
-          const nameInput = this.querySelector("#input-race-edit-name");
-          if (nameInput) {
-            nameInput.value = this.race.name || "";
-          }
-
-          // Populate date field
-          const dateInput = this.querySelector("#input-race-edit-date");
-          if (dateInput) {
-            const d = this.race.date ? new Date(this.race.date) : new Date();
-            const pad = (num) => String(num).padStart(2, "0");
-            const dateVal = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-            dateInput.value = dateVal;
-          }
 
           // Initialize the initial snapshot after all modal fields have been populated
           this.initialRaceSnapshot = this.getCurrentStateSnapshot();
@@ -199,33 +190,6 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
   }
 
   populateDropdowns() {
-    const trackSelect = this.querySelector("#select-race-edit-track");
-
-    if (trackSelect) {
-      trackSelect.innerHTML = "";
-
-      // Default option
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent =
-        window.t("registrations.default_track") || "Pista Padrão";
-      trackSelect.appendChild(defaultOption);
-
-      this.tracks.forEach((track) => {
-        const option = document.createElement("option");
-        option.value = track.id;
-        option.textContent = track.name;
-        trackSelect.appendChild(option);
-      });
-
-      // Select active track
-      if (this.race && this.race.trackId) {
-        trackSelect.value = this.race.trackId;
-      } else {
-        trackSelect.value = "";
-      }
-    }
-
     // Populate pilots avatars list
     this.populatePilots();
   }
@@ -370,7 +334,6 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
   setupEvents() {
     const form = this.querySelector("#form-edit-race");
     const modalEl = this.querySelector("#modal-edit-race");
-    const trackSelect = this.querySelector("#select-race-edit-track");
 
     if (form && modalEl) {
       // Clear expanded pilot drawers when modal closes
@@ -409,6 +372,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       // Bind input/change listeners to detect changes to inputs
       form.addEventListener("input", () => this.checkPendingChanges());
       form.addEventListener("change", () => this.checkPendingChanges());
+
+      // Bind custom form input event
+      const formComponent = this.querySelector("#race-edit-form-component");
+      if (formComponent) {
+        formComponent.addEventListener("raceFormInput", () => this.checkPendingChanges());
+      }
 
       // Close button on header
       const closeBtn = this.querySelector("#btn-close-edit-race");
@@ -461,31 +430,20 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         e.preventDefault();
         if (!this.race) return;
 
-        const typeSelect = this.querySelector("#select-race-edit-type");
-        const selectedType = typeSelect ? typeSelect.value : "grand_prix";
+        const formComponent = this.querySelector("#race-edit-form-component");
+        const formValues = formComponent
+          ? formComponent.getValues()
+          : {
+              type: "grand_prix",
+              name: "",
+              trackId: "",
+              date: this.race.date || new Date().toISOString(),
+            };
 
-        const nameInput = this.querySelector("#input-race-edit-name");
-        const trackSelectElement = this.querySelector(
-          "#select-race-edit-track",
-        );
-        const selectedTrackId = trackSelectElement
-          ? trackSelectElement.value
-          : "";
-        const dateInput = this.querySelector("#input-race-edit-date");
-
-        const newName = nameInput ? nameInput.value.trim() : "";
-
-        let selectedDateISO = this.race.date || new Date().toISOString();
-        if (dateInput && dateInput.value) {
-          const origDate = this.race.date
-            ? new Date(this.race.date)
-            : new Date();
-          const [year, month, day] = dateInput.value.split("-").map(Number);
-          origDate.setFullYear(year);
-          origDate.setMonth(month - 1);
-          origDate.setDate(day);
-          selectedDateISO = origDate.toISOString();
-        }
+        const selectedType = formValues.type;
+        const newName = formValues.name;
+        const selectedTrackId = formValues.trackId;
+        const selectedDateISO = formValues.date;
 
         // Find selected track name
         let selectedTrackName =
@@ -539,39 +497,25 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
   getCurrentStateSnapshot() {
     if (!this.race) return "";
 
-    const typeSelect = this.querySelector("#select-race-edit-type");
-    const selectedType = typeSelect ? typeSelect.value : "grand_prix";
-
-    const nameInput = this.querySelector("#input-race-edit-name");
-    const newName = nameInput ? nameInput.value.trim() : "";
-
-    const trackSelect = this.querySelector("#select-race-edit-track");
-    const selectedTrackId = trackSelect ? trackSelect.value : "";
-
-    const dateInput = this.querySelector("#input-race-edit-date");
-    let selectedDateISO = this.race.date || new Date().toISOString();
-    if (dateInput && dateInput.value) {
-      try {
-        const origDate = this.race.date ? new Date(this.race.date) : new Date();
-        const [year, month, day] = dateInput.value.split("-").map(Number);
-        origDate.setFullYear(year);
-        origDate.setMonth(month - 1);
-        origDate.setDate(day);
-        selectedDateISO = origDate.toISOString();
-      } catch (e) {
-        // Fallback
-      }
-    }
+    const formComponent = this.querySelector("#race-edit-form-component");
+    const formValues = formComponent
+      ? formComponent.getValues()
+      : {
+          type: "grand_prix",
+          name: "",
+          trackId: "",
+          date: this.race.date || new Date().toISOString(),
+        };
 
     const pilots = this.race.pilots || [];
     const quali = this.race.quali || [];
     const raceSession = this.race.raceSession || [];
 
     return JSON.stringify({
-      name: newName,
-      type: selectedType,
-      trackId: selectedTrackId,
-      date: selectedDateISO,
+      name: formValues.name,
+      type: formValues.type,
+      trackId: formValues.trackId,
+      date: formValues.date,
       pilots: pilots,
       quali: quali,
       raceSession: raceSession,
@@ -678,41 +622,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3" style="min-width: 350px; max-width: 350px;">
                     <!-- FORM -->
                     
-                      <!-- Tipo -->
-                      <div>
-                        <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
-                          Tipo de Corrida
-                        </label>
-                        <select id="select-race-edit-type" class="form-select">
-                          <option value="grand_prix">Grande Prêmio</option>
-                        </select>
-                      </div>
-
-                      <!-- Nome -->
-                      <div>
-                        <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
-                          ${window.t("registrations.modal.name_label") || "Nome"}
-                        </label>
-                        <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
-                      </div>
-
-                      <!-- Pista -->
-                      <div>
-                        <label for="select-race-edit-track" class="form-label fw-semibold text-secondary small">
-                          ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
-                        </label>
-                        <select id="select-race-edit-track" class="form-select">
-                          <!-- Options loaded dynamically -->
-                        </select>
-                      </div>
-
-                      <!-- Data -->
-                      <div>
-                        <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
-                          ${window.t("registrations.races_modal.date_label") || "Data"}
-                        </label>
-                        <input type="date" id="input-race-edit-date" class="form-control" required>
-                      </div>
+                      <slotrace-registrations-races-form id="race-edit-form-component" class="d-flex flex-column gap-3"></slotrace-registrations-races-form>
                     
 
                     <!-- Pilots list -->

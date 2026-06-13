@@ -20,26 +20,29 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
       const { race, drivers } = e.detail;
       this.race = race;
       this.drivers = drivers || [];
-      this.racePilots = race ? (race.pilots || []) : [];
+      this.racePilots = race ? race.pilots || [] : [];
       this.selectedDriverId = null;
       this.selectedCarId = null;
 
       // Load cars list dynamically from database
-      window.electronAPI.db.get('cars').then(cars => {
-        this.cars = cars || [];
-        this.populateLists();
+      window.electronAPI.db
+        .get("cars")
+        .then((cars) => {
+          this.cars = cars || [];
+          this.populateLists();
 
-        const modalEl = this.querySelector('#modal-race-add-pilot');
-        if (modalEl) {
-          let modalInstance = bootstrap.Modal.getInstance(modalEl);
-          if (!modalInstance) {
-            modalInstance = new bootstrap.Modal(modalEl);
+          const modalEl = this.querySelector("#modal-race-add-pilot");
+          if (modalEl) {
+            let modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (!modalInstance) {
+              modalInstance = new bootstrap.Modal(modalEl);
+            }
+            modalInstance.show();
           }
-          modalInstance.show();
-        }
-      }).catch(err => {
-        console.error('Failed to load cars list in add-pilot modal:', err);
-      });
+        })
+        .catch((err) => {
+          console.error("Failed to load cars list in add-pilot modal:", err);
+        });
     };
 
     this._pilotsUpdatedListener = (e) => {
@@ -48,20 +51,26 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
       this.populateLists();
     };
 
-    window.addEventListener('languageChanged', this._langListener);
-    window.addEventListener('requestOpenAddPilot', this._openAddPilotListener);
-    window.addEventListener('racePilotsUpdated', this._pilotsUpdatedListener);
+    window.addEventListener("languageChanged", this._langListener);
+    window.addEventListener("requestOpenAddPilot", this._openAddPilotListener);
+    window.addEventListener("racePilotsUpdated", this._pilotsUpdatedListener);
   }
 
   disconnectedCallback() {
     if (this._langListener) {
-      window.removeEventListener('languageChanged', this._langListener);
+      window.removeEventListener("languageChanged", this._langListener);
     }
     if (this._openAddPilotListener) {
-      window.removeEventListener('requestOpenAddPilot', this._openAddPilotListener);
+      window.removeEventListener(
+        "requestOpenAddPilot",
+        this._openAddPilotListener,
+      );
     }
     if (this._pilotsUpdatedListener) {
-      window.removeEventListener('racePilotsUpdated', this._pilotsUpdatedListener);
+      window.removeEventListener(
+        "racePilotsUpdated",
+        this._pilotsUpdatedListener,
+      );
     }
   }
 
@@ -72,15 +81,15 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
   }
 
   populateAvailablePilotsList() {
-    const listContainer = this.querySelector('#race-add-pilot-list');
+    const listContainer = this.querySelector("#race-add-pilot-list");
     if (!listContainer) return;
 
-    listContainer.innerHTML = '';
+    listContainer.innerHTML = "";
 
     // Filter drivers that are not already in the race
-    const availableDrivers = this.drivers.filter(driver => {
-      return !this.racePilots.some(p => {
-        const id = typeof p === 'object' ? p.id : p;
+    const availableDrivers = this.drivers.filter((driver) => {
+      return !this.racePilots.some((p) => {
+        const id = typeof p === "object" ? p.id : p;
         return id === driver.id;
       });
     });
@@ -95,33 +104,37 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
       return;
     }
 
-    availableDrivers.forEach(driver => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      
+    availableDrivers.forEach((driver) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+
       const isSelected = this.selectedDriverId === driver.id;
-      btn.className = `list-group-item list-group-item-action d-flex align-items-center gap-2.5 py-2 px-2.5 border rounded text-start mb-1 transition-all ${
-        isSelected 
-          ? 'bg-primary bg-opacity-10 border-primary text-primary fw-bold shadow-sm' 
-          : 'border-transparent text-body'
+      btn.className = `list-group-item list-group-item-action d-flex align-items-center gap-2 py-2 px-2.5 border rounded text-start mb-1 transition-all ${
+        isSelected
+          ? "bg-primary bg-opacity-10 border-primary text-primary fw-bold shadow-sm"
+          : "border-transparent text-body"
       }`;
 
       btn.innerHTML = `
-        <div class="rounded-circle overflow-hidden bg-body-secondary flex-shrink-0 shadow-sm" style="width: 32px; height: 32px; border: 2px solid ${isSelected ? 'var(--bs-primary)' : 'var(--bs-border-color)'};">
-          ${driver.photo ? `
+        <div class="rounded-circle overflow-hidden bg-body-secondary flex-shrink-0 shadow-sm" style="width: 32px; height: 32px; border: 2px solid ${isSelected ? "var(--bs-primary)" : "var(--bs-border-color)"};">
+          ${
+            driver.photo
+              ? `
             <img src="${driver.photo}" class="w-100 h-100 object-fit-cover">
-          ` : `
+          `
+              : `
             <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
               <i class="mdi mdi-account text-secondary fs-5"></i>
             </div>
-          `}
+          `
+          }
         </div>
         <div class="text-truncate">
           <div class="small text-truncate" style="font-size: 0.85rem;">${driver.nickname || driver.name}</div>
         </div>
       `;
 
-      btn.addEventListener('click', () => {
+      btn.addEventListener("click", () => {
         if (this.selectedDriverId === driver.id) {
           this.selectedDriverId = null;
         } else {
@@ -136,10 +149,10 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
   }
 
   populateAvailableCarsList() {
-    const listContainer = this.querySelector('#race-add-car-list');
+    const listContainer = this.querySelector("#race-add-car-list");
     if (!listContainer) return;
 
-    listContainer.innerHTML = '';
+    listContainer.innerHTML = "";
 
     if (!this.cars || this.cars.length === 0) {
       listContainer.innerHTML = `
@@ -151,33 +164,37 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
       return;
     }
 
-    this.cars.forEach(car => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      
+    this.cars.forEach((car) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+
       const isSelected = this.selectedCarId === car.id;
-      btn.className = `list-group-item list-group-item-action d-flex align-items-center gap-2.5 py-2 px-2.5 border rounded text-start mb-1 transition-all ${
-        isSelected 
-          ? 'bg-primary bg-opacity-10 border-primary text-primary fw-bold shadow-sm' 
-          : 'border-transparent text-body'
+      btn.className = `list-group-item list-group-item-action d-flex align-items-center gap-2 py-2 px-2.5 border rounded text-start mb-1 transition-all ${
+        isSelected
+          ? "bg-primary bg-opacity-10 border-primary text-primary fw-bold shadow-sm"
+          : "border-transparent text-body"
       }`;
 
       btn.innerHTML = `
-        <div class="rounded overflow-hidden bg-body-secondary flex-shrink-0 shadow-sm" style="width: 42px; height: 28px; border: 1px solid ${isSelected ? 'var(--bs-primary)' : 'var(--bs-border-color)'};">
-          ${car.photo ? `
+        <div class="rounded overflow-hidden bg-body-secondary flex-shrink-0 shadow-sm" style="width: 42px; height: 28px; border: 1px solid ${isSelected ? "var(--bs-primary)" : "var(--bs-border-color)"};">
+          ${
+            car.photo
+              ? `
             <img src="${car.photo}" class="w-100 h-100 object-fit-cover">
-          ` : `
+          `
+              : `
             <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary">
               <i class="mdi mdi-car text-secondary fs-6"></i>
             </div>
-          `}
+          `
+          }
         </div>
         <div class="text-truncate">
           <div class="small text-truncate" style="font-size: 0.85rem;">${car.name}</div>
         </div>
       `;
 
-      btn.addEventListener('click', () => {
+      btn.addEventListener("click", () => {
         if (this.selectedCarId === car.id) {
           this.selectedCarId = null;
         } else {
@@ -192,26 +209,28 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
   }
 
   updateConfirmButtonState() {
-    const btn = this.querySelector('#btn-confirm-add-pilot');
+    const btn = this.querySelector("#btn-confirm-add-pilot");
     if (btn) {
       btn.disabled = !this.selectedDriverId;
     }
   }
 
   setupEvents() {
-    const confirmBtn = this.querySelector('#btn-confirm-add-pilot');
+    const confirmBtn = this.querySelector("#btn-confirm-add-pilot");
     if (confirmBtn) {
-      confirmBtn.addEventListener('click', () => {
+      confirmBtn.addEventListener("click", () => {
         if (!this.selectedDriverId) return;
 
-        window.dispatchEvent(new CustomEvent('racePilotSelected', {
-          detail: { 
-            driverId: this.selectedDriverId,
-            carId: this.selectedCarId
-          }
-        }));
+        window.dispatchEvent(
+          new CustomEvent("racePilotSelected", {
+            detail: {
+              driverId: this.selectedDriverId,
+              carId: this.selectedCarId,
+            },
+          }),
+        );
 
-        const modalEl = this.querySelector('#modal-race-add-pilot');
+        const modalEl = this.querySelector("#modal-race-add-pilot");
         if (modalEl) {
           const modalInstance = bootstrap.Modal.getInstance(modalEl);
           if (modalInstance) {
@@ -229,7 +248,7 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content border-secondary-subtle shadow-lg">
             <div class="modal-header border-secondary-subtle bg-body-tertiary py-2 px-3">
-              <h6 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-1.5" id="modal-race-add-pilot-title" style="font-size: 0.95rem;">
+              <h6 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-1" id="modal-race-add-pilot-title" style="font-size: 0.95rem;">
                 <i class="mdi mdi-account-plus text-primary fs-5"></i>
                 Adicionar Piloto
               </h6>
@@ -276,4 +295,7 @@ class SlotRaceRegistrationsRacesAddPilotModal extends HTMLElement {
   }
 }
 
-customElements.define('slotrace-registrations-races-add-pilot-modal', SlotRaceRegistrationsRacesAddPilotModal);
+customElements.define(
+  "slotrace-registrations-races-add-pilot-modal",
+  SlotRaceRegistrationsRacesAddPilotModal,
+);

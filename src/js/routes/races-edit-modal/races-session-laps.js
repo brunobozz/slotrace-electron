@@ -132,21 +132,25 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
       </style>
 
       <div class="d-flex align-items-center justify-content-between mb-2.5 px-1">
-        <span class="fw-bold text-secondary small d-flex align-items-center gap-1.5" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+        <span class="fw-bold text-secondary small d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
           <i class="mdi mdi-history text-primary"></i>
           ${window.t("registrations.races_modal.laps_title") || "Tempos das Voltas"}
           <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem; font-family: monospace;">${this.item.lapTimes.length}</span>
         </span>
         <div class="d-flex align-items-center gap-2">
-          ${this.hideZone ? "" : `
+          ${
+            this.hideZone
+              ? ""
+              : `
             <div class="input-group input-group-sm" style="width: 120px;">
               <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
                 ${window.t("registrations.races_modal.zone_label") || "Zona"}
               </span>
-              <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ''}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
+              <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ""}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
             </div>
-          `}
-          <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 fw-semibold shadow-sm">
+          `
+          }
+          <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 fw-semibold shadow-sm">
             <i class="mdi mdi-plus"></i>
             ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}
           </button>
@@ -175,7 +179,10 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
           parseFloat(this.item.bestLapTime) > 0;
         const isPoleLap = isBestLap && this.isPole;
 
-        const formattedValue = (lapTime !== undefined && lapTime !== null) ? parseFloat(lapTime).toFixed(4) : "";
+        const formattedValue =
+          lapTime !== undefined && lapTime !== null
+            ? parseFloat(lapTime).toFixed(4)
+            : "";
 
         const pill = document.createElement("div");
         pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}`;

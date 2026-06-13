@@ -286,7 +286,7 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
       row.innerHTML = `
         <td class="align-middle text-start">${positionHtml}</td>
         <td class="align-middle text-start">
-          <div class="d-flex align-items-center gap-2.5">
+          <div class="d-flex align-items-center gap-2">
             <div class="rounded-circle overflow-hidden bg-body-secondary flex-shrink-0 border border-secondary-subtle" style="width: 40px; height: 40px;">
               ${
                 photoUrl
