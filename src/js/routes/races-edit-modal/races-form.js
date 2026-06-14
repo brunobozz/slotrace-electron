@@ -39,7 +39,10 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
       window.removeEventListener("languageChanged", this._langListener);
     }
     if (this._trackSelectedListener) {
-      window.removeEventListener("raceTrackSelected", this._trackSelectedListener);
+      window.removeEventListener(
+        "raceTrackSelected",
+        this._trackSelectedListener,
+      );
     }
   }
 
@@ -127,7 +130,8 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
     let date = (this.race && this.race.date) || new Date().toISOString();
     if (dateInput && dateInput.value) {
       try {
-        const origDate = this.race && this.race.date ? new Date(this.race.date) : new Date();
+        const origDate =
+          this.race && this.race.date ? new Date(this.race.date) : new Date();
         const [year, month, day] = dateInput.value.split("-").map(Number);
         origDate.setFullYear(year);
         origDate.setMonth(month - 1);
@@ -188,41 +192,43 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
         }
       </style>
 
-      <!-- Tipo -->
-      <div>
-        <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
-          Tipo de Corrida
-        </label>
-        <select id="select-race-edit-type" class="form-select">
-          <option value="grand_prix">Grande Prêmio</option>
-        </select>
-      </div>
-
-      <!-- Nome -->
-      <div>
-        <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
-          ${window.t("registrations.modal.name_label") || "Nome"}
-        </label>
-        <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
-      </div>
-
-      <!-- Data -->
-      <div>
-        <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
-          ${window.t("registrations.races_modal.date_label") || "Data"}
-        </label>
-        <input type="date" id="input-race-edit-date" class="form-control" required>
-      </div>
-
-      <!-- Pista -->
-      <div>
-        <label class="form-label fw-semibold text-secondary small mb-1.5">
-          ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
-        </label>
-        <div id="track-selector-preview" class="border border-secondary-subtle rounded-3 bg-body-secondary overflow-hidden position-relative shadow-sm" style="aspect-ratio: 16/9; cursor: pointer; transition: border-color 0.2s ease;">
-          <!-- Rendered dynamically -->
+      <div class="d-flex flex-column gap-3">
+        <!-- Tipo -->
+        <div>
+          <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
+            Tipo de Corrida
+          </label>
+          <select id="select-race-edit-type" class="form-select">
+            <option value="grand_prix">Grande Prêmio</option>
+          </select>
         </div>
-      </div>
+
+        <!-- Nome -->
+        <div>
+          <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
+            ${window.t("registrations.modal.name_label") || "Nome"}
+          </label>
+          <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
+        </div>
+
+        <!-- Data -->
+        <div>
+          <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
+            ${window.t("registrations.races_modal.date_label") || "Data"}
+          </label>
+          <input type="date" id="input-race-edit-date" class="form-control" required>
+        </div>
+
+        <!-- Pista -->
+        <div>
+          <label class="form-label fw-semibold text-secondary small mb-1.5">
+            ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
+          </label>
+          <div id="track-selector-preview" class="border border-secondary-subtle rounded-3 bg-body-secondary overflow-hidden position-relative shadow-sm" style="aspect-ratio: 16/9; cursor: pointer; transition: border-color 0.2s ease;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+    </div>
     `;
   }
 }

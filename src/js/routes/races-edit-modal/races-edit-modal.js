@@ -376,7 +376,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       // Bind custom form input event
       const formComponent = this.querySelector("#race-edit-form-component");
       if (formComponent) {
-        formComponent.addEventListener("raceFormInput", () => this.checkPendingChanges());
+        formComponent.addEventListener("raceFormInput", () =>
+          this.checkPendingChanges(),
+        );
       }
 
       // Close button on header
@@ -621,12 +623,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 <div class="d-flex h-100">
                   <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3" style="min-width: 350px; max-width: 350px;">
                     <!-- FORM -->
-                    
-                      <slotrace-registrations-races-form id="race-edit-form-component" class="d-flex flex-column gap-3"></slotrace-registrations-races-form>
-                    
-
+                    <slotrace-registrations-races-form id="race-edit-form-component"></slotrace-registrations-races-form>
                     <!-- Pilots list -->
-                    <div class="mt-4">
+                    <div>
                       <label class="form-label fw-semibold text-secondary small mb-2">
                         ${window.t("registrations.drivers") || "Pilotos"}
                       </label>
