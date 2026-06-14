@@ -198,7 +198,10 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     const pilotsContainer = this.querySelector("#race-edit-pilots-list");
     if (!pilotsContainer) return;
 
-    pilotsContainer.innerHTML = "";
+    const pills = pilotsContainer.querySelectorAll("slotrace-driver-pill");
+    pills.forEach((p) => p.remove());
+
+    const addButton = pilotsContainer.querySelector("#btn-race-edit-add-pilot");
     const racePilots = this.race && this.race.pilots ? this.race.pilots : [];
 
     // Render all current pilots in the race as horizontal capsule pills
@@ -275,34 +278,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         },
       });
 
-      pilotsContainer.appendChild(pill);
+      if (addButton) {
+        pilotsContainer.insertBefore(pill, addButton);
+      } else {
+        pilotsContainer.appendChild(pill);
+      }
     });
-
-    // Add the circular "+" button to add more pilots at the end
-    const addButton = document.createElement("button");
-    addButton.type = "button";
-    addButton.id = "btn-race-edit-add-pilot";
-    addButton.className =
-      "rounded-circle border border-secondary-subtle d-flex align-items-center justify-content-center bg-body-secondary shadow-sm text-primary mb-1";
-    addButton.style.width = "48px";
-    addButton.style.height = "48px";
-    addButton.style.borderWidth = "2px";
-    addButton.style.borderStyle = "dashed";
-    addButton.style.fontSize = "1.3rem";
-    addButton.title =
-      window.t("registrations.new_driver") || "Adicionar Piloto";
-    addButton.innerHTML = `<i class="mdi mdi-plus"></i>`;
-
-    addButton.addEventListener("click", () => {
-      // Dispatches event to launch the separate mini modal component
-      window.dispatchEvent(
-        new CustomEvent("requestOpenAddPilot", {
-          detail: { race: this.race, drivers: this.drivers },
-        }),
-      );
-    });
-
-    pilotsContainer.appendChild(addButton);
 
     // Call qualifying table population
     const qualiTableComponent = this.querySelector(
@@ -379,6 +360,18 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         formComponent.addEventListener("raceFormInput", () =>
           this.checkPendingChanges(),
         );
+      }
+
+      // Bind static add pilot button click listener
+      const addPilotBtn = this.querySelector("#btn-race-edit-add-pilot");
+      if (addPilotBtn) {
+        addPilotBtn.addEventListener("click", () => {
+          window.dispatchEvent(
+            new CustomEvent("requestOpenAddPilot", {
+              detail: { race: this.race, drivers: this.drivers },
+            }),
+          );
+        });
       }
 
       // Close button on header
@@ -621,7 +614,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
             <form id="form-edit-race">
               <div class="modal-body text-start fs-6 p-0">
                 <div class="d-flex h-100">
-                  <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3" style="min-width: 350px; max-width: 350px;">
+                  <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3 overflow-y-auto" style="min-width: 350px; max-width: 350px;">
                     <!-- FORM -->
                     <slotrace-registrations-races-form id="race-edit-form-component"></slotrace-registrations-races-form>
                     <!-- Pilots list -->
@@ -631,6 +624,10 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                       </label>
                       <div id="race-edit-pilots-list" class="d-flex align-items-center gap-2 flex-wrap py-1">
                         <!-- Rendered dynamically -->
+                        <button type="button" id="btn-race-edit-add-pilot" class="btn btn-primary rounded-pill w-100" style="height: 48px;" title="${window.t("registrations.races_modal.add_driver") || "Adicionar Piloto"}">
+                          <i class="mdi mdi-plus"></i>
+                          <span>${window.t("registrations.races_modal.add_driver") || "Adicionar Piloto"}</span>
+                        </button>
                       </div>
                     </div>
                   </div>

@@ -174,6 +174,7 @@ window.localeStrings.pt = {
         "? Esta ação não poderá ser desfeita e removerá o registro do histórico.",
       edit_title: "Editar Corrida",
       save_button: "Salvar Alterações",
+      add_driver: "Adicionar Piloto",
       winner_label: "Vencedor",
       no_winner: "Sem Vencedor",
       track_label: "Pista Utilizada",

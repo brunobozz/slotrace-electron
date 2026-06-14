@@ -2,9 +2,9 @@ class SlotRaceDriverPill extends HTMLElement {
   constructor() {
     super();
     this.pilotId = null;
-    this.name = '';
-    this.photoUrl = '';
-    this.carName = '';
+    this.name = "";
+    this.photoUrl = "";
+    this.carName = "";
     this.onRemove = null;
   }
 
@@ -19,9 +19,10 @@ class SlotRaceDriverPill extends HTMLElement {
 
   render() {
     // Style as the capsule driver pill
-    this.className = 'driver-pill-wrapper position-relative d-inline-flex align-items-center bg-body-secondary border border-secondary-subtle rounded-pill p-1 pe-2 me-1 mb-1';
-    this.style.height = '48px';
-    this.style.minWidth = 'max-content';
+    this.className =
+      "w-100 driver-pill-wrapper position-relative d-inline-flex align-items-center bg-body-secondary border border-secondary-subtle rounded-pill p-1 pe-2 me-1 mb-1";
+    this.style.height = "48px";
+    this.style.minWidth = "max-content";
 
     this.innerHTML = `
       <style>
@@ -33,13 +34,17 @@ class SlotRaceDriverPill extends HTMLElement {
       
       <!-- Circular Avatar Container with Active Theme Color border -->
       <div class="rounded-circle overflow-hidden bg-body-tertiary flex-shrink-0 shadow-sm" style="width: 38px; height: 38px; border: 2px solid var(--bs-primary);">
-        ${this.photoUrl ? `
+        ${
+          this.photoUrl
+            ? `
           <img src="${this.photoUrl}" class="w-100 h-100 object-fit-cover">
-        ` : `
+        `
+            : `
           <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-body-tertiary text-secondary">
             <i class="mdi mdi-account fs-5"></i>
           </div>
-        `}
+        `
+        }
       </div>
       
       <!-- Driver Nickname and Car text -->
@@ -47,11 +52,15 @@ class SlotRaceDriverPill extends HTMLElement {
         <span class="fw-bold text-body-emphasis small" style="font-size: 0.85rem; letter-spacing: 0.02em; white-space: nowrap;">
           ${this.name}
         </span>
-        ${this.carName ? `
+        ${
+          this.carName
+            ? `
           <span class="text-secondary fw-semibold" style="font-size: 0.68rem; white-space: nowrap; opacity: 0.85; letter-spacing: 0.01em;">
             ${this.carName}
           </span>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
       
       <!-- Absolute positioned Red X circle badge in top right (hidden by default, appears on hover) -->
@@ -61,9 +70,9 @@ class SlotRaceDriverPill extends HTMLElement {
     `;
 
     // Bind remove button callback
-    const removeBtn = this.querySelector('.btn-remove-race-pilot');
+    const removeBtn = this.querySelector(".btn-remove-race-pilot");
     if (removeBtn && this.onRemove) {
-      removeBtn.addEventListener('click', (e) => {
+      removeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         this.onRemove();
       });
@@ -71,4 +80,4 @@ class SlotRaceDriverPill extends HTMLElement {
   }
 }
 
-customElements.define('slotrace-driver-pill', SlotRaceDriverPill);
+customElements.define("slotrace-driver-pill", SlotRaceDriverPill);
