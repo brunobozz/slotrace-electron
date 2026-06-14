@@ -24,7 +24,7 @@ window.localeStrings.pt = {
     new_car: "Novo Carro",
     new_track: "Nova Pista",
     new_race: "Nova Corrida",
-    default_track: "Pista Padrão",
+    select_a_track: "Selecione a Pista",
     no_pilots_participated: "Nenhum piloto participou desta corrida ainda.",
     search_race_placeholder: "Pesquisar corrida...",
     no_races_listed: "Nenhuma corrida salva no histórico ainda.",

@@ -80,33 +80,6 @@ class SlotRaceRegistrationsTracksCard extends HTMLElement {
       recordHtml = `${recordPrefix}: <strong style="color: var(--bs-primary); font-weight: bold;">${track.recordTime}s${pilotSuffix}</strong>`;
     }
 
-    const laneCount = parseInt(track.lanes) || 0;
-    const laneColors = track.laneColors || [];
-    const defaultColors = [
-      "#ff3b30",
-      "#007aff",
-      "#34c759",
-      "#ffcc00",
-      "#ff9500",
-      "#ffffff",
-      "#af52de",
-      "#8e8e93",
-    ];
-    let dotsHtml = "";
-    if (laneCount > 0) {
-      dotsHtml = `
-        <div class="d-flex align-items-center bg-black bg-opacity-65 position-absolute rounded-pill" style="bottom: 10px; left: 10px; border: 1px solid rgba(255,255,255,0.18); padding: 5px 10px; gap: 6px;">
-          ${Array.from({ length: laneCount })
-            .map((_, i) => {
-              const colorHex =
-                laneColors[i] || defaultColors[i % defaultColors.length];
-              return `<span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background-color: ${colorHex}; border: 1.5px solid rgba(255,255,255,0.30); box-shadow: 0 0 5px ${colorHex}a0;"></span>`;
-            })
-            .join("")}
-        </div>
-      `;
-    }
-
     this.innerHTML = `
       <div class="card h-100 bg-body-tertiary border-secondary-subtle shadow-sm">
         <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -124,13 +97,13 @@ class SlotRaceRegistrationsTracksCard extends HTMLElement {
               </div>
             `
             }
-            ${dotsHtml}
+            <slotrace-lane-dots class="position-absolute" style="bottom: 10px; left: 10px;"></slotrace-lane-dots>
           </div>
           
           <!-- Upper row: Track Name & Scale Badge side-by-side -->
           <div class="d-flex align-items-center justify-content-between mb-2 gap-2">
             <h4 class="fw-bold text-body-emphasis mb-0 text-truncate text-start" title="${name}" style="font-size: 1.25rem; line-height: 1.2;">
-              ${name}
+               ${name}
             </h4>
             ${
               scale
@@ -189,6 +162,11 @@ class SlotRaceRegistrationsTracksCard extends HTMLElement {
         </div>
       </div>
     `;
+
+    const laneDots = this.querySelector("slotrace-lane-dots");
+    if (laneDots) {
+      laneDots.setTrack(track);
+    }
 
     // Bind edit request events
     const editBtn = this.querySelector(".btn-edit-track");

@@ -101,16 +101,22 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
                  <i class="mdi mdi-go-kart-track text-secondary" style="font-size: 48px;"></i>
                </div>`
         }
-        <div class="position-absolute bottom-0 start-0 w-100 bg-black bg-opacity-75 text-white p-2 text-center text-truncate small fw-semibold" style="border-top: 1px solid rgba(255,255,255,0.15);">
+        <slotrace-lane-dots class="position-absolute my-2" style="bottom:0px; left: 10px; z-index: 2;"></slotrace-lane-dots>
+        <div class="position-absolute start-0 w-100 text-white p-3 text-truncate small fw-semibold" style="bottom:20px; text-shadow: 1px 1px 3px #000000;">
           ${trackObj.name}
         </div>
       `;
+
+      const laneDots = previewContainer.querySelector("slotrace-lane-dots");
+      if (laneDots) {
+        laneDots.setTrack(trackObj);
+      }
     } else {
       previewContainer.innerHTML = `
         <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-secondary gap-1 p-3">
           <i class="mdi mdi-plus-circle-outline" style="font-size: 32px; line-height: 1;"></i>
           <span class="small fw-semibold text-center" style="font-size: 0.8rem;">
-            ${window.t("registrations.default_track") || "Selecionar Pista"}
+            ${window.t("registrations.select_a_track") || "Selecione a Pista"}
           </span>
         </div>
       `;
