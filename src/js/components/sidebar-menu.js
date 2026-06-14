@@ -46,7 +46,7 @@ class SlotRaceSidebarMenu extends HTMLElement {
         },
         {
           name: "registrations.tracks",
-          icon: "mdi mdi-road-variant",
+          icon: "mdi mdi-go-kart-track",
           route: "#registrations/tracks",
         },
       ],
