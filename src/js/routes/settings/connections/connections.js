@@ -289,6 +289,14 @@ class SlotRaceSettingsConnections extends HTMLElement {
               </div>
             </div>
             
+            <!-- Status Badge Area -->
+            <div class="mb-3 d-flex align-items-center justify-content-between py-2 border-top border-bottom border-secondary border-opacity-10">
+              <span class="text-secondary small fw-semibold text-uppercase">Status de Conexão</span>
+              <span id="status-badge" class="badge bg-danger px-3 py-2 fs-7">
+                <i class="mdi mdi-close-circle me-1"></i>Desconectado
+              </span>
+            </div>
+
             <!-- Console Log Container -->
             <div id="console-log" class="flex-grow-1 bg-dark rounded border border-secondary border-opacity-25 p-3 overflow-y-auto font-monospace text-success fs-7" style="height: 260px; max-height: 300px; line-height: 1.4;">
               <div class="text-secondary opacity-50 py-0.5">Console pronto para monitoramento. Selecione uma porta e conecte...</div>
