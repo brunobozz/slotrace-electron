@@ -285,29 +285,33 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       }
     });
 
-    // Call qualifying table population
+    const tablesContainer = this.querySelector(
+      "#race-edit-tables-tab-container",
+    );
+    const emptyStateContainer = this.querySelector(
+      "#race-edit-tables-empty-state",
+    );
     const qualiTableComponent = this.querySelector(
       "#race-edit-quali-table-component",
     );
-    if (qualiTableComponent) {
-      if (racePilots.length === 0) {
-        qualiTableComponent.classList.add("d-none");
-      } else {
-        qualiTableComponent.classList.remove("d-none");
-        qualiTableComponent.setParams(this.race, this.drivers, this.cars);
-      }
-    }
-
-    // Call race table population
     const raceTableComponent = this.querySelector(
       "#race-edit-race-table-component",
     );
-    if (raceTableComponent) {
+
+    if (tablesContainer && emptyStateContainer) {
       if (racePilots.length === 0) {
-        raceTableComponent.classList.add("d-none");
+        tablesContainer.classList.add("d-none");
+        emptyStateContainer.classList.remove("d-none");
       } else {
-        raceTableComponent.classList.remove("d-none");
-        raceTableComponent.setParams(this.race, this.drivers, this.cars);
+        tablesContainer.classList.remove("d-none");
+        emptyStateContainer.classList.add("d-none");
+
+        if (qualiTableComponent) {
+          qualiTableComponent.setParams(this.race, this.drivers, this.cars);
+        }
+        if (raceTableComponent) {
+          raceTableComponent.setParams(this.race, this.drivers, this.cars);
+        }
       }
     }
   }
@@ -634,11 +638,44 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   
                   <!-- TABLES AREA -->
                   <div class="flex-grow-1 p-3 overflow-y-auto">
-                    <!-- Qualifying Standings Table Row -->
-                    <slotrace-registrations-races-quali-table id="race-edit-quali-table-component" class="d-block mb-4 d-none"></slotrace-registrations-races-quali-table>
-                  
-                    <!-- Race Standings Table Row -->
-                    <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block d-none"></slotrace-registrations-races-race-table>
+                    <!-- Tab System Container (visible when pilots > 0) -->
+                    <div id="race-edit-tables-tab-container" class="d-none h-100 d-flex flex-column">
+                      <!-- Navigation Tabs -->
+                      <ul class="nav nav-tabs nav-fill border-secondary-subtle mb-3" id="race-edit-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link active fw-semibold text-secondary-emphasis" id="quali-tab" data-bs-toggle="tab" data-bs-target="#tab-content-quali" type="button" role="tab" aria-controls="tab-content-quali" aria-selected="true">
+                            Classificação
+                          </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link fw-semibold text-secondary-emphasis" id="race-tab" data-bs-toggle="tab" data-bs-target="#tab-content-race" type="button" role="tab" aria-controls="tab-content-race" aria-selected="false">
+                            Corrida
+                          </button>
+                        </li>
+                      </ul>
+                      
+                      <!-- Tab Content Container -->
+                      <div class="tab-content flex-grow-1" id="race-edit-tabs-content">
+                        <!-- Tab 1: Qualifying -->
+                        <div class="tab-pane fade show active h-100" id="tab-content-quali" role="tabpanel" aria-labelledby="quali-tab">
+                          <slotrace-registrations-races-quali-table id="race-edit-quali-table-component" class="d-block mb-4"></slotrace-registrations-races-quali-table>
+                        </div>
+                        
+                        <!-- Tab 2: Race -->
+                        <div class="tab-pane fade h-100" id="tab-content-race" role="tabpanel" aria-labelledby="race-tab">
+                          <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block"></slotrace-registrations-races-race-table>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Empty State (visible when pilots == 0) -->
+                    <div id="race-edit-tables-empty-state" class="d-flex flex-column align-items-center justify-content-center h-100 text-secondary gap-3 py-5">
+                      <i class="mdi mdi-table-alert text-secondary" style="font-size: 64px; opacity: 0.65;"></i>
+                      <div class="text-center">
+                        <h6 class="fw-bold text-body-emphasis mb-1">Nenhum Piloto Adicionado</h6>
+                        <p class="small text-secondary mb-0">Adicione pilotos para configurar a Classificação e Resultados da Corrida.</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

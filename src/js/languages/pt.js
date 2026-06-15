@@ -175,6 +175,7 @@ window.localeStrings.pt = {
       edit_title: "Editar Corrida",
       save_button: "Salvar Alterações",
       add_driver: "Adicionar Piloto",
+      race_name_label: "Nome da Corrida",
       winner_label: "Vencedor",
       no_winner: "Sem Vencedor",
       track_label: "Pista Utilizada",

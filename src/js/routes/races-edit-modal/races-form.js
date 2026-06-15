@@ -200,7 +200,7 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
 
       <div class="d-flex flex-column gap-3">
         <!-- Tipo -->
-        <div>
+        <div class="d-none">
           <label for="select-race-edit-type" class="form-label fw-semibold text-secondary small">
             Tipo de Corrida
           </label>
@@ -211,15 +211,15 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
 
         <!-- Nome -->
         <div>
-          <label for="input-race-edit-name" class="form-label fw-semibold text-secondary small">
+          <label for="input-race-edit-name" class="d-none form-label fw-semibold text-secondary small">
             ${window.t("registrations.modal.name_label") || "Nome"}
           </label>
-          <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.new_race") || "Nome da Corrida"}">
+          <input type="text" id="input-race-edit-name" class="form-control" required placeholder="${window.t("registrations.races_modal.race_name_label") || "Nome da Corrida"}">
         </div>
 
         <!-- Data -->
         <div>
-          <label for="input-race-edit-date" class="form-label fw-semibold text-secondary small">
+          <label for="input-race-edit-date" class="d-none form-label fw-semibold text-secondary small">
             ${window.t("registrations.races_modal.date_label") || "Data"}
           </label>
           <input type="date" id="input-race-edit-date" class="form-control" required>
@@ -227,7 +227,7 @@ class SlotRaceRegistrationsRacesForm extends HTMLElement {
 
         <!-- Pista -->
         <div>
-          <label class="form-label fw-semibold text-secondary small mb-1.5">
+          <label class="d-none form-label fw-semibold text-secondary small mb-1.5">
             ${window.t("registrations.races_modal.track_label") || "Pista Utilizada"}
           </label>
           <div id="track-selector-preview" class="border border-secondary-subtle rounded-3 bg-body-secondary overflow-hidden position-relative shadow-sm" style="aspect-ratio: 16/9; cursor: pointer; transition: border-color 0.2s ease;">
