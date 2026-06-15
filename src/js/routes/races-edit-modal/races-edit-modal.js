@@ -326,6 +326,16 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     }
   }
 
+  _formatPodiumTime(seconds) {
+    if (seconds == null || isNaN(seconds) || seconds === 0) return "";
+    const mins = Math.floor(seconds / 60);
+    const secs = (seconds % 60).toFixed(3);
+    const paddedSecs = secs.padStart(6, "0");
+    return mins > 0
+      ? `${String(mins).padStart(2, "0")}:${paddedSecs}`
+      : `00:${paddedSecs}`;
+  }
+
   populateResultsTab() {
     const podiumComponent = this.querySelector("#race-edit-podium-component");
     if (!podiumComponent) return;
@@ -335,11 +345,19 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
       return;
     }
 
+    const activePilotIds = new Set(
+      this.race.pilots.map((p) => String(p && typeof p === "object" ? p.id : p))
+    );
+
     // Determine the top 3 drivers from the race session
     let topDrivers = [];
     if (this.race.raceSession && this.race.raceSession.length > 0) {
       const racePilots = this.race.pilots || [];
-      const sortedRace = [...this.race.raceSession].sort((a, b) => {
+      const filteredSession = this.race.raceSession.filter((r) =>
+        activePilotIds.has(String(r.pilotId))
+      );
+
+      const sortedRace = [...filteredSession].sort((a, b) => {
         const lapsA = parseInt(a.laps) || 0;
         const lapsB = parseInt(b.laps) || 0;
 
@@ -390,15 +408,55 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         );
         return idxA - idxB;
       });
-      topDrivers = sortedRace.slice(0, 3).map((r) => {
-        return (
-          this.drivers.find((d) => d.id === r.pilotId) || { name: r.pilotId }
-        );
-      });
+
+      const leaderLaps = sortedRace[0] ? parseInt(sortedRace[0].laps) || 0 : 0;
+
+      topDrivers = sortedRace.slice(0, 3).map((r, index) => {
+        const driverObj = this.drivers.find((d) => d.id === r.pilotId);
+        if (!driverObj) return null;
+
+        const pilotConfig = this.race.pilots.find((p) => {
+          const pId = typeof p === "object" ? p.id : p;
+          return String(pId) === String(r.pilotId);
+        });
+        const carId = pilotConfig && typeof pilotConfig === "object" ? pilotConfig.carId : null;
+        const carObj = carId && this.cars ? this.cars.find((c) => String(c.id) === String(carId)) : null;
+
+        let lapsText = r.laps === 1 ? '1 VOLTA' : `${r.laps || 0} VOLTAS`;
+        let subtext = "";
+
+        if (index === 0) {
+          subtext = "";
+        } else {
+          const currentLaps = parseInt(r.laps) || 0;
+          const diffLaps = leaderLaps - currentLaps;
+          if (diffLaps > 0) {
+            subtext = `+${diffLaps} VOLTA${diffLaps > 1 ? 'S' : ''}`;
+          } else {
+            const leaderZone = sortedRace[0] ? parseFloat(sortedRace[0].finalZone) || 0 : 0;
+            const currentZone = parseFloat(r.finalZone) || 0;
+            const diffZones = leaderZone - currentZone;
+            if (diffZones > 0) {
+              subtext = `+${diffZones}z`;
+            }
+          }
+        }
+
+        return {
+          driver: driverObj,
+          car: carObj,
+          laps: lapsText,
+          subtext: subtext
+        };
+      }).filter(Boolean);
     } else if (this.race.quali && this.race.quali.length > 0) {
       // Fallback: sort by bestLapTime ascending (excluding 0/empty times)
       const racePilots = this.race.pilots || [];
-      const sortedQuali = [...this.race.quali]
+      const filteredQuali = this.race.quali.filter((q) =>
+        activePilotIds.has(String(q.pilotId))
+      );
+
+      const sortedQuali = [...filteredQuali]
         .filter((q) => (parseFloat(q.bestLapTime) || 0) > 0)
         .sort((a, b) => {
           const timeA = parseFloat(a.bestLapTime) || 0;
@@ -422,11 +480,41 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           }
           return timeA - timeB;
         });
-      topDrivers = sortedQuali.slice(0, 3).map((q) => {
-        return (
-          this.drivers.find((d) => d.id === q.pilotId) || { name: q.pilotId }
-        );
-      });
+
+      const leaderTime = sortedQuali[0] ? parseFloat(sortedQuali[0].bestLapTime) || 0 : 0;
+
+      topDrivers = sortedQuali.slice(0, 3).map((q, index) => {
+        const driverObj = this.drivers.find((d) => d.id === q.pilotId);
+        if (!driverObj) return null;
+
+        const pilotConfig = this.race.pilots.find((p) => {
+          const pId = typeof p === "object" ? p.id : p;
+          return String(pId) === String(q.pilotId);
+        });
+        const carId = pilotConfig && typeof pilotConfig === "object" ? pilotConfig.carId : null;
+        const carObj = carId && this.cars ? this.cars.find((c) => String(c.id) === String(carId)) : null;
+
+        const totalLaps = q.laps || (q.lapTimes ? q.lapTimes.length : 0);
+        let lapsText = totalLaps === 1 ? '1 VOLTA' : `${totalLaps} VOLTAS`;
+        let subtext = "";
+
+        if (index === 0) {
+          subtext = "";
+        } else {
+          const currentTime = parseFloat(q.bestLapTime) || 0;
+          const diffTime = currentTime - leaderTime;
+          if (diffTime > 0) {
+            subtext = `+${diffTime.toFixed(3)}s`;
+          }
+        }
+
+        return {
+          driver: driverObj,
+          car: carObj,
+          laps: lapsText,
+          subtext: subtext
+        };
+      }).filter(Boolean);
     }
 
     podiumComponent.setParams({ drivers: topDrivers });
@@ -789,7 +877,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
                         <!-- Tab 3: Results -->
                         <div class="tab-pane fade h-100" id="tab-content-results" role="tabpanel" aria-labelledby="results-tab">
-                          <div class="p-4 h-100">
+                          <div>
                             <slotrace-podium id="race-edit-podium-component" class="w-100"></slotrace-podium>
                           </div>
                         </div>
