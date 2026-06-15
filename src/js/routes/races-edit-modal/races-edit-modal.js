@@ -78,19 +78,6 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
             tabTrigger.show();
           }
 
-          // Expand results accordion when opening
-          const resultsCollapse = this.querySelector("#collapse-results");
-          if (resultsCollapse) {
-            resultsCollapse.classList.add("show");
-            const resultsButton = this.querySelector(
-              "[data-bs-target='#collapse-results']",
-            );
-            if (resultsButton) {
-              resultsButton.classList.remove("collapsed");
-              resultsButton.setAttribute("aria-expanded", "true");
-            }
-          }
-
           // Initialize the initial snapshot after all modal fields have been populated
           this.initialRaceSnapshot = this.getCurrentStateSnapshot();
           this.checkPendingChanges();
@@ -333,13 +320,13 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           raceTableComponent.setParams(this.race, this.drivers, this.cars);
         }
 
-        // Populate results accordion
-        this.populateResultsAccordion();
+        // Populate results tab
+        this.populateResultsTab();
       }
     }
   }
 
-  populateResultsAccordion() {
+  populateResultsTab() {
     const podiumComponent = this.querySelector("#race-edit-podium-component");
     if (!podiumComponent) return;
 
@@ -769,23 +756,6 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   <div class="flex-grow-1 p-3 overflow-y-auto">
                     <!-- Tab System Container (visible when pilots > 0) -->
                     <div id="race-edit-tables-tab-container" class="d-none h-100 d-flex flex-column">
-                      <!-- Accordion of 1 item (Results) -->
-                      <div class="accordion mb-3" id="race-edit-results-accordion">
-                        <div class="accordion-item rounded-3">
-                          <h2 class="accordion-header" id="heading-results">
-                            <button class="accordion-button py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-results" aria-expanded="true" aria-controls="collapse-results">
-                              <i class="mdi mdi-trophy-outline me-2 fs-5"></i>
-                              Resultados
-                            </button>
-                          </h2>
-                          <div id="collapse-results" class="accordion-collapse collapse show" aria-labelledby="heading-results" data-bs-parent="#race-edit-results-accordion">
-                            <div class="accordion-body p-3 d-flex justify-content-center align-items-center" id="race-edit-results-accordion-body">
-                              <slotrace-podium id="race-edit-podium-component" class="w-100"></slotrace-podium>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
                       <!-- Navigation Tabs -->
                       <ul class="nav nav-tabs nav-fill border-secondary-subtle mb-3" id="race-edit-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -796,6 +766,11 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                         <li class="nav-item" role="presentation">
                           <button class="nav-link fw-semibold text-secondary-emphasis" id="race-tab" data-bs-toggle="tab" data-bs-target="#tab-content-race" type="button" role="tab" aria-controls="tab-content-race" aria-selected="false">
                             Corrida
+                          </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link fw-semibold text-secondary-emphasis" id="results-tab" data-bs-toggle="tab" data-bs-target="#tab-content-results" type="button" role="tab" aria-controls="tab-content-results" aria-selected="false">
+                            Resultados
                           </button>
                         </li>
                       </ul>
@@ -810,6 +785,13 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                         <!-- Tab 2: Race -->
                         <div class="tab-pane fade h-100" id="tab-content-race" role="tabpanel" aria-labelledby="race-tab">
                           <slotrace-registrations-races-race-table id="race-edit-race-table-component" class="d-block"></slotrace-registrations-races-race-table>
+                        </div>
+
+                        <!-- Tab 3: Results -->
+                        <div class="tab-pane fade h-100" id="tab-content-results" role="tabpanel" aria-labelledby="results-tab">
+                          <div class="p-4 h-100">
+                            <slotrace-podium id="race-edit-podium-component" class="w-100"></slotrace-podium>
+                          </div>
                         </div>
                       </div>
                     </div>
