@@ -71,6 +71,26 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
           this.populateDropdowns();
 
+          // Reset active tab to Qualifying
+          const qualiTab = this.querySelector("#quali-tab");
+          if (qualiTab) {
+            const tabTrigger = new bootstrap.Tab(qualiTab);
+            tabTrigger.show();
+          }
+
+          // Expand results accordion when opening
+          const resultsCollapse = this.querySelector("#collapse-results");
+          if (resultsCollapse) {
+            resultsCollapse.classList.add("show");
+            const resultsButton = this.querySelector(
+              "[data-bs-target='#collapse-results']",
+            );
+            if (resultsButton) {
+              resultsButton.classList.remove("collapsed");
+              resultsButton.setAttribute("aria-expanded", "true");
+            }
+          }
+
           // Initialize the initial snapshot after all modal fields have been populated
           this.initialRaceSnapshot = this.getCurrentStateSnapshot();
           this.checkPendingChanges();
@@ -312,8 +332,117 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         if (raceTableComponent) {
           raceTableComponent.setParams(this.race, this.drivers, this.cars);
         }
+
+        // Populate results accordion
+        this.populateResultsAccordion();
       }
     }
+  }
+
+  populateResultsAccordion() {
+    const podiumComponent = this.querySelector("#race-edit-podium-component");
+    if (!podiumComponent) return;
+
+    if (!this.race || !this.race.pilots || this.race.pilots.length === 0) {
+      podiumComponent.setParams({ drivers: [] });
+      return;
+    }
+
+    // Determine the top 3 drivers from the race session
+    let topDrivers = [];
+    if (this.race.raceSession && this.race.raceSession.length > 0) {
+      const racePilots = this.race.pilots || [];
+      const sortedRace = [...this.race.raceSession].sort((a, b) => {
+        const lapsA = parseInt(a.laps) || 0;
+        const lapsB = parseInt(b.laps) || 0;
+
+        if (lapsA !== lapsB) {
+          return lapsB - lapsA;
+        }
+
+        const zoneA = parseFloat(a.finalZone) || 0;
+        const zoneB = parseFloat(b.finalZone) || 0;
+        if (zoneA !== zoneB) {
+          return zoneB - zoneA;
+        }
+
+        // Tie breaker: qualifying best lap time (fastest first, zeros at bottom)
+        const qA = this.race.quali
+          ? this.race.quali.find((q) => String(q.pilotId) === String(a.pilotId))
+          : null;
+        const qB = this.race.quali
+          ? this.race.quali.find((q) => String(q.pilotId) === String(b.pilotId))
+          : null;
+        const qTimeA =
+          qA && parseFloat(qA.bestLapTime) > 0
+            ? parseFloat(qA.bestLapTime)
+            : Infinity;
+        const qTimeB =
+          qB && parseFloat(qB.bestLapTime) > 0
+            ? parseFloat(qB.bestLapTime)
+            : Infinity;
+
+        if (qTimeA !== qTimeB) {
+          return qTimeA - qTimeB;
+        }
+
+        // Tie-breaker for identical qualifying best lap times: who did it first
+        const setAtA = (qA && qA.bestLapTimeSetAt) || 0;
+        const setAtB = (qB && qB.bestLapTimeSetAt) || 0;
+        if (setAtA !== setAtB) {
+          if (setAtA === 0) return 1;
+          if (setAtB === 0) return -1;
+          return setAtA - setAtB;
+        }
+
+        const idxA = racePilots.findIndex(
+          (p) => (typeof p === "object" ? p.id : p) === a.pilotId,
+        );
+        const idxB = racePilots.findIndex(
+          (p) => (typeof p === "object" ? p.id : p) === b.pilotId,
+        );
+        return idxA - idxB;
+      });
+      topDrivers = sortedRace.slice(0, 3).map((r) => {
+        return (
+          this.drivers.find((d) => d.id === r.pilotId) || { name: r.pilotId }
+        );
+      });
+    } else if (this.race.quali && this.race.quali.length > 0) {
+      // Fallback: sort by bestLapTime ascending (excluding 0/empty times)
+      const racePilots = this.race.pilots || [];
+      const sortedQuali = [...this.race.quali]
+        .filter((q) => (parseFloat(q.bestLapTime) || 0) > 0)
+        .sort((a, b) => {
+          const timeA = parseFloat(a.bestLapTime) || 0;
+          const timeB = parseFloat(b.bestLapTime) || 0;
+
+          if (timeA === timeB) {
+            const setAtA = a.bestLapTimeSetAt || 0;
+            const setAtB = b.bestLapTimeSetAt || 0;
+            if (setAtA !== setAtB) {
+              if (setAtA === 0) return 1;
+              if (setAtB === 0) return -1;
+              return setAtA - setAtB;
+            }
+            const idxA = racePilots.findIndex(
+              (p) => (typeof p === "object" ? p.id : p) === a.pilotId,
+            );
+            const idxB = racePilots.findIndex(
+              (p) => (typeof p === "object" ? p.id : p) === b.pilotId,
+            );
+            return idxA - idxB;
+          }
+          return timeA - timeB;
+        });
+      topDrivers = sortedQuali.slice(0, 3).map((q) => {
+        return (
+          this.drivers.find((d) => d.id === q.pilotId) || { name: q.pilotId }
+        );
+      });
+    }
+
+    podiumComponent.setParams({ drivers: topDrivers });
   }
 
   setupEvents() {
@@ -640,6 +769,23 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                   <div class="flex-grow-1 p-3 overflow-y-auto">
                     <!-- Tab System Container (visible when pilots > 0) -->
                     <div id="race-edit-tables-tab-container" class="d-none h-100 d-flex flex-column">
+                      <!-- Accordion of 1 item (Results) -->
+                      <div class="accordion mb-3" id="race-edit-results-accordion">
+                        <div class="accordion-item rounded-3">
+                          <h2 class="accordion-header" id="heading-results">
+                            <button class="accordion-button py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-results" aria-expanded="true" aria-controls="collapse-results">
+                              <i class="mdi mdi-trophy-outline me-2 fs-5"></i>
+                              Resultados
+                            </button>
+                          </h2>
+                          <div id="collapse-results" class="accordion-collapse collapse show" aria-labelledby="heading-results" data-bs-parent="#race-edit-results-accordion">
+                            <div class="accordion-body p-3 d-flex justify-content-center align-items-center" id="race-edit-results-accordion-body">
+                              <slotrace-podium id="race-edit-podium-component" class="w-100"></slotrace-podium>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       <!-- Navigation Tabs -->
                       <ul class="nav nav-tabs nav-fill border-secondary-subtle mb-3" id="race-edit-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
