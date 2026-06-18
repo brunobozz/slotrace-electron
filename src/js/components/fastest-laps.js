@@ -117,7 +117,131 @@ class SlotRaceFastestLaps extends HTMLElement {
       }
     }
 
+    // Resolve Lane Color
+    const trackObj = this.tracks.find(
+      (t) => String(t.id) === String(this.race.trackId),
+    );
+    let laneColor = "#a855f7"; // Fallback color
+    if (trackObj && trackObj.laneColors && trackObj.laneColors[laneNum - 1]) {
+      laneColor = trackObj.laneColors[laneNum - 1];
+    }
+
     const formattedTime = parseFloat(bestRecord.bestLapTime).toFixed(4);
+
+    // Compile best laps for all active pilots (excluding the overall fastest pilot)
+    const pilotBestLaps = [];
+    activePilotIds.forEach((pilotId) => {
+      if (bestRecord && String(pilotId) === String(bestRecord.pilotId)) {
+        return;
+      }
+      let pilotRecord = null;
+      let time = 0;
+      let index = 0;
+      let lane = 1;
+
+      if (this.race.raceSession && this.race.raceSession.length > 0) {
+        pilotRecord = this.race.raceSession.find(
+          (r) => String(r.pilotId) === String(pilotId),
+        );
+        if (pilotRecord) {
+          time = parseFloat(pilotRecord.bestLapTime) || 0;
+          index = pilotRecord.bestLapIndex || 0;
+          lane = pilotRecord.bestLapLane || 1;
+        }
+      }
+
+      if (time === 0 && this.race.quali && this.race.quali.length > 0) {
+        pilotRecord = this.race.quali.find(
+          (q) => String(q.pilotId) === String(pilotId),
+        );
+        if (pilotRecord) {
+          time = parseFloat(pilotRecord.bestLapTime) || 0;
+          index = pilotRecord.bestLapIndex || 0;
+          lane = pilotRecord.bestLapLane || this.race.lane || 1;
+        }
+      }
+
+      const driverObj = this.drivers.find(
+        (d) => String(d.id) === String(pilotId),
+      );
+      if (driverObj) {
+        pilotBestLaps.push({
+          pilotId,
+          name: driverObj.nickname || driverObj.name,
+          photo: driverObj.photo || "",
+          bestLapTime: time,
+          bestLapIndex: index,
+          bestLapLane: lane,
+        });
+      }
+    });
+
+    // Sort by bestLapTime ascending (excluding 0, which go to the bottom)
+    pilotBestLaps.sort((a, b) => {
+      const timeA = a.bestLapTime || Infinity;
+      const timeB = b.bestLapTime || Infinity;
+      if (timeA === Infinity && timeB === Infinity) return 0;
+      return timeA - timeB;
+    });
+
+    const rowsHtml = pilotBestLaps
+      .map((item, idx) => {
+        const formattedLapTime =
+          item.bestLapTime > 0
+            ? `${parseFloat(item.bestLapTime).toFixed(4)}s`
+            : "-";
+
+        const pConfig = this.race.pilots.find((p) => {
+          const pId = typeof p === "object" ? p.id : p;
+          return String(pId) === String(item.pilotId);
+        });
+        const carId =
+          pConfig && typeof pConfig === "object" ? pConfig.carId : null;
+        const carObj =
+          carId && this.cars
+            ? this.cars.find((c) => String(c.id) === String(carId))
+            : null;
+        const carName = carObj ? carObj.name : "-";
+
+        return `
+        <style>
+          .fastast-list .list-group-item:first-child{
+            border-top: 0;
+          }
+        </style>
+        <div class="fastast-list list-group-item d-flex align-items-center justify-content-between py-2 px-3" style="font-size: 1rem;">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-secondary text-start font-monospace" style="width: 22px;">#${idx + 2}</span>
+            ${
+              item.photo
+                ? `<img src="${item.photo}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">`
+                : `<div class="rounded-circle bg-body-tertiary d-flex align-items-center justify-content-center text-secondary" style="width: 24px; height: 24px;">
+                    <i class="mdi mdi-account" style="font-size: 0.8rem;"></i>
+                  </div>`
+            }
+            <div class="text-start ms-1">
+              <span class="fw-bold text-body-emphasis" style="font-size: 1rem;">${item.name}</span>
+              <span class="text-secondary small ms-1" style="font-size: 0.72rem;">(${carName})</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center">
+            <span class="fw-bold font-monospace text-body-secondary" style="font-size: 1rem;">
+              ${formattedLapTime}
+            </span>
+          </div>
+        </div>
+      `;
+      })
+      .join("");
+
+    let listHtml = "";
+    if (pilotBestLaps.length > 0) {
+      listHtml = `
+        <div class="list-group rounded-2 overflow-hidden rounded-top-0">
+          ${rowsHtml}
+        </div>
+      `;
+    }
 
     this.innerHTML = `
       <style>
@@ -157,7 +281,7 @@ class SlotRaceFastestLaps extends HTMLElement {
         }
       </style>
 
-      <div class="fastest-lap-card border border-secondary-subtle rounded-3 p-3 shadow-sm mt-3">
+      <div class="fastest-lap-card border border-secondary-subtle rounded-3 rounded-bottom-0 p-3 shadow-sm mt-3">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
           <div class="d-flex align-items-center gap-3">
             <!-- Pilot Avatar -->
@@ -193,12 +317,15 @@ class SlotRaceFastestLaps extends HTMLElement {
             <div class="display-6 fw-bold text-purple font-monospace">
               ${formattedTime}s
             </div>
-            <div class="small fw-semibold text-secondary-emphasis">
-              Fenda: <span class="badge bg-purple text-white px-2.5 py-1 rounded-pill ms-1" style="font-size: 0.72rem; font-family: monospace;">#${laneNum}</span>
+            <div class="small fw-semibold text-secondary-emphasis d-flex align-items-center justify-content-end" style="gap: 6px;">
+              <!--<span>Fenda:</span>
+              <span class="rounded-circle border text-center border-0 fw-bold" style="width: 24px; height: 24px; background-color: ${laneColor}; display: inline-block;">${laneNum}</span>-->
             </div>
           </div>
         </div>
       </div>
+
+      ${listHtml}
     `;
   }
 }
