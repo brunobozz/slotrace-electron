@@ -107,11 +107,11 @@ class SlotRacePodium extends HTMLElement {
         .podium-container {
           display: flex;
           justify-content: center;
-          align-items: flex-end;
+          align-items: center;
           gap: 20px;
           width: 100%;
           margin: 0 auto;
-          padding: 25px 0 10px 0;
+          padding: 10px 0 10px 0;
         }
         @keyframes podiumSlideUp {
           from {
@@ -152,6 +152,7 @@ class SlotRacePodium extends HTMLElement {
         
         .podium-pane {
           width: 100%;
+          min-width: 300px;
           height: 300px;
           border-top: 2px solid;
           border-left: 2px solid;

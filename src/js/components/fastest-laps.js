@@ -281,7 +281,7 @@ class SlotRaceFastestLaps extends HTMLElement {
         }
       </style>
 
-      <div class="fastest-lap-card border border-secondary-subtle rounded-3 rounded-bottom-0 p-3 shadow-sm mt-3">
+      <div class="fastest-lap-card border border-secondary-subtle rounded-3 rounded-bottom-0 p-3 shadow-sm mt-5">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
           <div class="d-flex align-items-center gap-3">
             <!-- Pilot Avatar -->

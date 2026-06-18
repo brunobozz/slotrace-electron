@@ -71,32 +71,15 @@ class SlotRaceRealtimeRace extends HTMLElement {
     this._startListener = () => this.startSession();
     this._pauseListener = () => this.pauseSession();
     this._resumeListener = () => this.resumeSession();
-    this._resetListener = async () => {
-      const confirmacao = window.confirm(
-        "Tem certeza que deseja zerar a corrida? Todas as voltas e tempos acumulados serão apagados!",
-      );
-      if (!confirmacao) return;
-
-      if (this.race) {
-        this.race.raceSession = [];
-        this.race.activeSessionState = null;
-        try {
-          const races = (await window.electronAPI.db.get("races")) || [];
-          const idx = races.findIndex((r) => r.id === this.race.id);
-          if (idx !== -1) {
-            races[idx].raceSession = [];
-            races[idx].activeSessionState = null;
-            await window.electronAPI.db.set("races", races);
-            console.log(
-              `[Database] Cleared race results for reset ID: ${this.race.id}`,
-            );
-          }
-        } catch (err) {
-          console.error("Failed to clear database results on reset:", err);
+    this._resetListener = () => {
+      const resetModalEl = this.querySelector("#modal-race-reset-confirm");
+      if (resetModalEl) {
+        let modalInstance = bootstrap.Modal.getInstance(resetModalEl);
+        if (!modalInstance) {
+          modalInstance = new bootstrap.Modal(resetModalEl);
         }
+        modalInstance.show();
       }
-
-      this.resetSession(true, false);
     };
 
     this._simulateLapListener = (e) => {
@@ -113,10 +96,13 @@ class SlotRaceRealtimeRace extends HTMLElement {
       }
     };
 
+    this._resetConfirmedListener = () => this._handleResetConfirmed();
+
     window.addEventListener("raceSessionStart", this._startListener);
     window.addEventListener("raceSessionPause", this._pauseListener);
     window.addEventListener("raceSessionResume", this._resumeListener);
     window.addEventListener("raceSessionReset", this._resetListener);
+    window.addEventListener("raceSessionResetConfirmed", this._resetConfirmedListener);
     window.addEventListener("raceConfigSaved", this._configSavedListener);
     window.addEventListener("serial-sensor-triggered", this._onSensorTriggered);
     this.addEventListener("requestSimulateLap", this._simulateLapListener);
@@ -155,6 +141,7 @@ class SlotRaceRealtimeRace extends HTMLElement {
     window.removeEventListener("raceSessionPause", this._pauseListener);
     window.removeEventListener("raceSessionResume", this._resumeListener);
     window.removeEventListener("raceSessionReset", this._resetListener);
+    window.removeEventListener("raceSessionResetConfirmed", this._resetConfirmedListener);
     window.removeEventListener("raceConfigSaved", this._configSavedListener);
     window.removeEventListener("keydown", this._keydownListener);
     window.removeEventListener("serial-sensor-triggered", this._onSensorTriggered);
@@ -237,6 +224,29 @@ class SlotRaceRealtimeRace extends HTMLElement {
       const pid = typeof p === "object" ? p.id : p;
       this._completedLanes[pid] = [];
     });
+  }
+
+  async _handleResetConfirmed() {
+    if (this.race) {
+      this.race.raceSession = [];
+      this.race.activeSessionState = null;
+      try {
+        const races = (await window.electronAPI.db.get("races")) || [];
+        const idx = races.findIndex((r) => r.id === this.race.id);
+        if (idx !== -1) {
+          races[idx].raceSession = [];
+          races[idx].activeSessionState = null;
+          await window.electronAPI.db.set("races", races);
+          console.log(
+            `[Database] Cleared race results for reset ID: ${this.race.id}`,
+          );
+        }
+      } catch (err) {
+        console.error("Failed to clear database results on reset:", err);
+      }
+    }
+
+    this.resetSession(true, false);
   }
 
   resetSession(renderFlag = true, preserveExisting = false) {
@@ -1078,6 +1088,9 @@ class SlotRaceRealtimeRace extends HTMLElement {
 
       <!-- Race Zones Modals Component -->
       <slotrace-realtime-race-zones-modal></slotrace-realtime-race-zones-modal>
+
+      <!-- Race Reset Confirmation Modal Component -->
+      <slotrace-realtime-race-reset-confirm-modal></slotrace-realtime-race-reset-confirm-modal>
     `;
   }
 }

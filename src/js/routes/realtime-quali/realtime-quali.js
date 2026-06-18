@@ -35,6 +35,22 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       this._updateDriverPanel();
     };
     this._onConfigChanged = (e) => this._handleConfigChanged(e.detail);
+    this._onConfigSaved = (e) => {
+      this._handleConfigChanged(e.detail);
+      this._updateQueue();
+      this._updateDriverPanel();
+      // Keep the config modal state synchronized
+      const configModal = this.querySelector("slotrace-realtime-quali-config-modal");
+      if (configModal && this.race) {
+        configModal.setData({
+          timePerPilot: this._sessionConfig.timePerPilot,
+          interval: this._sessionConfig.interval,
+          lane: this._sessionConfig.lane,
+          track: this.getTrackForRace(),
+        });
+      }
+    };
+    this._onReset = () => this._handleReset();
     this._onShuffleOrder = () => this._handleShuffleOrder();
     this._onSelectTelemetryPilot = (e) => this._handleSelectTelemetryPilot(e);
     this._onSensorTriggered = (e) => {
@@ -49,13 +65,18 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       }
     };
 
+    this._onResetConfirmed = () => this._handleResetConfirmed();
+
     window.addEventListener("qualiSessionStart", this._onStart);
     window.addEventListener("qualiSessionPause", this._onPause);
     window.addEventListener("qualiSessionResume", this._onResume);
+    window.addEventListener("qualiSessionReset", this._onReset);
+    window.addEventListener("qualiSessionResetConfirmed", this._onResetConfirmed);
     window.addEventListener("qualiMarkLap", this._onMarkLap);
     window.addEventListener("qualiSessionFinish", this._onFinish);
     window.addEventListener("qualiLaneChanged", this._onLaneChanged);
     window.addEventListener("qualiConfigChanged", this._onConfigChanged);
+    window.addEventListener("qualiConfigSaved", this._onConfigSaved);
     window.addEventListener("requestShuffleOrder", this._onShuffleOrder);
     window.addEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
     window.addEventListener("serial-sensor-triggered", this._onSensorTriggered);
@@ -73,10 +94,13 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener("qualiSessionStart", this._onStart);
     window.removeEventListener("qualiSessionPause", this._onPause);
     window.removeEventListener("qualiSessionResume", this._onResume);
+    window.removeEventListener("qualiSessionReset", this._onReset);
+    window.removeEventListener("qualiSessionResetConfirmed", this._onResetConfirmed);
     window.removeEventListener("qualiMarkLap", this._onMarkLap);
     window.removeEventListener("qualiSessionFinish", this._onFinish);
     window.removeEventListener("qualiLaneChanged", this._onLaneChanged);
     window.removeEventListener("qualiConfigChanged", this._onConfigChanged);
+    window.removeEventListener("qualiConfigSaved", this._onConfigSaved);
     window.removeEventListener("requestShuffleOrder", this._onShuffleOrder);
     window.removeEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
     window.removeEventListener("serial-sensor-triggered", this._onSensorTriggered);
@@ -380,7 +404,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   async _handleFinish() {
-    if (this._state !== "finished") return;
+    if (this._state === "qualifying") return;
 
     // Save quali data back to the race in the database
     try {
@@ -407,6 +431,39 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     );
     window.dispatchEvent(new CustomEvent("raceListChanged"));
     this._resetSession();
+  }
+
+  _handleReset() {
+    const resetModalEl = this.querySelector("#modal-quali-reset-confirm");
+    if (resetModalEl) {
+      let modalInstance = bootstrap.Modal.getInstance(resetModalEl);
+      if (!modalInstance) {
+        modalInstance = new bootstrap.Modal(resetModalEl);
+      }
+      modalInstance.show();
+    }
+  }
+
+  async _handleResetConfirmed() {
+    if (this.race) {
+      this.race.quali = [];
+      this.race.qualiOrder = null;
+      try {
+        const races = (await window.electronAPI.db.get("races")) || [];
+        const idx = races.findIndex((r) => r.id === this.race.id);
+        if (idx !== -1) {
+          races[idx].quali = [];
+          races[idx].qualiOrder = null;
+          await window.electronAPI.db.set("races", races);
+          console.log(`[Database] Cleared quali results for reset ID: ${this.race.id}`);
+        }
+      } catch (err) {
+        console.error("Failed to clear database results on reset:", err);
+      }
+    }
+
+    this._resetSession();
+    this.distributeData();
   }
 
   _recalcQuali(pilotId) {
@@ -437,9 +494,129 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
   // ─── UI UPDATES ────────────────────────────────────────
 
+  _updateHeaderControls() {
+    const container = this.querySelector("#quali-header-controls-container");
+    if (!container) return;
+
+    const isIdle = this._state === "idle";
+    const isRunning = this._state === "qualifying";
+    const isPaused = this._state === "paused";
+    const isFinished = this._state === "finished";
+    const isInterval = this._state === "interval";
+    const hasResults = !!(this.race && this.race.quali && this.race.quali.some(q => (q.laps && q.laps > 0) || (q.bestLapTime && q.bestLapTime > 0)));
+
+    container.innerHTML = `
+      <!-- Play button (Start / Resume) -->
+      ${
+        isIdle || isPaused
+          ? `
+        <button id="btn-quali-header-start" class="btn btn-lg btn-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="${isPaused ? "Retomar" : "Iniciar"}" style="width: 48px; height: 48px;">
+          <i class="mdi mdi-play fs-3" style="margin-left: 2px;"></i>
+        </button>
+      `
+          : ""
+      }
+
+      <!-- Pause button -->
+      ${
+        isRunning || isInterval
+          ? `
+        <button id="btn-quali-header-pause" class="btn btn-lg btn-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Pausar" style="width: 48px; height: 48px;">
+          <i class="mdi mdi-pause fs-3"></i>
+        </button>
+      `
+          : ""
+      }
+
+      <!-- Save button (Disquete) -->
+      ${
+        isPaused || isFinished
+          ? `
+        <button id="btn-quali-header-save" class="btn btn-lg btn-info rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Salvar e Finalizar" style="width: 48px; height: 48px;">
+          <i class="mdi mdi-content-save fs-3"></i>
+        </button>
+      `
+          : ""
+      }
+
+      <!-- Reset button -->
+      ${
+        isPaused || isFinished || hasResults
+          ? `
+        <button id="btn-quali-header-reset" class="btn btn-sm btn-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Reiniciar" style="width: 32px; height: 32px;">
+          <i class="mdi mdi-refresh fs-5"></i>
+        </button>
+      `
+          : ""
+      }
+
+      <!-- Gear Config Button -->
+      <button id="btn-quali-config" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Configurações da Qualificação" style="width: 32px; height: 32px;">
+        <i class="mdi mdi-cog fs-5"></i>
+      </button>
+      <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="outline: none; box-shadow: none;"></button>
+    `;
+
+    // Re-bind events
+    const btnHeaderStart = container.querySelector("#btn-quali-header-start");
+    const btnHeaderPause = container.querySelector("#btn-quali-header-pause");
+    const btnHeaderSave = container.querySelector("#btn-quali-header-save");
+    const btnHeaderReset = container.querySelector("#btn-quali-header-reset");
+    const btnConfig = container.querySelector("#btn-quali-config");
+
+    if (btnHeaderStart) {
+      btnHeaderStart.addEventListener("click", () => {
+        if (this._state === "idle") {
+          const timePerPilot = this._sessionConfig.timePerPilot;
+          const lane = this._sessionConfig.lane;
+          const interval = this._sessionConfig.interval;
+          window.dispatchEvent(
+            new CustomEvent("qualiSessionStart", {
+              detail: { timePerPilot, lane, interval },
+            }),
+          );
+        } else if (this._state === "paused") {
+          window.dispatchEvent(new CustomEvent("qualiSessionResume"));
+        }
+      });
+    }
+
+    if (btnHeaderPause) {
+      btnHeaderPause.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("qualiSessionPause"));
+      });
+    }
+
+    if (btnHeaderSave) {
+      btnHeaderSave.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("qualiSessionFinish"));
+      });
+    }
+
+    if (btnHeaderReset) {
+      btnHeaderReset.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("qualiSessionReset"));
+      });
+    }
+
+    if (btnConfig) {
+      btnConfig.addEventListener("click", () => {
+        const configModalEl = this.querySelector("#modal-quali-config");
+        if (configModalEl) {
+          let configModalInstance = bootstrap.Modal.getInstance(configModalEl);
+          if (!configModalInstance) {
+            configModalInstance = new bootstrap.Modal(configModalEl);
+          }
+          configModalInstance.show();
+        }
+      });
+    }
+  }
+
   _updateToolbarState() {
     const toolbar = this.querySelector("quali-toolbar");
     if (toolbar) toolbar.setState(this._state, this._isShuffling);
+    this._updateHeaderControls();
   }
 
   _updateDriverPanel() {
@@ -542,6 +719,16 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const toolbar = this.querySelector("quali-toolbar");
     if (toolbar) {
       toolbar.setData({ race: this.race, track: this.getTrackForRace() });
+    }
+
+    const configModal = this.querySelector("slotrace-realtime-quali-config-modal");
+    if (configModal) {
+      configModal.setData({
+        timePerPilot: this._sessionConfig.timePerPilot,
+        interval: this._sessionConfig.interval,
+        lane: this._sessionConfig.lane,
+        track: this.getTrackForRace(),
+      });
     }
 
     if (!this.race.quali) this.race.quali = [];
@@ -724,23 +911,24 @@ class SlotRaceRealtimeQuali extends HTMLElement {
             <!-- Header section -->
             <div class="modal-header border-bottom border-secondary-subtle px-4 py-0 d-flex align-items-center justify-content-between">
               
-              <!-- Left: Logo -->
-              <!-- <slotrace-logo></slotrace-logo> -->
-
-              <!-- Center: Race Name & QUALIFICAÇÃO -->
-              <div class="flex-grow-1 mx-3">
-                <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-2" style="letter-spacing: 0.05em;">
+              <!-- Left: Race Name & QUALIFICAÇÃO -->
+              <div class="text-start" style="width: 350px;">
+                <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-3 text-truncate" style="letter-spacing: 0.05em;" title="${raceName}">
                   ${raceName}
                 </h2>
-                <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 1rem; letter-spacing: 0.25em;">
+                <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 0.8rem; letter-spacing: 0.25em;">
                   QUALIFICAÇÃO
                 </div>
               </div>
 
-              <!-- Right: Timer & Close button -->
-              <div class="d-flex align-items-center gap-3">
+              <!-- Center: Controls, Config & Close button -->
+              <div id="quali-header-controls-container" class="d-flex align-items-center gap-2 justify-content-center">
+                <!-- Controls will be injected here -->
+              </div>
+
+              <!-- Right: Timer -->
+              <div class="d-flex align-items-center gap-3 justify-content-end" style="width: 350px;">
                 <slotrace-timer></slotrace-timer>
-                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="outline: none; box-shadow: none;"></button>
               </div>
 
             </div>
@@ -768,7 +956,21 @@ class SlotRaceRealtimeQuali extends HTMLElement {
           </div>
         </div>
       </div>
+      <slotrace-realtime-quali-config-modal></slotrace-realtime-quali-config-modal>
+      <slotrace-realtime-quali-reset-confirm-modal></slotrace-realtime-quali-reset-confirm-modal>
     `;
+
+    this._updateHeaderControls();
+
+    const configModal = this.querySelector("slotrace-realtime-quali-config-modal");
+    if (configModal && this.race) {
+      configModal.setData({
+        timePerPilot: this._sessionConfig.timePerPilot,
+        interval: this._sessionConfig.interval,
+        lane: this._sessionConfig.lane,
+        track: this.getTrackForRace(),
+      });
+    }
   }
 }
 
