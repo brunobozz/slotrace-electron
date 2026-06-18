@@ -338,15 +338,23 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
   populateResultsTab() {
     const podiumComponent = this.querySelector("#race-edit-podium-component");
+    const fastestLapsComponent = this.querySelector(
+      "#race-edit-fastest-laps-component",
+    );
     if (!podiumComponent) return;
 
     if (!this.race || !this.race.pilots || this.race.pilots.length === 0) {
       podiumComponent.setParams({ drivers: [] });
+      if (fastestLapsComponent) {
+        fastestLapsComponent.setParams({ race: null });
+      }
       return;
     }
 
     const activePilotIds = new Set(
-      this.race.pilots.map((p) => String(p && typeof p === "object" ? p.id : p))
+      this.race.pilots.map((p) =>
+        String(p && typeof p === "object" ? p.id : p),
+      ),
     );
 
     // Determine the top 3 drivers from the race session
@@ -354,7 +362,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     if (this.race.raceSession && this.race.raceSession.length > 0) {
       const racePilots = this.race.pilots || [];
       const filteredSession = this.race.raceSession.filter((r) =>
-        activePilotIds.has(String(r.pilotId))
+        activePilotIds.has(String(r.pilotId)),
       );
 
       const sortedRace = [...filteredSession].sort((a, b) => {
@@ -411,49 +419,60 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
       const leaderLaps = sortedRace[0] ? parseInt(sortedRace[0].laps) || 0 : 0;
 
-      topDrivers = sortedRace.slice(0, 3).map((r, index) => {
-        const driverObj = this.drivers.find((d) => d.id === r.pilotId);
-        if (!driverObj) return null;
+      topDrivers = sortedRace
+        .slice(0, 3)
+        .map((r, index) => {
+          const driverObj = this.drivers.find((d) => d.id === r.pilotId);
+          if (!driverObj) return null;
 
-        const pilotConfig = this.race.pilots.find((p) => {
-          const pId = typeof p === "object" ? p.id : p;
-          return String(pId) === String(r.pilotId);
-        });
-        const carId = pilotConfig && typeof pilotConfig === "object" ? pilotConfig.carId : null;
-        const carObj = carId && this.cars ? this.cars.find((c) => String(c.id) === String(carId)) : null;
+          const pilotConfig = this.race.pilots.find((p) => {
+            const pId = typeof p === "object" ? p.id : p;
+            return String(pId) === String(r.pilotId);
+          });
+          const carId =
+            pilotConfig && typeof pilotConfig === "object"
+              ? pilotConfig.carId
+              : null;
+          const carObj =
+            carId && this.cars
+              ? this.cars.find((c) => String(c.id) === String(carId))
+              : null;
 
-        let lapsText = r.laps === 1 ? '1 VOLTA' : `${r.laps || 0} VOLTAS`;
-        let subtext = "";
+          let lapsText = r.laps === 1 ? "1 VOLTA" : `${r.laps || 0} VOLTAS`;
+          let subtext = "";
 
-        if (index === 0) {
-          subtext = "";
-        } else {
-          const currentLaps = parseInt(r.laps) || 0;
-          const diffLaps = leaderLaps - currentLaps;
-          if (diffLaps > 0) {
-            subtext = `+${diffLaps} VOLTA${diffLaps > 1 ? 'S' : ''}`;
+          if (index === 0) {
+            subtext = "";
           } else {
-            const leaderZone = sortedRace[0] ? parseFloat(sortedRace[0].finalZone) || 0 : 0;
-            const currentZone = parseFloat(r.finalZone) || 0;
-            const diffZones = leaderZone - currentZone;
-            if (diffZones > 0) {
-              subtext = `+${diffZones}z`;
+            const currentLaps = parseInt(r.laps) || 0;
+            const diffLaps = leaderLaps - currentLaps;
+            if (diffLaps > 0) {
+              subtext = `+${diffLaps} VOLTA${diffLaps > 1 ? "S" : ""}`;
+            } else {
+              const leaderZone = sortedRace[0]
+                ? parseFloat(sortedRace[0].finalZone) || 0
+                : 0;
+              const currentZone = parseFloat(r.finalZone) || 0;
+              const diffZones = leaderZone - currentZone;
+              if (diffZones > 0) {
+                subtext = `+${diffZones}z`;
+              }
             }
           }
-        }
 
-        return {
-          driver: driverObj,
-          car: carObj,
-          laps: lapsText,
-          subtext: subtext
-        };
-      }).filter(Boolean);
+          return {
+            driver: driverObj,
+            car: carObj,
+            laps: lapsText,
+            subtext: subtext,
+          };
+        })
+        .filter(Boolean);
     } else if (this.race.quali && this.race.quali.length > 0) {
       // Fallback: sort by bestLapTime ascending (excluding 0/empty times)
       const racePilots = this.race.pilots || [];
       const filteredQuali = this.race.quali.filter((q) =>
-        activePilotIds.has(String(q.pilotId))
+        activePilotIds.has(String(q.pilotId)),
       );
 
       const sortedQuali = [...filteredQuali]
@@ -481,43 +500,63 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           return timeA - timeB;
         });
 
-      const leaderTime = sortedQuali[0] ? parseFloat(sortedQuali[0].bestLapTime) || 0 : 0;
+      const leaderTime = sortedQuali[0]
+        ? parseFloat(sortedQuali[0].bestLapTime) || 0
+        : 0;
 
-      topDrivers = sortedQuali.slice(0, 3).map((q, index) => {
-        const driverObj = this.drivers.find((d) => d.id === q.pilotId);
-        if (!driverObj) return null;
+      topDrivers = sortedQuali
+        .slice(0, 3)
+        .map((q, index) => {
+          const driverObj = this.drivers.find((d) => d.id === q.pilotId);
+          if (!driverObj) return null;
 
-        const pilotConfig = this.race.pilots.find((p) => {
-          const pId = typeof p === "object" ? p.id : p;
-          return String(pId) === String(q.pilotId);
-        });
-        const carId = pilotConfig && typeof pilotConfig === "object" ? pilotConfig.carId : null;
-        const carObj = carId && this.cars ? this.cars.find((c) => String(c.id) === String(carId)) : null;
+          const pilotConfig = this.race.pilots.find((p) => {
+            const pId = typeof p === "object" ? p.id : p;
+            return String(pId) === String(q.pilotId);
+          });
+          const carId =
+            pilotConfig && typeof pilotConfig === "object"
+              ? pilotConfig.carId
+              : null;
+          const carObj =
+            carId && this.cars
+              ? this.cars.find((c) => String(c.id) === String(carId))
+              : null;
 
-        const totalLaps = q.laps || (q.lapTimes ? q.lapTimes.length : 0);
-        let lapsText = totalLaps === 1 ? '1 VOLTA' : `${totalLaps} VOLTAS`;
-        let subtext = "";
+          const totalLaps = q.laps || (q.lapTimes ? q.lapTimes.length : 0);
+          let lapsText = totalLaps === 1 ? "1 VOLTA" : `${totalLaps} VOLTAS`;
+          let subtext = "";
 
-        if (index === 0) {
-          subtext = "";
-        } else {
-          const currentTime = parseFloat(q.bestLapTime) || 0;
-          const diffTime = currentTime - leaderTime;
-          if (diffTime > 0) {
-            subtext = `+${diffTime.toFixed(3)}s`;
+          if (index === 0) {
+            subtext = "";
+          } else {
+            const currentTime = parseFloat(q.bestLapTime) || 0;
+            const diffTime = currentTime - leaderTime;
+            if (diffTime > 0) {
+              subtext = `+${diffTime.toFixed(3)}s`;
+            }
           }
-        }
 
-        return {
-          driver: driverObj,
-          car: carObj,
-          laps: lapsText,
-          subtext: subtext
-        };
-      }).filter(Boolean);
+          return {
+            driver: driverObj,
+            car: carObj,
+            laps: lapsText,
+            subtext: subtext,
+          };
+        })
+        .filter(Boolean);
     }
 
     podiumComponent.setParams({ drivers: topDrivers });
+
+    if (fastestLapsComponent) {
+      fastestLapsComponent.setParams({
+        race: this.race,
+        drivers: this.drivers,
+        cars: this.cars,
+        tracks: this.tracks,
+      });
+    }
   }
 
   setupEvents() {
@@ -877,8 +916,9 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
                         <!-- Tab 3: Results -->
                         <div class="tab-pane fade h-100" id="tab-content-results" role="tabpanel" aria-labelledby="results-tab">
-                          <div>
-                            <slotrace-podium id="race-edit-podium-component" class="w-100"></slotrace-podium>
+                          <div class="d-flex justify-content-center gap-4 h-100">
+                          <slotrace-fastest-laps id="race-edit-fastest-laps-component" style="width: 800px;"></slotrace-fastest-laps>
+                            <slotrace-podium id="race-edit-podium-component" class="w-100 flex-grow-1"></slotrace-podium>
                           </div>
                         </div>
                       </div>

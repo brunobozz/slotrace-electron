@@ -83,6 +83,25 @@ class SlotRacePodium extends HTMLElement {
       `;
     };
 
+    // Determine layout order based on number of active spots
+    let spotsHtml = "";
+    if (first && second && third) {
+      spotsHtml = `
+        ${renderSpot(second, "2º", "#bdc3c7")}
+        ${renderSpot(first, "1º", "#f1c40f")}
+        ${renderSpot(third, "3º", "#e67e22")}
+      `;
+    } else if (first && second) {
+      spotsHtml = `
+        ${renderSpot(first, "1º", "#f1c40f")}
+        ${renderSpot(second, "2º", "#bdc3c7")}
+      `;
+    } else if (first) {
+      spotsHtml = `
+        ${renderSpot(first, "1º", "#f1c40f")}
+      `;
+    }
+
     this.innerHTML = `
       <style>
         .podium-container {
@@ -280,14 +299,7 @@ class SlotRacePodium extends HTMLElement {
       </style>
 
       <div class="podium-container">
-        <!-- 2º Lugar (Silver) -->
-        ${renderSpot(second, "2º", "#bdc3c7")}
-
-        <!-- 1º Lugar (Gold) -->
-        ${renderSpot(first, "1º", "#f1c40f")}
-
-        <!-- 3º Lugar (Bronze) -->
-        ${renderSpot(third, "3º", "#e67e22")}
+        ${spotsHtml}
       </div>
     `;
   }

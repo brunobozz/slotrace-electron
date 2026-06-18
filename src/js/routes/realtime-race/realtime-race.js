@@ -468,12 +468,14 @@ class SlotRaceRealtimeRace extends HTMLElement {
     }
     this._sessionLaps[pilotId]++;
 
-    // Record lap
     const record = this.raceSession.find(
       (r) => String(r.pilotId) === String(pilotId),
     );
     if (record) {
-      record.lapTimes.push(parseFloat(lapTime.toFixed(4)));
+      const parsedLapTime = parseFloat(lapTime.toFixed(4));
+      const isNewBest = record.bestLapTime === 0 || parsedLapTime < record.bestLapTime;
+
+      record.lapTimes.push(parsedLapTime);
       record.laps = record.lapTimes.length;
 
       // Calculate best lap
@@ -488,6 +490,10 @@ class SlotRaceRealtimeRace extends HTMLElement {
       });
       record.bestLapTime = minVal;
       record.bestLapIndex = minIdx;
+
+      if (isNewBest) {
+        record.bestLapLane = laneNum;
+      }
     }
 
     this.updateChildComponents();

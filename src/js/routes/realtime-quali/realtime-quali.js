@@ -426,6 +426,9 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
     if (minTime > 0 && (record.bestLapTime === 0 || minTime < record.bestLapTime)) {
       record.bestLapTimeSetAt = Date.now();
+      record.bestLapLane = this._sessionConfig.lane || 1;
+    } else if (minTime > 0 && !record.bestLapLane) {
+      record.bestLapLane = this._sessionConfig.lane || 1;
     }
 
     record.bestLapTime = minTime;
