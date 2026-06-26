@@ -110,29 +110,6 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
         </div>
       </div>
 
-      <!-- Confirmation Modal for Clearing Standings -->
-      <div class="modal fade" id="modal-confirm-clear-quali" tabindex="-1" aria-labelledby="modal-confirm-clear-quali-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-          <div class="modal-content border-danger-subtle">
-            <div class="modal-header bg-danger bg-opacity-10 border-danger-subtle py-2.5">
-              <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="modal-confirm-clear-quali-title" style="font-size: 0.95rem;">
-                <i class="mdi mdi-alert-circle-outline fs-5"></i>
-                Confirmar Limpeza de Classificação
-              </h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-start py-3">
-              <p class="mb-0 text-body-emphasis small">
-                Tem certeza de que deseja zerar todas as voltas e tempos de todos os pilotos nesta corrida? Esta ação é irreversível e excluirá permanentemente todos os registros de telemetria desta classificação.
-              </p>
-            </div>
-            <div class="modal-footer border-secondary-subtle py-2">
-              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" id="btn-confirm-clear-quali-action" class="btn btn-sm btn-danger fw-semibold px-3">Zerar Tudo</button>
-            </div>
-          </div>
-        </div>
-      </div>
     `;
     this.setupHeaderEvents();
   }
@@ -548,43 +525,33 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
     const clearBtn = this.querySelector("#btn-clear-quali");
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
-        const confirmModalEl = this.querySelector("#modal-confirm-clear-quali");
-        if (confirmModalEl) {
-          let confirmModalInstance =
-            bootstrap.Modal.getInstance(confirmModalEl);
-          if (!confirmModalInstance) {
-            confirmModalInstance = new bootstrap.Modal(confirmModalEl);
+        window.confirmModal({
+          title: "Zerar Classificação",
+          message: `Tem certeza de que deseja zerar todas as voltas e tempos de classificação da corrida <strong class="text-danger fw-bold">${this.race.name}</strong>? Esta ação não poderá ser desfeita e removerá o registro do histórico.`,
+          theme: "danger",
+          icon: "mdi-alert-circle",
+          cancelBtnText: "Cancelar",
+          confirmBtnText: "Zerar",
+          confirmBtnIcon: "mdi-trash-can-outline"
+        }).then((confirmed) => {
+          if (confirmed) {
+            // Clear quali metrics for all pilots
+            this.race.quali = this.race.quali.map((q) => ({
+              ...q,
+              laps: 0,
+              bestLapIndex: 0,
+              bestLapTime: 0,
+              bestLapTimeSetAt: 0,
+              lapTimes: [],
+            }));
+
+            // Re-render table
+            this.populateQualiTable();
+
+            // Notify parent modal of quali/laps updates
+            window.dispatchEvent(new CustomEvent("raceQualiUpdated"));
           }
-          confirmModalInstance.show();
-
-          const actionBtn = confirmModalEl.querySelector(
-            "#btn-confirm-clear-quali-action",
-          );
-          if (actionBtn) {
-            const newActionBtn = actionBtn.cloneNode(true);
-            actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
-
-            newActionBtn.addEventListener("click", () => {
-              // Clear quali metrics for all pilots
-              this.race.quali = this.race.quali.map((q) => ({
-                ...q,
-                laps: 0,
-                bestLapIndex: 0,
-                bestLapTime: 0,
-                bestLapTimeSetAt: 0,
-                lapTimes: [],
-              }));
-
-              // Re-render table
-              this.populateQualiTable();
-
-              // Notify parent modal of quali/laps updates
-              window.dispatchEvent(new CustomEvent("raceQualiUpdated"));
-
-              confirmModalInstance.hide();
-            });
-          }
-        }
+        });
       });
     }
 

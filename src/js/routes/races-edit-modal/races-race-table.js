@@ -111,29 +111,6 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         </div>
       </div>
 
-      <!-- Confirmation Modal for Clearing Race Standings -->
-      <div class="modal fade" id="modal-confirm-clear-race" tabindex="-1" aria-labelledby="modal-confirm-clear-race-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-          <div class="modal-content border-danger-subtle">
-            <div class="modal-header bg-danger bg-opacity-10 border-danger-subtle py-2.5">
-              <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="modal-confirm-clear-race-title" style="font-size: 0.95rem;">
-                <i class="mdi mdi-alert-circle-outline fs-5"></i>
-                Confirmar Limpeza de Corrida
-              </h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-start py-3">
-              <p class="mb-0 text-body-emphasis small">
-                Tem certeza de que deseja zerar todas as voltas e tempos de todos os pilotos na Corrida? Esta ação é irreversível e excluirá permanentemente todos os registros de telemetria desta tabela.
-              </p>
-            </div>
-            <div class="modal-footer border-secondary-subtle py-2">
-              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" id="btn-confirm-clear-race-action" class="btn btn-sm btn-danger fw-semibold px-3">Zerar Tudo</button>
-            </div>
-          </div>
-        </div>
-      </div>
     `;
     this.setupHeaderEvents();
   }
@@ -690,41 +667,31 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
     const clearBtn = this.querySelector("#btn-clear-race");
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
-        const confirmModalEl = this.querySelector("#modal-confirm-clear-race");
-        if (confirmModalEl) {
-          let confirmModalInstance =
-            bootstrap.Modal.getInstance(confirmModalEl);
-          if (!confirmModalInstance) {
-            confirmModalInstance = new bootstrap.Modal(confirmModalEl);
+        window.confirmModal({
+          title: "Zerar Corrida",
+          message: `Tem certeza de que deseja zerar todas as voltas e tempos da corrida <strong class="text-danger fw-bold">${this.race.name}</strong>? Esta ação não poderá ser desfeita e removerá o registro do histórico.`,
+          theme: "danger",
+          icon: "mdi-alert-circle",
+          cancelBtnText: "Cancelar",
+          confirmBtnText: "Zerar",
+          confirmBtnIcon: "mdi-trash-can-outline"
+        }).then((confirmed) => {
+          if (confirmed) {
+            // Clear race metrics for all pilots
+            this.race.raceSession = this.race.raceSession.map((q) => ({
+              ...q,
+              laps: 0,
+              bestLapIndex: 0,
+              bestLapTime: 0,
+              lapTimes: [],
+            }));
+
+            this.populateRaceTable();
+
+            // Notify parent modal of quali/laps updates to enable save button
+            window.dispatchEvent(new CustomEvent("raceQualiUpdated"));
           }
-          confirmModalInstance.show();
-
-          const actionBtn = confirmModalEl.querySelector(
-            "#btn-confirm-clear-race-action",
-          );
-          if (actionBtn) {
-            const newActionBtn = actionBtn.cloneNode(true);
-            actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
-
-            newActionBtn.addEventListener("click", () => {
-              // Clear race metrics for all pilots
-              this.race.raceSession = this.race.raceSession.map((q) => ({
-                ...q,
-                laps: 0,
-                bestLapIndex: 0,
-                bestLapTime: 0,
-                lapTimes: [],
-              }));
-
-              this.populateRaceTable();
-
-              // Notify parent modal of quali/laps updates to enable save button
-              window.dispatchEvent(new CustomEvent("raceQualiUpdated"));
-
-              confirmModalInstance.hide();
-            });
-          }
-        }
+        });
       });
     }
 

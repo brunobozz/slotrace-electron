@@ -234,54 +234,34 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         photoUrl: photoUrl,
         carName: carName,
         onRemove: () => {
-          const confirmModalEl = this.querySelector(
-            "#modal-confirm-remove-pilot",
-          );
-          if (confirmModalEl) {
-            const nameEl = confirmModalEl.querySelector(
-              "#remove-pilot-confirm-name",
-            );
-            if (nameEl) {
-              nameEl.textContent = name;
-            }
-
-            let confirmModalInstance =
-              bootstrap.Modal.getInstance(confirmModalEl);
-            if (!confirmModalInstance) {
-              confirmModalInstance = new bootstrap.Modal(confirmModalEl);
-            }
-            confirmModalInstance.show();
-
-            const actionBtn = confirmModalEl.querySelector(
-              "#btn-confirm-remove-pilot-action",
-            );
-            if (actionBtn) {
-              const newActionBtn = actionBtn.cloneNode(true);
-              actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
-
-              newActionBtn.addEventListener("click", () => {
-                // Remove from race pilots list
-                this.race.pilots = this.race.pilots.filter((p) => {
-                  const id = typeof p === "object" ? p.id : p;
-                  return id !== pilotId;
-                });
-
-                // Re-render circular list and qualifying table
-                this.populatePilots();
-
-                // Notify the separate add-pilot modal of the update
-                window.dispatchEvent(
-                  new CustomEvent("racePilotsUpdated", {
-                    detail: { pilots: this.race.pilots },
-                  }),
-                );
-
-                this.checkPendingChanges();
-
-                confirmModalInstance.hide();
+          window.confirmModal({
+            title: "Confirmar Remoção de Piloto",
+            message: `Tem certeza de que deseja remover o piloto <strong class="text-danger">${name}</strong> desta corrida? Todos os tempos das voltas dele também serão permanentemente excluídos.`,
+            theme: "danger",
+            icon: "mdi-alert-circle-outline",
+            confirmBtnText: "Remover",
+            confirmBtnIcon: "mdi-trash-can-outline"
+          }).then((confirmed) => {
+            if (confirmed) {
+              // Remove from race pilots list
+              this.race.pilots = this.race.pilots.filter((p) => {
+                const id = typeof p === "object" ? p.id : p;
+                return id !== pilotId;
               });
+
+              // Re-render circular list and qualifying table
+              this.populatePilots();
+
+              // Notify the separate add-pilot modal of the update
+              window.dispatchEvent(
+                new CustomEvent("racePilotsUpdated", {
+                  detail: { pilots: this.race.pilots },
+                }),
+              );
+
+              this.checkPendingChanges();
             }
-          }
+          });
         },
       });
 
@@ -650,90 +630,94 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         });
       }
 
-      // Discard changes confirmation button
-      const discardBtn = this.querySelector("#btn-confirm-discard-changes");
-      if (discardBtn) {
-        discardBtn.addEventListener("click", () => {
-          const confirmCloseModalEl = this.querySelector(
-            "#modal-confirm-close-edit",
-          );
-          if (confirmCloseModalEl) {
-            const confirmCloseInstance =
-              bootstrap.Modal.getInstance(confirmCloseModalEl);
-            if (confirmCloseInstance) {
-              confirmCloseInstance.hide();
-            }
-          }
-          this.closeEditModal();
-        });
-      }
-
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (!this.race) return;
 
-        const formComponent = this.querySelector("#race-edit-form-component");
-        const formValues = formComponent
-          ? formComponent.getValues()
-          : {
-              type: "grand_prix",
-              name: "",
-              trackId: "",
-              date: this.race.date || new Date().toISOString(),
-            };
-
-        const selectedType = formValues.type;
-        const newName = formValues.name;
-        const selectedTrackId = formValues.trackId;
-        const selectedDateISO = formValues.date;
-
-        // Find selected track name
-        let selectedTrackName =
-          window.t("registrations.default_track") || "Pista Padrão";
-        if (selectedTrackId) {
-          const trackObj = this.tracks.find((t) => t.id === selectedTrackId);
-          if (trackObj) {
-            selectedTrackName = trackObj.name;
+        window.confirmModal({
+          title: "Confirmar Salvamento",
+          message: "Deseja realmente salvar as alterações feitas nesta corrida?",
+          theme: "success",
+          icon: "mdi-content-save-outline",
+          cancelBtnText: "Cancelar",
+          confirmBtnText: "Confirmar",
+          confirmBtnIcon: "mdi-check-circle-outline"
+        }).then((confirmed) => {
+          if (confirmed) {
+            this.saveRaceChanges();
           }
-        }
-
-        window.electronAPI.db
-          .get("races")
-          .then((races) => {
-            const racesList = races || [];
-            const updatedList = racesList.map((r) => {
-              if (r.id === this.race.id) {
-                return {
-                  ...r,
-                  name: newName || r.name,
-                  type: selectedType,
-                  trackId: selectedTrackId,
-                  trackName: selectedTrackName,
-                  date: selectedDateISO,
-                  pilots: this.race.pilots || [],
-                  quali: this.race.quali || [],
-                  raceSession: this.race.raceSession || [],
-                };
-              }
-              return r;
-            });
-            return window.electronAPI.db.set("races", updatedList);
-          })
-          .then((success) => {
-            if (success) {
-              window.recalculateDriversRacesCount();
-              const modalInstance = bootstrap.Modal.getInstance(modalEl);
-              if (modalInstance) {
-                modalInstance.hide();
-              }
-              window.dispatchEvent(new CustomEvent("raceListChanged"));
-            }
-          })
-          .catch((err) => {
-            console.error("Failed to update race details in database:", err);
-          });
+        });
       });
     }
+  }
+
+  saveRaceChanges() {
+    if (!this.race) return;
+
+    const formComponent = this.querySelector("#race-edit-form-component");
+    const formValues = formComponent
+      ? formComponent.getValues()
+      : {
+          type: "grand_prix",
+          name: "",
+          trackId: "",
+          date: this.race.date || new Date().toISOString(),
+        };
+
+    const selectedType = formValues.type;
+    const newName = formValues.name;
+    const selectedTrackId = formValues.trackId;
+    const selectedDateISO = formValues.date;
+
+    // Find selected track name
+    let selectedTrackName =
+      window.t("registrations.default_track") || "Pista Padrão";
+    if (selectedTrackId) {
+      const trackObj = this.tracks.find((t) => t.id === selectedTrackId);
+      if (trackObj) {
+        selectedTrackName = trackObj.name;
+      }
+    }
+
+    window.electronAPI.db
+      .get("races")
+      .then((races) => {
+        const racesList = races || [];
+        const updatedList = racesList.map((r) => {
+          if (r.id === this.race.id) {
+            this.race.name = newName || r.name;
+            this.race.type = selectedType;
+            this.race.trackId = selectedTrackId;
+            this.race.trackName = selectedTrackName;
+            this.race.date = selectedDateISO;
+
+            return {
+              ...r,
+              name: newName || r.name,
+              type: selectedType,
+              trackId: selectedTrackId,
+              trackName: selectedTrackName,
+              date: selectedDateISO,
+              pilots: this.race.pilots || [],
+              quali: this.race.quali || [],
+              raceSession: this.race.raceSession || [],
+            };
+          }
+          return r;
+        });
+        return window.electronAPI.db.set("races", updatedList);
+      })
+      .then((success) => {
+        if (success) {
+          window.recalculateDriversRacesCount();
+          this.initialRaceSnapshot = this.getCurrentStateSnapshot();
+          this.checkPendingChanges();
+          window.dispatchEvent(new CustomEvent("raceListChanged"));
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to update race details in database:", err);
+      });
   }
 
   getCurrentStateSnapshot() {
@@ -770,7 +754,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
 
     const currentSnapshot = this.getCurrentStateSnapshot();
     const hasChanges = currentSnapshot !== this.initialRaceSnapshot;
-    submitBtn.disabled = !hasChanges;
+    
+    if (hasChanges) {
+      submitBtn.classList.remove("d-none");
+    } else {
+      submitBtn.classList.add("d-none");
+    }
   }
 
   handleCloseAttempt() {
@@ -778,17 +767,19 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     const hasChanges = currentSnapshot !== this.initialRaceSnapshot;
 
     if (hasChanges) {
-      const confirmCloseModalEl = this.querySelector(
-        "#modal-confirm-close-edit",
-      );
-      if (confirmCloseModalEl) {
-        let confirmCloseModalInstance =
-          bootstrap.Modal.getInstance(confirmCloseModalEl);
-        if (!confirmCloseModalInstance) {
-          confirmCloseModalInstance = new bootstrap.Modal(confirmCloseModalEl);
+      window.confirmModal({
+        title: "Descartar Alterações?",
+        message: "Você possui alterações pendentes nesta corrida. Tem certeza de que deseja fechar o modal? Todas as modificações não salvas serão permanentemente perdidas.",
+        theme: "warning",
+        icon: "mdi-alert-circle-outline",
+        cancelBtnText: "Continuar Editando",
+        confirmBtnText: "Descartar",
+        confirmBtnIcon: "mdi-close-circle-outline"
+      }).then((confirmed) => {
+        if (confirmed) {
+          this.closeEditModal();
         }
-        confirmCloseModalInstance.show();
-      }
+      });
     } else {
       this.closeEditModal();
     }
@@ -844,34 +835,58 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           flex-grow: 1;
           overflow: hidden;
         }
+        @keyframes pulse-save-btn {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+          }
+          70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 8px rgba(25, 135, 84, 0);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+          }
+        }
+        .pulse-save {
+          animation: pulse-save-btn 1.8s infinite;
+        }
       </style>
 
       <div class="modal fade" id="modal-edit-race" tabindex="-1" aria-labelledby="modal-edit-race-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
           <div class="modal-content border-secondary-subtle">
-            
-            <div class="modal-header border-secondary-subtle bg-body-tertiary">
-              <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2" id="modal-edit-race-title" style="font-size: 1.1rem;">
-                <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
-                Corrida
-              </h5>
-              <button type="button" id="btn-close-edit-race" class="btn-close" aria-label="Close"></button>
-            </div>
-            
             <form id="form-edit-race">
               <div class="modal-body text-start fs-6 p-0">
                 <div class="d-flex h-100">
-                  <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3 overflow-y-auto" style="min-width: 350px; max-width: 350px;">
+                  <div class="bg-body-tertiary h-100 d-flex flex-column gap-3 p-3" style="min-width: 350px; max-width: 350px;">
+                    <div class="d-flex align-items-center gap-2 w-100">
+                      <button type="button" id="btn-close-edit-race" class="btn border-0 p-0 text-body-secondary me-2 d-flex align-items-center justify-content-center" aria-label="Close" style="background: none; border: none; box-shadow: none; width: 32px; height: 32px;">
+                      <i class="mdi mdi-arrow-left fs-3"></i>
+                      </button>
+                      <h5 class="modal-title fw-bold text-body-emphasis d-flex align-items-center gap-2 mb-0" id="modal-edit-race-title" style="font-size: 1.1rem;">
+                        <i class="mdi mdi-flag-checkered text-primary fs-4"></i>
+                        Corrida
+                      </h5>
+                      <div class="ms-auto"></div>
+                      <button type="submit" id="btn-submit-edit-race" class="btn btn-success rounded-circle p-0 d-flex align-items-center justify-content-center d-none pulse-save" title="${window.t("registrations.races_modal.save_button") || "Salvar Alterações"}" style="width: 32px; height: 32px; min-width: 32px;">
+                        <i class="mdi mdi-content-save-outline fs-5"></i>
+                      </button>
+                      <button type="button" id="btn-delete-race" class="btn border-0 text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" title="${window.t("registrations.modal.delete_button") || "Excluir"}" style="background: none; box-shadow: none; width: 32px; height: 32px; min-width: 32px;">
+                        <i class="mdi mdi-trash-can-outline fs-4"></i>
+                      </button>
+                    </div>
                     <!-- FORM -->
                     <slotrace-registrations-races-form id="race-edit-form-component"></slotrace-registrations-races-form>
                     <!-- Pilots list -->
-                    <div>
+                    <div class="d-flex flex-column flex-grow-1 overflow-hidden" style="min-height: 0;">
                       <label class="form-label fw-semibold text-secondary small mb-2">
                         ${window.t("registrations.drivers") || "Pilotos"}
                       </label>
-                      <div id="race-edit-pilots-list" class="d-flex align-items-center gap-2 flex-wrap py-1">
+                      <div id="race-edit-pilots-list" class="d-flex flex-column gap-2 py-1 overflow-y-auto overflow-x-hidden" style="min-height: 0;">
                         <!-- Rendered dynamically -->
-                        <button type="button" id="btn-race-edit-add-pilot" class="btn btn-primary rounded-pill w-100" style="height: 48px;" title="${window.t("registrations.races_modal.add_driver") || "Adicionar Piloto"}">
+                        <button type="button" id="btn-race-edit-add-pilot" class="btn btn-primary rounded-pill w-100 flex-shrink-0" style="height: 48px;" title="${window.t("registrations.races_modal.add_driver") || "Adicionar Piloto"}">
                           <i class="mdi mdi-plus"></i>
                           <span>${window.t("registrations.races_modal.add_driver") || "Adicionar Piloto"}</span>
                         </button>
@@ -936,68 +951,12 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                 </div>
               </div>
               
-              <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary-subtle">
-                <button type="button" id="btn-delete-race" class="btn text-danger px-3 fw-semibold d-flex align-items-center gap-2" title="${window.t("registrations.modal.delete_button") || "Excluir"}">
-                  <i class="mdi mdi-trash-can-outline fs-5"></i>
-                </button>
-                <button type="submit" id="btn-submit-edit-race" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
-                  <i class="mdi mdi-content-save-outline fs-5"></i>
-                  ${window.t("registrations.races_modal.save_button") || "Salvar Alterações"}
-                </button>
-              </div>
             </form>
             
           </div>
         </div>
       </div>
 
-      <!-- Confirmation Modal for Removing a Pilot -->
-      <div class="modal fade" id="modal-confirm-remove-pilot" tabindex="-1" aria-labelledby="modal-confirm-remove-pilot-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-          <div class="modal-content border-danger-subtle">
-            <div class="modal-header bg-danger bg-opacity-10 border-danger-subtle py-2.5">
-              <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="modal-confirm-remove-pilot-title" style="font-size: 0.95rem;">
-                <i class="mdi mdi-alert-circle-outline fs-5"></i>
-                Confirmar Remoção de Piloto
-              </h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-start py-3">
-              <p class="mb-0 text-body-emphasis small">
-                Tem certeza de que deseja remover o piloto <strong id="remove-pilot-confirm-name" class="text-primary"></strong> desta corrida? Todos os tempos das voltas dele também serão permanentemente excluídos.
-              </p>
-            </div>
-            <div class="modal-footer border-secondary-subtle py-2">
-              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" id="btn-confirm-remove-pilot-action" class="btn btn-sm btn-danger fw-semibold px-3">Remover</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Confirmation Modal for Closing Edit Modal with Unsaved Changes -->
-      <div class="modal fade" id="modal-confirm-close-edit" tabindex="-1" aria-labelledby="modal-confirm-close-edit-title" aria-hidden="true" data-bs-backdrop="false" style="z-index: 1065; background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-          <div class="modal-content border-warning-subtle">
-            <div class="modal-header bg-warning bg-opacity-10 border-warning-subtle py-2.5">
-              <h6 class="modal-title fw-bold text-warning d-flex align-items-center gap-2" id="modal-confirm-close-edit-title" style="font-size: 0.95rem;">
-                <i class="mdi mdi-alert-circle-outline fs-5"></i>
-                Descartar Alterações?
-              </h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-start py-3">
-              <p class="mb-0 text-body-emphasis small">
-                Você possui alterações pendentes nesta corrida. Tem certeza de que deseja fechar o modal? Todas as modificações não salvas serão permanentemente perdidas.
-              </p>
-            </div>
-            <div class="modal-footer border-secondary-subtle py-2">
-              <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Continuar Editando</button>
-              <button type="button" id="btn-confirm-discard-changes" class="btn btn-sm btn-warning text-dark fw-semibold px-3">Descartar</button>
-            </div>
-          </div>
-        </div>
-      </div>
     `;
   }
 }
