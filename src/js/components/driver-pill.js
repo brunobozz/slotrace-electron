@@ -20,7 +20,7 @@ class SlotRaceDriverPill extends HTMLElement {
   render() {
     // Style as the capsule driver pill
     this.className =
-      "w-100 driver-pill-wrapper position-relative d-inline-flex align-items-center bg-body-secondary border border-secondary-subtle rounded-pill p-1 pe-2 me-1 mb-1";
+      "w-100 driver-pill-wrapper position-relative d-inline-flex align-items-center bg-body-secondary border border-secondary-subtle rounded-pill p-1 pe-2";
     this.style.height = "48px";
     this.style.minWidth = "max-content";
 
