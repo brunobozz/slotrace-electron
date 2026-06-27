@@ -351,7 +351,14 @@ class SlotRaceRealtimeRace extends HTMLElement {
         );
         const hasLapsInRace =
           record && record.lapTimes && record.lapTimes.length > 0;
-        this._sessionFirstLapMarked[pid] = hasLapsInRace;
+        const hasCompletedHeats =
+          this._completedLanes[pid] && this._completedLanes[pid].length > 0;
+        const hasAccumulatedTime =
+          (this._pilotAccumulatedLapTime[pid] || 0) > 0;
+
+        const alreadyStartedTiming = hasLapsInRace || hasCompletedHeats || hasAccumulatedTime;
+
+        this._sessionFirstLapMarked[pid] = alreadyStartedTiming;
         this._sessionLapStartTime[pid] = null;
         this._sessionLaps[pid] = 0;
       }
@@ -367,7 +374,14 @@ class SlotRaceRealtimeRace extends HTMLElement {
         );
         const hasLapsInRace =
           record && record.lapTimes && record.lapTimes.length > 0;
-        if (hasLapsInRace) {
+        const hasCompletedHeats =
+          this._completedLanes[pid] && this._completedLanes[pid].length > 0;
+        const hasAccumulatedTime =
+          (this._pilotAccumulatedLapTime[pid] || 0) > 0;
+
+        const alreadyStartedTiming = hasLapsInRace || hasCompletedHeats || hasAccumulatedTime;
+
+        if (alreadyStartedTiming) {
           this._sessionFirstLapMarked[pid] = true;
           const accTime = this._pilotAccumulatedLapTime[pid] || 0;
           this._sessionLapStartTime[pid] = startTime - accTime * 1000;
@@ -572,40 +586,41 @@ class SlotRaceRealtimeRace extends HTMLElement {
         );
 
         if (zoneModal) {
-          if (hasFinishedRace) {
-            // Exiting pilot has finished all lanes of the track
-            zoneModal.showFinalZoneModal({
-              pilotName,
-              laneName: `Fenda ${exitLane}`,
-              callback: (zone) => {
-                const record = this.raceSession.find(
-                  (r) => String(r.pilotId) === String(exitingPilotId),
-                );
-                if (record) record.finalZone = zone;
+          setTimeout(() => {
+            if (hasFinishedRace) {
+              // Exiting pilot has finished all lanes of the track
+              zoneModal.showFinalZoneModal({
+                pilotName,
+                laneName: `Fenda ${exitLane}`,
+                callback: (zone) => {
+                  const record = this.raceSession.find(
+                    (r) => String(r.pilotId) === String(exitingPilotId),
+                  );
+                  if (record) record.finalZone = zone;
 
-                // Do not return to DECK, they finished the race!
-                this._laneAssignments[exitLane] = null;
-                this.proceedRotation(exitLane);
-              },
-            });
-            return;
-          } else {
-            // Exiting pilot needs to mark stopped zone and return to DECK
-            zoneModal.showStoppedZoneModal({
-              pilotName,
-              laneName: `Fenda ${exitLane}`,
-              callback: (zone) => {
-                // Save stopped zone internally to show in DECK list
-                this._pilotStoppedZones[exitingPilotId] = zone;
+                  // Do not return to DECK, they finished the race!
+                  this._laneAssignments[exitLane] = null;
+                  this.proceedRotation(exitLane);
+                },
+              });
+            } else {
+              // Exiting pilot needs to mark stopped zone and return to DECK
+              zoneModal.showStoppedZoneModal({
+                pilotName,
+                laneName: `Fenda ${exitLane}`,
+                callback: (zone) => {
+                  // Save stopped zone internally to show in DECK list
+                  this._pilotStoppedZones[exitingPilotId] = zone;
 
-                // Push to back of DECK queue
-                this._deckQueue.push(exitingPilotId);
-                this._laneAssignments[exitLane] = null;
-                this.proceedRotation(exitLane);
-              },
-            });
-            return;
-          }
+                  // Push to back of DECK queue
+                  this._deckQueue.push(exitingPilotId);
+                  this._laneAssignments[exitLane] = null;
+                  this.proceedRotation(exitLane);
+                },
+              });
+            }
+          }, 1000);
+          return;
         }
       }
     }
@@ -795,6 +810,10 @@ class SlotRaceRealtimeRace extends HTMLElement {
         drivers: this.drivers,
         cars: this.cars,
         lanesCount: this._lanesCount,
+        state: this._state,
+        pilotAccumulatedLapTime: this._pilotAccumulatedLapTime,
+        sessionLapStartTime: this._sessionLapStartTime,
+        pauseTimeStart: this._pauseTimeStart,
       });
     }
 
