@@ -48,16 +48,15 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         "#af52de", // Purple
         "#8e8e93", // Gray
       ];
-      const colors = this.laneColors && this.laneColors.length > 0 ? this.laneColors : defaultColors;
+      const colors =
+        this.laneColors && this.laneColors.length > 0
+          ? this.laneColors
+          : defaultColors;
 
       this.innerHTML = `
         <style>
           .lap-list-group-item {
             border-color: var(--bs-border-color-translucent) !important;
-            transition: background-color 0.15s ease-in-out;
-          }
-          .lap-list-group-item:hover {
-            background-color: var(--bs-secondary-bg) !important;
           }
           .lap-item-index {
             font-size: 0.85rem;
@@ -186,10 +185,13 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
           const isPoleLap = isBestLap && this.isPole;
 
           const formattedValue =
-            time !== undefined && time !== null ? parseFloat(time).toFixed(4) : "";
+            time !== undefined && time !== null
+              ? parseFloat(time).toFixed(4)
+              : "";
 
           const itemEl = document.createElement("div");
-          itemEl.className = "list-group-item bg-transparent d-flex align-items-center justify-content-between py-1.5 px-3 lap-list-group-item";
+          itemEl.className =
+            "list-group-item bg-transparent d-flex align-items-center justify-content-between py-1.5 px-3 lap-list-group-item";
           itemEl.innerHTML = `
             <div class="d-flex align-items-center gap-3">
               <span class="lap-item-index font-monospace ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}">#${globalLapIndex}</span>
@@ -245,7 +247,10 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
               if (typeof this.item.lapTimes[idx] === "object") {
                 this.item.lapTimes[idx].lane = nextLane;
               } else {
-                this.item.lapTimes[idx] = { time: parseFloat(this.item.lapTimes[idx]) || 0, lane: nextLane };
+                this.item.lapTimes[idx] = {
+                  time: parseFloat(this.item.lapTimes[idx]) || 0,
+                  lane: nextLane,
+                };
               }
               this.render();
               if (this.onChangeCallback) {
@@ -478,7 +483,9 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
 
           const formattedValue =
             lapTime !== undefined && lapTime !== null
-              ? parseFloat(typeof lapTime === "object" ? lapTime.time : lapTime).toFixed(4)
+              ? parseFloat(
+                  typeof lapTime === "object" ? lapTime.time : lapTime,
+                ).toFixed(4)
               : "";
 
           const pill = document.createElement("div");
