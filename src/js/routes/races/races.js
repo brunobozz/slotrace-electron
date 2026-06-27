@@ -26,8 +26,7 @@ class SlotRaceRegistrationsRaces extends HTMLElement {
       <!-- Races List Grid -->
       <slotrace-registrations-races-list class="mt-4 d-block"></slotrace-registrations-races-list>
 
-      <!-- Delete Race Confirmation Modal -->
-      <slotrace-registrations-races-delete-modal></slotrace-registrations-races-delete-modal>
+
 
       <!-- Edit Race Modal -->
       <slotrace-registrations-races-edit-modal></slotrace-registrations-races-edit-modal>

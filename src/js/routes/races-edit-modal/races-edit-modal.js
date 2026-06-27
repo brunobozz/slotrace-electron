@@ -617,16 +617,35 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
         });
       }
 
-      // Delete button on footer
       const deleteBtn = this.querySelector("#btn-delete-race");
       if (deleteBtn) {
         deleteBtn.addEventListener("click", () => {
           if (!this.race) return;
-          window.dispatchEvent(
-            new CustomEvent("requestDeleteRace", {
-              detail: { id: this.race.id, name: this.race.name },
-            }),
-          );
+          window.confirmModal({
+            title: window.t('registrations.races_modal.delete_title') || 'Excluir Corrida',
+            message: `${window.t('registrations.races_modal.delete_confirm_prefix') || 'Tem certeza de que deseja excluir a corrida '}<strong class="text-danger fw-bold">${this.race.name}</strong>${window.t('registrations.races_modal.delete_confirm_suffix') || '? Esta ação não poderá ser desfeita e removerá o registro do histórico.'}`,
+            theme: 'danger',
+            icon: 'mdi-alert-circle',
+            cancelBtnText: window.t('registrations.modal.cancel_button') || 'Cancelar',
+            confirmBtnText: window.t('registrations.modal.delete_button_confirm') || 'Excluir',
+            confirmBtnIcon: 'mdi-trash-can-outline'
+          }).then((confirmed) => {
+            if (confirmed) {
+              const raceId = this.race.id;
+              window.electronAPI.db.get('races').then(races => {
+                const racesList = races || [];
+                const updatedList = racesList.filter(r => r.id !== raceId);
+                return window.electronAPI.db.set('races', updatedList);
+              }).then(success => {
+                if (success) {
+                  window.recalculateDriversRacesCount();
+                  window.dispatchEvent(new CustomEvent('raceListChanged'));
+                }
+              }).catch(err => {
+                console.error('Failed to delete race from database:', err);
+              });
+            }
+          });
         });
       }
 

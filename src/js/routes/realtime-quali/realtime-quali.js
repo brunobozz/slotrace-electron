@@ -65,13 +65,10 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       }
     };
 
-    this._onResetConfirmed = () => this._handleResetConfirmed();
-
     window.addEventListener("qualiSessionStart", this._onStart);
     window.addEventListener("qualiSessionPause", this._onPause);
     window.addEventListener("qualiSessionResume", this._onResume);
     window.addEventListener("qualiSessionReset", this._onReset);
-    window.addEventListener("qualiSessionResetConfirmed", this._onResetConfirmed);
     window.addEventListener("qualiMarkLap", this._onMarkLap);
     window.addEventListener("qualiSessionFinish", this._onFinish);
     window.addEventListener("qualiLaneChanged", this._onLaneChanged);
@@ -95,7 +92,6 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener("qualiSessionPause", this._onPause);
     window.removeEventListener("qualiSessionResume", this._onResume);
     window.removeEventListener("qualiSessionReset", this._onReset);
-    window.removeEventListener("qualiSessionResetConfirmed", this._onResetConfirmed);
     window.removeEventListener("qualiMarkLap", this._onMarkLap);
     window.removeEventListener("qualiSessionFinish", this._onFinish);
     window.removeEventListener("qualiLaneChanged", this._onLaneChanged);
@@ -434,14 +430,19 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   _handleReset() {
-    const resetModalEl = this.querySelector("#modal-quali-reset-confirm");
-    if (resetModalEl) {
-      let modalInstance = bootstrap.Modal.getInstance(resetModalEl);
-      if (!modalInstance) {
-        modalInstance = new bootstrap.Modal(resetModalEl);
+    window.confirmModal({
+      title: "Zerar Classificação",
+      message: "Tem certeza que deseja zerar a classificação? Todas as voltas e tempos acumulados serão apagados!",
+      theme: "danger",
+      icon: "mdi-alert-circle",
+      cancelBtnText: "Cancelar",
+      confirmBtnText: "Zerar",
+      confirmBtnIcon: "mdi-trash-can-outline"
+    }).then((confirmed) => {
+      if (confirmed) {
+        this._handleResetConfirmed();
       }
-      modalInstance.show();
-    }
+    });
   }
 
   async _handleResetConfirmed() {
@@ -957,7 +958,6 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         </div>
       </div>
       <slotrace-realtime-quali-config-modal></slotrace-realtime-quali-config-modal>
-      <slotrace-realtime-quali-reset-confirm-modal></slotrace-realtime-quali-reset-confirm-modal>
     `;
 
     this._updateHeaderControls();
