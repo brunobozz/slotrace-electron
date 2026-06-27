@@ -558,7 +558,11 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
     // Setup Go Qualify Button listener
     const goQualifyBtn = this.querySelector("#btn-go-qualify");
     if (goQualifyBtn) {
-      goQualifyBtn.addEventListener("click", () => {
+      goQualifyBtn.addEventListener("click", (e) => {
+        if (this._hasPendingChanges) {
+          e.preventDefault();
+          return;
+        }
         // Dispatch custom event for future telemetry/racing screens integration
         window.dispatchEvent(
           new CustomEvent("requestGoQualify", {
@@ -566,6 +570,25 @@ class SlotRaceRegistrationsRacesQualiTable extends HTMLElement {
           }),
         );
       });
+    }
+
+    this.setHasPendingChanges(this._hasPendingChanges || false);
+  }
+
+  setHasPendingChanges(hasChanges) {
+    this._hasPendingChanges = hasChanges;
+    const btn = this.querySelector("#btn-go-qualify");
+    if (btn) {
+      if (hasChanges) {
+        btn.style.opacity = "0.6";
+        btn.style.cursor = "not-allowed";
+        btn.setAttribute("title", "Você precisa salvar as alterações");
+      } else {
+        btn.style.opacity = "";
+        btn.style.cursor = "";
+        const originalTitle = window.t("registrations.races_modal.quali.go_qualify_button") || "Go Qualify";
+        btn.setAttribute("title", originalTitle);
+      }
     }
   }
 

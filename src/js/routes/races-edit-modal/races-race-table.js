@@ -698,13 +698,36 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
     // Setup Go Race Button listener
     const goRaceBtn = this.querySelector("#btn-go-race");
     if (goRaceBtn) {
-      goRaceBtn.addEventListener("click", () => {
+      goRaceBtn.addEventListener("click", (e) => {
+        if (this._hasPendingChanges) {
+          e.preventDefault();
+          return;
+        }
         window.dispatchEvent(
           new CustomEvent("requestGoRace", {
             detail: { race: this.race },
           }),
         );
       });
+    }
+
+    this.setHasPendingChanges(this._hasPendingChanges || false);
+  }
+
+  setHasPendingChanges(hasChanges) {
+    this._hasPendingChanges = hasChanges;
+    const btn = this.querySelector("#btn-go-race");
+    if (btn) {
+      if (hasChanges) {
+        btn.style.opacity = "0.6";
+        btn.style.cursor = "not-allowed";
+        btn.setAttribute("title", "Você precisa salvar as alterações");
+      } else {
+        btn.style.opacity = "";
+        btn.style.cursor = "";
+        const originalTitle = window.t("registrations.races_modal.quali.go_race_button") || "Correr";
+        btn.setAttribute("title", originalTitle);
+      }
     }
   }
 

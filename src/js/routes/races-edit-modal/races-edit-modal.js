@@ -779,6 +779,15 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
     } else {
       submitBtn.classList.add("d-none");
     }
+
+    const qualiTable = this.querySelector("#race-edit-quali-table-component");
+    if (qualiTable && typeof qualiTable.setHasPendingChanges === "function") {
+      qualiTable.setHasPendingChanges(hasChanges);
+    }
+    const raceTable = this.querySelector("#race-edit-race-table-component");
+    if (raceTable && typeof raceTable.setHasPendingChanges === "function") {
+      raceTable.setHasPendingChanges(hasChanges);
+    }
   }
 
   handleCloseAttempt() {
