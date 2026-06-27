@@ -958,8 +958,8 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
                         </div>
 
                         <!-- Tab 3: Results -->
-                        <div class="tab-pane fade h-100" id="tab-content-results" role="tabpanel" aria-labelledby="results-tab">
-                          <div class="d-flex justify-content-center align-items-center gap-4 h-100">
+                        <div class="tab-pane fade h-100 overflow-y-auto" id="tab-content-results" role="tabpanel" aria-labelledby="results-tab">
+                          <div class="d-flex justify-content-center align-items-center gap-4 h-100 flex-wrap">
                             <slotrace-podium id="race-edit-podium-component" style="min-width: 700px;"></slotrace-podium>
                             <slotrace-fastest-laps id="race-edit-fastest-laps-component" style="width: 500px;"></slotrace-fastest-laps>
                           </div>

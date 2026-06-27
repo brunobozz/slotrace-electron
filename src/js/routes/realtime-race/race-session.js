@@ -9,6 +9,10 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
     this.drivers = [];
     this.cars = [];
     this._lanesCount = 4;
+    this._state = "idle";
+    this._pilotAccumulatedLapTime = {};
+    this._sessionLapStartTime = {};
+    this._pauseTimeStart = null;
     this.render();
   }
 
@@ -22,6 +26,10 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
     drivers,
     cars,
     lanesCount,
+    state,
+    pilotAccumulatedLapTime,
+    sessionLapStartTime,
+    pauseTimeStart,
   }) {
     this._laneAssignments = laneAssignments || {};
     this._laneColors = laneColors || [];
@@ -32,6 +40,10 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
     this.drivers = drivers || [];
     this.cars = cars || [];
     this._lanesCount = lanesCount || 4;
+    this._state = state || "idle";
+    this._pilotAccumulatedLapTime = pilotAccumulatedLapTime || {};
+    this._sessionLapStartTime = sessionLapStartTime || {};
+    this._pauseTimeStart = pauseTimeStart || null;
     this.render();
   }
 
@@ -145,10 +157,19 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
         const metrics = getSessionMetrics(record, currentSessionLaps);
         const bestTime =
           metrics.best !== Infinity ? metrics.best.toFixed(4) : "—";
-        const lastTime =
-          record && record.lapTimes && record.lapTimes.length > 0
-            ? record.lapTimes[record.lapTimes.length - 1].toFixed(4)
-            : "—";
+        let lastTime = "—";
+        if (this._state === "paused" && this._pauseTimeStart && this._sessionLapStartTime && this._sessionLapStartTime[pilotId]) {
+          // Mid-race pause: display the elapsed time at the moment of pause
+          const elapsed = (this._pauseTimeStart - this._sessionLapStartTime[pilotId]) / 1000;
+          lastTime = elapsed.toFixed(4) + "s";
+        } else if ((this._state === "idle" || this._state === "paused" || this._state === "interval") && this._sessionFirstLapMarked && this._sessionFirstLapMarked[pilotId]) {
+          // Waiting to start/resume after rotation: display the accumulated time from previous fendas
+          const accTime = this._pilotAccumulatedLapTime[pilotId] || 0;
+          lastTime = accTime.toFixed(4) + "s";
+        } else if (record && record.lapTimes && record.lapTimes.length > 0) {
+          // Running or finished: display last completed lap time
+          lastTime = record.lapTimes[record.lapTimes.length - 1].toFixed(4);
+        }
 
         const card = document.createElement(
           "slotrace-realtime-race-session-card",

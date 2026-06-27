@@ -128,7 +128,7 @@ class SlotRacePodium extends HTMLElement {
           flex-direction: column;
           align-items: center;
           flex: 1;
-          min-width: 200px;
+          min-width: 300px;
           max-width: 300px;
           transform-origin: bottom;
           animation: podiumSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -152,7 +152,6 @@ class SlotRacePodium extends HTMLElement {
         
         .podium-pane {
           width: 100%;
-          min-width: 300px;
           height: 300px;
           border-top: 2px solid;
           border-left: 2px solid;
