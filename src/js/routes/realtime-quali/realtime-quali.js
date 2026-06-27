@@ -615,8 +615,6 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   _updateToolbarState() {
-    const toolbar = this.querySelector("quali-toolbar");
-    if (toolbar) toolbar.setState(this._state, this._isShuffling);
     this._updateHeaderControls();
   }
 
@@ -717,10 +715,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   distributeData() {
     if (!this.race) return;
 
-    const toolbar = this.querySelector("quali-toolbar");
-    if (toolbar) {
-      toolbar.setData({ race: this.race, track: this.getTrackForRace() });
-    }
+
 
     const configModal = this.querySelector("slotrace-realtime-quali-config-modal");
     if (configModal) {
@@ -934,8 +929,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
             </div>
 
-            <!-- Toolbar section -->
-            <quali-toolbar></quali-toolbar>
+
 
             <!-- Content area: 2 columns -->
             <div class="modal-body flex-grow-1 p-0 d-flex overflow-hidden">
