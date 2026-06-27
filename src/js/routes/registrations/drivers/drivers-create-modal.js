@@ -358,16 +358,16 @@ class SlotRaceRegistrationsDriversCreateModal extends HTMLElement {
     if (applyBtn) {
       applyBtn.onclick = () => {
         const cropCanvas = document.createElement('canvas');
-        cropCanvas.width = 400;
-        cropCanvas.height = 400;
+        cropCanvas.width = 600;
+        cropCanvas.height = 600;
         const cropCtx = cropCanvas.getContext('2d');
         
         // Fill canvas with a black background so outer empty areas are clean
         cropCtx.fillStyle = '#09090b'; 
-        cropCtx.fillRect(0, 0, 400, 400);
+        cropCtx.fillRect(0, 0, 600, 600);
         
-        // Scale factor between the 320x320 crop modal canvas and our high-res 400x400 output canvas
-        const outputScale = 400 / (2 * cropRadius);
+        // Scale factor between the 320x320 crop modal canvas and our high-res 600x600 output canvas
+        const outputScale = 600 / (2 * cropRadius);
         const cropStartX = centerX - cropRadius; // 30
         const cropStartY = centerY - cropRadius; // 30
         

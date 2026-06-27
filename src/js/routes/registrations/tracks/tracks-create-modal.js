@@ -518,16 +518,16 @@ class SlotRaceRegistrationsTracksCreateModal extends HTMLElement {
     if (applyBtn) {
       applyBtn.onclick = () => {
         const cropCanvas = document.createElement("canvas");
-        cropCanvas.width = 400;
-        cropCanvas.height = 225; // Widescreen 16:9 ratio
+        cropCanvas.width = 800;
+        cropCanvas.height = 450; // Widescreen 16:9 ratio
         const cropCtx = cropCanvas.getContext("2d");
 
         cropCtx.fillStyle = "#09090b";
-        cropCtx.fillRect(0, 0, 400, 225);
+        cropCtx.fillRect(0, 0, 800, 450);
 
         // Precise mapping from crop box to output canvas
-        const scaleX = 400 / cropW;
-        const scaleY = 225 / cropH;
+        const scaleX = 800 / cropW;
+        const scaleY = 450 / cropH;
 
         const destX = (this.offsetX - cropX) * scaleX;
         const destY = (this.offsetY - cropY) * scaleY;
