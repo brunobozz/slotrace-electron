@@ -32,8 +32,8 @@ class SlotRaceDriverPill extends HTMLElement {
         }
       </style>
       
-      <!-- Circular Avatar Container with Active Theme Color border -->
-      <div class="rounded-circle overflow-hidden bg-body-tertiary flex-shrink-0 shadow-sm" style="width: 38px; height: 38px; border: 2px solid var(--bs-primary);">
+      <!-- Circular Avatar Container -->
+      <div class="rounded-circle overflow-hidden bg-body-tertiary flex-shrink-0 shadow-sm" style="width: 38px; height: 38px;">
         ${
           this.photoUrl
             ? `
