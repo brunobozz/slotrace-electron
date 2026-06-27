@@ -24,10 +24,11 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
     }
   }
 
-  setParams(race, drivers, cars) {
+  setParams(race, drivers, cars, tracks) {
     this.race = race;
     this.drivers = drivers;
     this.cars = cars || [];
+    this.tracks = tracks || [];
     this.render();
     this.populateRaceTable();
   }
@@ -118,6 +119,10 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
   populateRaceTable() {
     const tableBody = this.querySelector("#race-edit-race-table-body");
     if (!tableBody || !this.race) return;
+
+    const trackObj = this.tracks ? this.tracks.find((t) => String(t.id) === String(this.race.trackId)) : null;
+    const lanesCount = trackObj ? (parseInt(trackObj.lanes) || 4) : 4;
+    const laneColors = trackObj ? trackObj.laneColors : null;
 
     const racePilots = this.race.pilots || [];
 
@@ -235,7 +240,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
     const leaderLaps = leader ? parseInt(leader.laps) || 0 : 0;
     const leaderTime =
       leader && leader.lapTimes
-        ? leader.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0)
+        ? leader.lapTimes.reduce((sum, t) => sum + (parseFloat((t && typeof t === "object") ? t.time : t) || 0), 0)
         : 0;
 
     sortedRace.forEach((item, index) => {
@@ -479,7 +484,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         let minIndex = 0;
 
         record.lapTimes.forEach((time, idx) => {
-          const val = parseFloat(time) || 0;
+          const val = parseFloat((time && typeof time === "object") ? time.time : time) || 0;
           if (val > 0) {
             if (minTime === 0 || val < minTime) {
               minTime = val;
@@ -492,7 +497,7 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
         record.bestLapIndex = minIndex;
 
         const calcTotal = record.lapTimes.reduce(
-          (sum, t) => sum + (parseFloat(t) || 0),
+          (sum, t) => sum + (parseFloat((t && typeof t === "object") ? t.time : t) || 0),
           0,
         );
 
@@ -599,6 +604,9 @@ class SlotRaceRegistrationsRacesRaceTable extends HTMLElement {
             recalculateRaceMetrics(item);
           },
           isPole,
+          false,
+          lanesCount,
+          laneColors
         );
       }
 

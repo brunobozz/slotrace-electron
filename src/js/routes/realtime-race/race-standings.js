@@ -47,7 +47,7 @@ class SlotRaceRealtimeRaceStandings extends HTMLElement {
     const leaderLaps = leader ? parseInt(leader.laps) || 0 : 0;
     const leaderTime =
       leader && leader.lapTimes
-        ? leader.lapTimes.reduce((sum, t) => sum + (parseFloat(t) || 0), 0)
+        ? leader.lapTimes.reduce((sum, t) => sum + (parseFloat((t && typeof t === "object") ? t.time : t) || 0), 0)
         : 0;
 
     const overallBestLap = this.raceSession.reduce((best, q) => {

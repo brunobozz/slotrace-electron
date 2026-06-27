@@ -1,6 +1,6 @@
 {
   "name": "slotrace",
-  "version": "0.1.88",
+  "version": "0.1.89",
   "description": "SlotRace Control Panel",
   "main": "main.js",
   "scripts": {

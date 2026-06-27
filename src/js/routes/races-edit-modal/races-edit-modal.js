@@ -297,7 +297,7 @@ class SlotRaceRegistrationsRacesEditModal extends HTMLElement {
           qualiTableComponent.setParams(this.race, this.drivers, this.cars);
         }
         if (raceTableComponent) {
-          raceTableComponent.setParams(this.race, this.drivers, this.cars);
+          raceTableComponent.setParams(this.race, this.drivers, this.cars, this.tracks);
         }
 
         // Populate results tab

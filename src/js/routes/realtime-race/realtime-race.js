@@ -500,14 +500,14 @@ class SlotRaceRealtimeRace extends HTMLElement {
       const parsedLapTime = parseFloat(lapTime.toFixed(4));
       const isNewBest = record.bestLapTime === 0 || parsedLapTime < record.bestLapTime;
 
-      record.lapTimes.push(parsedLapTime);
+      record.lapTimes.push({ time: parsedLapTime, lane: laneNum });
       record.laps = record.lapTimes.length;
 
       // Calculate best lap
       let minVal = 0;
       let minIdx = 0;
       record.lapTimes.forEach((t, index) => {
-        const val = parseFloat(t) || 0;
+        const val = parseFloat((t && typeof t === "object") ? t.time : t) || 0;
         if (val > 0 && (minVal === 0 || val < minVal)) {
           minVal = val;
           minIdx = index + 1;

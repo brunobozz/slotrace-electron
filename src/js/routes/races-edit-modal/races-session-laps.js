@@ -23,259 +23,559 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
     }
   }
 
-  setParams(item, onChangeCallback, isPole, hideZone) {
+  setParams(item, onChangeCallback, isPole, hideZone, lanesCount, laneColors) {
     this.item = item;
     this.onChangeCallback = onChangeCallback;
     this.isPole = isPole || false;
     this.hideZone = hideZone || false;
+    this.lanesCount = lanesCount || 1;
+    this.laneColors = laneColors || null;
     this.render();
   }
 
   render() {
     if (!this.item) return;
+    const lanesCount = this.lanesCount || 1;
 
-    this.innerHTML = `
-      <style>
-        .btn-xs {
-          padding: 0.15rem 0.4rem;
-          font-size: 0.75rem;
-          line-height: 1.25;
-          border-radius: 0.2rem;
-        }
-        .lap-badge {
-          display: inline-flex;
-          align-items: center;
-          background-color: var(--bs-body-bg);
-          border: 1px solid var(--bs-border-color-translucent);
-          border-radius: 8px;
-          padding: 3px 8px;
-          gap: 6px;
-          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
-          transform: translateY(0);
-        }
-        .lap-badge:hover {
-          border-color: var(--bs-border-color);
-          transform: translateY(-1px);
-        }
-        .lap-badge:focus-within {
-          border-color: var(--bs-primary);
-          box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
-          background-color: var(--bs-body-bg);
-          transform: translateY(-1px);
-        }
-        .lap-badge-index {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--bs-secondary-color);
-          user-select: none;
-          display: inline-flex;
-          align-items: center;
-          line-height: 1 !important;
-        }
-        .lap-badge.best-lap .lap-badge-index {
-          color: #2ec866 !important;
-        }
-        .lap-badge.best-lap.pole-lap .lap-badge-index {
-          color: #a855f7 !important;
-        }
-        html[data-bs-theme="light"] .lap-badge.best-lap.pole-lap .lap-badge-index {
-          color: #6f42c1 !important;
-        }
-        .lap-badge-input {
-          border: 0 !important;
-          background: transparent !important;
-          color: var(--bs-body-color) !important;
-          font-weight: 600;
-          font-size: 0.85rem;
-          width: 54px;
-          text-align: center;
-          outline: none !important;
-          box-shadow: none !important;
-          font-family: monospace;
-          padding: 0;
-          height: 18px;
-          line-height: 18px !important;
-        }
-        .lap-badge.best-lap .lap-badge-input {
-          color: #2ec866 !important;
-          font-weight: 700;
-        }
-        .lap-badge.best-lap.pole-lap .lap-badge-input {
-          color: #a855f7 !important;
-          font-weight: 700;
-        }
-        html[data-bs-theme="light"] .lap-badge.best-lap.pole-lap .lap-badge-input {
-          color: #6f42c1 !important;
-          font-weight: 700;
-        }
-        .lap-badge-input::-webkit-outer-spin-button,
-        .lap-badge-input::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-        .lap-badge-input[type=number] {
-          -moz-appearance: textfield;
-        }
-        .lap-badge-delete {
-          color: var(--bs-danger);
-          opacity: 0.5;
-          transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          line-height: 1 !important;
-        }
-        .lap-badge-delete:hover {
-          opacity: 1;
-          transform: scale(1.15);
-        }
-      </style>
+    if (lanesCount > 1) {
+      const defaultColors = [
+        "#ff3b30", // Red
+        "#007aff", // Blue
+        "#34c759", // Green
+        "#ffcc00", // Yellow
+        "#ff9500", // Orange
+        "#ffffff", // White
+        "#af52de", // Purple
+        "#8e8e93", // Gray
+      ];
+      const colors = this.laneColors && this.laneColors.length > 0 ? this.laneColors : defaultColors;
 
-      <div class="d-flex align-items-center justify-content-between mb-2.5 px-1">
-        <span class="fw-bold text-secondary small d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
-          <i class="mdi mdi-history text-primary"></i>
-          ${window.t("registrations.races_modal.laps_title") || "Tempos das Voltas"}
-          <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem; font-family: monospace;">${this.item.lapTimes.length}</span>
-        </span>
-        <div class="d-flex align-items-center gap-2">
-          ${
-            this.hideZone
-              ? ""
-              : `
-            <div class="input-group input-group-sm" style="width: 120px;">
-              <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
-                ${window.t("registrations.races_modal.zone_label") || "Zona"}
-              </span>
-              <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ""}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
-            </div>
-          `
+      this.innerHTML = `
+        <style>
+          .lap-list-group-item {
+            border-color: var(--bs-border-color-translucent) !important;
+            transition: background-color 0.15s ease-in-out;
           }
-          <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 fw-semibold shadow-sm">
-            <i class="mdi mdi-plus"></i>
-            ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}
-          </button>
+          .lap-list-group-item:hover {
+            background-color: var(--bs-secondary-bg) !important;
+          }
+          .lap-item-index {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--bs-secondary-color);
+            user-select: none;
+            width: 45px;
+          }
+          .lap-item-index.best-lap {
+            color: #2ec866 !important;
+          }
+          .lap-item-index.best-lap.pole-lap {
+            color: #a855f7 !important;
+          }
+          html[data-bs-theme="light"] .lap-item-index.best-lap.pole-lap {
+            color: #6f42c1 !important;
+          }
+          .lap-item-input {
+            border: 0 !important;
+            background: transparent !important;
+            color: var(--bs-body-color) !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 80px;
+            text-align: center;
+            outline: none !important;
+            box-shadow: none !important;
+            font-family: monospace;
+            padding: 0;
+          }
+          .lap-item-input.best-lap {
+            color: #2ec866 !important;
+            font-weight: 700;
+          }
+          .lap-item-input.best-lap.pole-lap {
+            color: #a855f7 !important;
+            font-weight: 700;
+          }
+          html[data-bs-theme="light"] .lap-item-input.best-lap.pole-lap {
+            color: #6f42c1 !important;
+            font-weight: 700;
+          }
+          .lap-item-input::-webkit-outer-spin-button,
+          .lap-item-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          .lap-item-input[type=number] {
+            -moz-appearance: textfield;
+          }
+          .lap-item-delete {
+            color: var(--bs-danger);
+            opacity: 0.4;
+            transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            padding: 0;
+            line-height: 1;
+          }
+          .lap-item-delete:hover {
+            opacity: 1;
+            transform: scale(1.15);
+          }
+        </style>
+
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+          <span class="fw-bold text-secondary small d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+            <i class="mdi mdi-history text-primary"></i>
+            ${window.t("registrations.races_modal.laps_title") || "Tempos das Voltas"}
+            <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem; font-family: monospace;">${this.item.lapTimes.length}</span>
+          </span>
+          <div class="d-flex align-items-center gap-3">
+            ${
+              this.hideZone
+                ? ""
+                : `
+              <div class="input-group input-group-sm" style="width: 120px;">
+                <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
+                  ${window.t("registrations.races_modal.zone_label") || "Zona"}
+                </span>
+                <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ""}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
+              </div>
+            `
+            }
+            <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 fw-semibold shadow-sm">
+              <i class="mdi mdi-plus"></i>
+              ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}
+            </button>
+          </div>
         </div>
-      </div>
-      
-      <div class="laps-list-container d-flex flex-wrap gap-2 align-items-center pt-2 px-1" id="laps-list-container">
-        <!-- Rendered dynamically -->
-      </div>
-    `;
 
-    const lapsListContainer = this.querySelector("#laps-list-container");
-    if (!lapsListContainer) return;
-
-    if (this.item.lapTimes.length === 0) {
-      lapsListContainer.innerHTML = `
-        <div class="d-flex align-items-center gap-2 py-1 px-1 text-secondary" style="font-size: 0.8rem;">
-          <i class="mdi mdi-information-outline fs-6 text-primary"></i>
-          <span>${window.t("registrations.races_modal.no_laps_registered") || 'Nenhuma volta registrada para este piloto. Clique em "Adicionar Volta" para começar.'}</span>
+        <div class="list-group list-group-flush w-100 border border-secondary-subtle rounded-3 overflow-hidden bg-body-tertiary" id="laps-list-container">
+          <!-- Rendered dynamically -->
         </div>
       `;
-    } else {
-      this.item.lapTimes.forEach((lapTime, lapIndex) => {
-        const isBestLap =
-          this.item.bestLapIndex === lapIndex + 1 &&
-          parseFloat(this.item.bestLapTime) > 0;
-        const isPoleLap = isBestLap && this.isPole;
 
-        const formattedValue =
-          lapTime !== undefined && lapTime !== null
-            ? parseFloat(lapTime).toFixed(4)
-            : "";
+      const lapsListContainer = this.querySelector("#laps-list-container");
+      if (!lapsListContainer) return;
 
-        const pill = document.createElement("div");
-        pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}`;
-        pill.innerHTML = `
-          <span class="lap-badge-index">#${lapIndex + 1}</span>
-          <input type="number" step="0.0001" min="0" class="lap-badge-input input-lap-time" value="${formattedValue}" placeholder="0.0000" data-lap-index="${lapIndex}">
-          <i class="mdi mdi-close lap-badge-delete btn-delete-lap" data-lap-index="${lapIndex}"></i>
+      if (this.item.lapTimes.length === 0) {
+        lapsListContainer.innerHTML = `
+          <div class="d-flex align-items-center justify-content-center py-4 px-2 text-muted" style="font-size: 0.8rem; font-style: italic;">
+            ${window.t("registrations.races_modal.no_laps_registered") || "Nenhuma volta registrada para este piloto."}
+          </div>
         `;
-
-        const lapInput = pill.querySelector(".input-lap-time");
-        if (lapInput) {
-          lapInput.addEventListener("input", (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            this.item.lapTimes[lapIndex] = val;
-            if (this.onChangeCallback) {
-              this.onChangeCallback();
-            }
-          });
-          lapInput.addEventListener("blur", (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            e.target.value = val.toFixed(4);
-            this.item.lapTimes[lapIndex] = parseFloat(val.toFixed(4));
-            if (this.onChangeCallback) {
-              this.onChangeCallback();
-            }
-          });
-        }
-
-        const delBtn = pill.querySelector(".btn-delete-lap");
-        if (delBtn) {
-          delBtn.addEventListener("click", () => {
-            this.item.lapTimes.splice(lapIndex, 1);
-            this.render();
-            if (this.onChangeCallback) {
-              this.onChangeCallback();
-            }
-          });
-        }
-
-        lapsListContainer.appendChild(pill);
-      });
-    }
-
-    // Zone Input logic
-    const zoneInput = this.querySelector(`#input-zone-${this.item.pilotId}`);
-    if (zoneInput) {
-      const updateZone = (val) => {
-        this.item.finalZone = val;
-        if (this.onChangeCallback) {
-          this.onChangeCallback();
-        }
-      };
-
-      zoneInput.addEventListener("keyup", (e) => {
-        if (this._zoneTimeout) {
-          clearTimeout(this._zoneTimeout);
-        }
-        this._zoneTimeout = setTimeout(() => {
-          const val = parseFloat(e.target.value) || 0;
-          updateZone(val);
-        }, 1000);
-      });
-
-      zoneInput.addEventListener("change", (e) => {
-        if (this._zoneTimeout) {
-          clearTimeout(this._zoneTimeout);
-        }
-        const val = parseFloat(e.target.value) || 0;
-        if (this.item.finalZone !== val) {
-          updateZone(val);
-        }
-      });
-    }
-
-    // Add Lap button logic
-    const addLapBtn = this.querySelector(`#btn-add-lap-${this.item.pilotId}`);
-    if (addLapBtn) {
-      addLapBtn.addEventListener("click", () => {
-        this.item.lapTimes.push(0);
-        this.render();
-        if (this.onChangeCallback) {
-          this.onChangeCallback();
-        }
-
-        setTimeout(() => {
-          const inputs = this.querySelectorAll(".input-lap-time");
-          if (inputs && inputs.length > 0) {
-            const lastInput = inputs[inputs.length - 1];
-            lastInput.focus();
-            lastInput.select();
+      } else {
+        this.item.lapTimes.forEach((lap, idx) => {
+          let time = 0;
+          let lane = 1;
+          if (typeof lap === "object" && lap !== null) {
+            time = parseFloat(lap.time) || 0;
+            lane = parseInt(lap.lane) || 1;
+          } else {
+            time = parseFloat(lap) || 0;
+            lane = 1;
           }
-        }, 50);
-      });
+
+          const laneColor = colors[lane - 1] || "#ffffff";
+          const globalLapIndex = idx + 1;
+          const isBestLap =
+            this.item.bestLapIndex === globalLapIndex &&
+            parseFloat(this.item.bestLapTime) > 0;
+          const isPoleLap = isBestLap && this.isPole;
+
+          const formattedValue =
+            time !== undefined && time !== null ? parseFloat(time).toFixed(4) : "";
+
+          const itemEl = document.createElement("div");
+          itemEl.className = "list-group-item bg-transparent d-flex align-items-center justify-content-between py-1.5 px-3 lap-list-group-item";
+          itemEl.innerHTML = `
+            <div class="d-flex align-items-center gap-3">
+              <span class="lap-item-index font-monospace ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}">#${globalLapIndex}</span>
+              <button type="button" class="btn btn-link p-0 rounded-circle border-0 d-flex align-items-center justify-content-center btn-rotate-lane" data-lap-index="${idx}" title="Fenda ${lane} (Clique para alterar)" style="width: 24px; height: 24px; outline: none; box-shadow: none;">
+                <span class="d-inline-block rounded-circle" style="width: 12px; height: 12px; background-color: ${laneColor}; box-shadow: 0 0 6px ${laneColor}; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;"></span>
+              </button>
+              <input type="number" step="0.0001" min="0" id="input-lap-${idx}" class="lap-item-input input-lap-time ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}" value="${formattedValue}" placeholder="0.0000" data-lap-index="${idx}">
+            </div>
+            <div class="d-flex align-items-center gap-4">
+              <button type="button" class="lap-item-delete btn-delete-lap" data-lap-index="${idx}" title="Excluir Volta">
+                <i class="mdi mdi-close fs-5"></i>
+              </button>
+            </div>
+          `;
+
+          const lapInput = itemEl.querySelector(".input-lap-time");
+          if (lapInput) {
+            lapInput.addEventListener("input", (e) => {
+              const val = parseFloat(e.target.value) || 0;
+              if (typeof this.item.lapTimes[idx] === "object") {
+                this.item.lapTimes[idx].time = val;
+              } else {
+                this.item.lapTimes[idx] = val;
+              }
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+            lapInput.addEventListener("blur", (e) => {
+              const val = parseFloat(e.target.value) || 0;
+              e.target.value = val.toFixed(4);
+              const parsedVal = parseFloat(val.toFixed(4));
+              if (typeof this.item.lapTimes[idx] === "object") {
+                this.item.lapTimes[idx].time = parsedVal;
+              } else {
+                this.item.lapTimes[idx] = parsedVal;
+              }
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+          }
+
+          const rotateBtn = itemEl.querySelector(".btn-rotate-lane");
+          if (rotateBtn) {
+            rotateBtn.addEventListener("click", () => {
+              const nextLane = (lane % lanesCount) + 1;
+              if (typeof this.item.lapTimes[idx] === "object") {
+                this.item.lapTimes[idx].lane = nextLane;
+              } else {
+                this.item.lapTimes[idx] = { time: parseFloat(this.item.lapTimes[idx]) || 0, lane: nextLane };
+              }
+              this.render();
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+          }
+
+          const delBtn = itemEl.querySelector(".btn-delete-lap");
+          if (delBtn) {
+            delBtn.addEventListener("click", () => {
+              this.item.lapTimes.splice(idx, 1);
+              this.render();
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+          }
+
+          lapsListContainer.appendChild(itemEl);
+        });
+      }
+
+      // Add Lap button logic
+      const addLapBtn = this.querySelector(`#btn-add-lap-${this.item.pilotId}`);
+      if (addLapBtn) {
+        addLapBtn.addEventListener("click", () => {
+          let lastLane = 1;
+          if (this.item.lapTimes.length > 0) {
+            const lastLap = this.item.lapTimes[this.item.lapTimes.length - 1];
+            if (typeof lastLap === "object" && lastLap !== null) {
+              lastLane = parseInt(lastLap.lane) || 1;
+            } else {
+              lastLane = 1;
+            }
+          }
+          this.item.lapTimes.push({ time: 0, lane: lastLane });
+          this.render();
+          if (this.onChangeCallback) {
+            this.onChangeCallback();
+          }
+
+          const newIdx = this.item.lapTimes.length - 1;
+          setTimeout(() => {
+            const input = this.querySelector(`#input-lap-${newIdx}`);
+            if (input) {
+              input.focus();
+              input.select();
+            }
+          }, 50);
+        });
+      }
+
+      // Zone input listener
+      const zoneInput = this.querySelector(`#input-zone-${this.item.pilotId}`);
+      if (zoneInput) {
+        const updateZone = (val) => {
+          this.item.finalZone = val;
+          if (this.onChangeCallback) {
+            this.onChangeCallback();
+          }
+        };
+
+        zoneInput.addEventListener("keyup", (e) => {
+          if (this._zoneTimeout) {
+            clearTimeout(this._zoneTimeout);
+          }
+          this._zoneTimeout = setTimeout(() => {
+            const val = parseFloat(e.target.value) || 0;
+            updateZone(val);
+          }, 1000);
+        });
+
+        zoneInput.addEventListener("change", (e) => {
+          if (this._zoneTimeout) {
+            clearTimeout(this._zoneTimeout);
+          }
+          const val = parseFloat(e.target.value) || 0;
+          if (this.item.finalZone !== val) {
+            updateZone(val);
+          }
+        });
+      }
+    } else {
+      // Fallback flat layout (legacy/qualifying mode)
+      this.innerHTML = `
+        <style>
+          .btn-xs {
+            padding: 0.15rem 0.4rem;
+            font-size: 0.75rem;
+            line-height: 1.25;
+            border-radius: 0.2rem;
+          }
+          .lap-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color-translucent);
+            border-radius: 8px;
+            padding: 3px 8px;
+            gap: 6px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
+            transform: translateY(0);
+          }
+          .lap-badge:hover {
+            border-color: var(--bs-border-color);
+            transform: translateY(-1px);
+          }
+          .lap-badge:focus-within {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+            background-color: var(--bs-body-bg);
+            transform: translateY(-1px);
+          }
+          .lap-badge-index {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--bs-secondary-color);
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1 !important;
+          }
+          .lap-badge.best-lap .lap-badge-index {
+            color: #2ec866 !important;
+          }
+          .lap-badge.best-lap.pole-lap .lap-badge-index {
+            color: #a855f7 !important;
+          }
+          html[data-bs-theme="light"] .lap-badge.best-lap.pole-lap .lap-badge-index {
+            color: #6f42c1 !important;
+          }
+          .lap-badge-input {
+            border: 0 !important;
+            background: transparent !important;
+            color: var(--bs-body-color) !important;
+            font-weight: 600;
+            font-size: 0.85rem;
+            width: 54px;
+            text-align: center;
+            outline: none !important;
+            box-shadow: none !important;
+            font-family: monospace;
+            padding: 0;
+            height: 18px;
+            line-height: 18px !important;
+          }
+          .lap-badge.best-lap .lap-badge-input {
+            color: #2ec866 !important;
+            font-weight: 700;
+          }
+          .lap-badge.best-lap.pole-lap .lap-badge-input {
+            color: #a855f7 !important;
+            font-weight: 700;
+          }
+          html[data-bs-theme="light"] .lap-badge.best-lap.pole-lap .lap-badge-input {
+            color: #6f42c1 !important;
+            font-weight: 700;
+          }
+          .lap-badge-input::-webkit-outer-spin-button,
+          .lap-badge-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          .lap-badge-input[type=number] {
+            -moz-appearance: textfield;
+          }
+          .lap-badge-delete {
+            color: var(--bs-danger);
+            opacity: 0.5;
+            transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1 !important;
+          }
+          .lap-badge-delete:hover {
+            opacity: 1;
+            transform: scale(1.15);
+          }
+        </style>
+
+        <div class="d-flex align-items-center justify-content-between mb-2.5 px-1">
+          <span class="fw-bold text-secondary small d-flex align-items-center gap-1" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+            <i class="mdi mdi-history text-primary"></i>
+            ${window.t("registrations.races_modal.laps_title") || "Tempos das Voltas"}
+            <span class="badge bg-secondary bg-opacity-25 text-secondary-emphasis rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem; font-family: monospace;">${this.item.lapTimes.length}</span>
+          </span>
+          <div class="d-flex align-items-center gap-2">
+            ${
+              this.hideZone
+                ? ""
+                : `
+              <div class="input-group input-group-sm" style="width: 120px;">
+                <span class="input-group-text bg-body-secondary text-secondary-emphasis border-secondary-subtle py-1" style="font-size: 0.75rem; font-weight: 500;">
+                  ${window.t("registrations.races_modal.zone_label") || "Zona"}
+                </span>
+                <input type="number" min="0" step="1" id="input-zone-${this.item.pilotId}" class="form-control border-secondary-subtle bg-body-tertiary text-body-emphasis shadow-none text-center" value="${this.item.finalZone > 0 ? this.item.finalZone : ""}" placeholder="-" style="font-size: 0.85rem; font-weight: 600; font-family: monospace;">
+              </div>
+            `
+            }
+            <button type="button" id="btn-add-lap-${this.item.pilotId}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 fw-semibold shadow-sm">
+              <i class="mdi mdi-plus"></i>
+              ${window.t("registrations.races_modal.add_lap_button") || "Adicionar Volta"}
+            </button>
+          </div>
+        </div>
+        
+        <div class="laps-list-container d-flex flex-wrap gap-2 align-items-center pt-2 px-1" id="laps-list-container">
+          <!-- Rendered dynamically -->
+        </div>
+      `;
+
+      const lapsListContainer = this.querySelector("#laps-list-container");
+      if (!lapsListContainer) return;
+
+      if (this.item.lapTimes.length === 0) {
+        lapsListContainer.innerHTML = `
+          <div class="d-flex align-items-center gap-2 py-1 px-1 text-secondary" style="font-size: 0.8rem;">
+            <i class="mdi mdi-information-outline fs-6 text-primary"></i>
+            <span>${window.t("registrations.races_modal.no_laps_registered") || 'Nenhuma volta registrada para este piloto. Clique em "Adicionar Volta" para começar.'}</span>
+          </div>
+        `;
+      } else {
+        this.item.lapTimes.forEach((lapTime, lapIndex) => {
+          const isBestLap =
+            this.item.bestLapIndex === lapIndex + 1 &&
+            parseFloat(this.item.bestLapTime) > 0;
+          const isPoleLap = isBestLap && this.isPole;
+
+          const formattedValue =
+            lapTime !== undefined && lapTime !== null
+              ? parseFloat(typeof lapTime === "object" ? lapTime.time : lapTime).toFixed(4)
+              : "";
+
+          const pill = document.createElement("div");
+          pill.className = `lap-badge shadow-sm ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}`;
+          pill.innerHTML = `
+            <span class="lap-badge-index">#${lapIndex + 1}</span>
+            <input type="number" step="0.0001" min="0" id="input-lap-${lapIndex}" class="lap-badge-input input-lap-time" value="${formattedValue}" placeholder="0.0000" data-lap-index="${lapIndex}">
+            <i class="mdi mdi-close lap-badge-delete btn-delete-lap" data-lap-index="${lapIndex}"></i>
+          `;
+
+          const lapInput = pill.querySelector(".input-lap-time");
+          if (lapInput) {
+            lapInput.addEventListener("input", (e) => {
+              const val = parseFloat(e.target.value) || 0;
+              if (typeof this.item.lapTimes[lapIndex] === "object") {
+                this.item.lapTimes[lapIndex].time = val;
+              } else {
+                this.item.lapTimes[lapIndex] = val;
+              }
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+            lapInput.addEventListener("blur", (e) => {
+              const val = parseFloat(e.target.value) || 0;
+              e.target.value = val.toFixed(4);
+              const parsedVal = parseFloat(val.toFixed(4));
+              if (typeof this.item.lapTimes[lapIndex] === "object") {
+                this.item.lapTimes[lapIndex].time = parsedVal;
+              } else {
+                this.item.lapTimes[lapIndex] = parsedVal;
+              }
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+          }
+
+          const delBtn = pill.querySelector(".btn-delete-lap");
+          if (delBtn) {
+            delBtn.addEventListener("click", () => {
+              this.item.lapTimes.splice(lapIndex, 1);
+              this.render();
+              if (this.onChangeCallback) {
+                this.onChangeCallback();
+              }
+            });
+          }
+
+          lapsListContainer.appendChild(pill);
+        });
+      }
+
+      // Zone Input logic
+      const zoneInput = this.querySelector(`#input-zone-${this.item.pilotId}`);
+      if (zoneInput) {
+        const updateZone = (val) => {
+          this.item.finalZone = val;
+          if (this.onChangeCallback) {
+            this.onChangeCallback();
+          }
+        };
+
+        zoneInput.addEventListener("keyup", (e) => {
+          if (this._zoneTimeout) {
+            clearTimeout(this._zoneTimeout);
+          }
+          this._zoneTimeout = setTimeout(() => {
+            const val = parseFloat(e.target.value) || 0;
+            updateZone(val);
+          }, 1000);
+        });
+
+        zoneInput.addEventListener("change", (e) => {
+          if (this._zoneTimeout) {
+            clearTimeout(this._zoneTimeout);
+          }
+          const val = parseFloat(e.target.value) || 0;
+          if (this.item.finalZone !== val) {
+            updateZone(val);
+          }
+        });
+      }
+
+      // Add Lap button logic
+      const addLapBtn = this.querySelector(`#btn-add-lap-${this.item.pilotId}`);
+      if (addLapBtn) {
+        addLapBtn.addEventListener("click", () => {
+          this.item.lapTimes.push(0);
+          this.render();
+          if (this.onChangeCallback) {
+            this.onChangeCallback();
+          }
+
+          setTimeout(() => {
+            const inputs = this.querySelectorAll(".input-lap-time");
+            if (inputs && inputs.length > 0) {
+              const lastInput = inputs[inputs.length - 1];
+              lastInput.focus();
+              lastInput.select();
+            }
+          }, 50);
+        });
+      }
     }
   }
 }

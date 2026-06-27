@@ -64,15 +64,18 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
         };
       }
       const sessionTimes = record.lapTimes.slice(-laps);
-      const validTimes = sessionTimes.filter((t) => (parseFloat(t) || 0) > 0);
+      const validTimes = sessionTimes
+        .map((t) => ((t && typeof t === "object") ? t.time : t))
+        .filter((t) => (parseFloat(t) || 0) > 0);
       const best = validTimes.length > 0 ? Math.min(...validTimes) : Infinity;
       const last =
         sessionTimes.length > 0 ? sessionTimes[sessionTimes.length - 1] : null;
+      const lastVal = last !== null ? (((last && typeof last === "object") ? last.time : last)) : null;
       const total = sessionTimes.reduce(
-        (sum, t) => sum + (parseFloat(t) || 0),
+        (sum, t) => sum + (parseFloat((t && typeof t === "object") ? t.time : t) || 0),
         0,
       );
-      return { best, last, total };
+      return { best, last: lastVal, total };
     };
 
     lanes.sort((a, b) => {
@@ -168,7 +171,9 @@ class SlotRaceRealtimeRaceSession extends HTMLElement {
           lastTime = accTime.toFixed(4) + "s";
         } else if (record && record.lapTimes && record.lapTimes.length > 0) {
           // Running or finished: display last completed lap time
-          lastTime = record.lapTimes[record.lapTimes.length - 1].toFixed(4);
+          const lastLap = record.lapTimes[record.lapTimes.length - 1];
+          const lastVal = (lastLap && typeof lastLap === "object") ? lastLap.time : lastLap;
+          lastTime = lastVal.toFixed(4);
         }
 
         const card = document.createElement(
