@@ -168,9 +168,11 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
         this.item.lapTimes.forEach((lap, idx) => {
           let time = 0;
           let lane = 1;
+          let position = null;
           if (typeof lap === "object" && lap !== null) {
             time = parseFloat(lap.time) || 0;
             lane = parseInt(lap.lane) || 1;
+            position = lap.position || null;
           } else {
             time = parseFloat(lap) || 0;
             lane = 1;
@@ -194,6 +196,11 @@ class SlotRaceRegistrationsRacesSessionLaps extends HTMLElement {
               <button type="button" class="btn btn-link p-0 rounded-circle border-0 d-flex align-items-center justify-content-center btn-rotate-lane" data-lap-index="${idx}" title="Fenda ${lane} (Clique para alterar)" style="width: 24px; height: 24px; outline: none; box-shadow: none;">
                 <span class="d-inline-block rounded-circle" style="width: 12px; height: 12px; background-color: ${laneColor}; box-shadow: 0 0 6px ${laneColor}; transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;"></span>
               </button>
+              ${
+                position
+                  ? `<span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis font-monospace fw-bold px-1.5 py-0.5 rounded" style="font-size: 0.7rem; min-width: 24px; text-align: center;">P${position}</span>`
+                  : ""
+              }
               <input type="number" step="0.0001" min="0" id="input-lap-${idx}" class="lap-item-input input-lap-time ${isBestLap ? "best-lap" : ""} ${isPoleLap ? "pole-lap" : ""}" value="${formattedValue}" placeholder="0.0000" data-lap-index="${idx}">
             </div>
             <div class="d-flex align-items-center gap-4">

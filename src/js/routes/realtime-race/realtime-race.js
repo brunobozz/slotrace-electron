@@ -503,6 +503,25 @@ class SlotRaceRealtimeRace extends HTMLElement {
       record.lapTimes.push({ time: parsedLapTime, lane: laneNum });
       record.laps = record.lapTimes.length;
 
+      // Calculate standings position at this lap
+      const sorted = [...this.raceSession].sort((a, b) => {
+        const lapsA = a.lapTimes ? a.lapTimes.length : 0;
+        const lapsB = b.lapTimes ? b.lapTimes.length : 0;
+        if (lapsA !== lapsB) return lapsB - lapsA;
+        
+        const zoneA = parseFloat(a.finalZone) || 0;
+        const zoneB = parseFloat(b.finalZone) || 0;
+        if (zoneA !== zoneB) return zoneB - zoneA;
+        
+        const idxA = this.raceSession.indexOf(a);
+        const idxB = this.raceSession.indexOf(b);
+        return idxA - idxB;
+      });
+      const currentPos = sorted.findIndex((r) => String(r.pilotId) === String(pilotId)) + 1;
+      if (currentPos > 0) {
+        record.lapTimes[record.lapTimes.length - 1].position = currentPos;
+      }
+
       // Calculate best lap
       let minVal = 0;
       let minIdx = 0;
