@@ -272,6 +272,10 @@ window.localeStrings.pt = {
       theme_bootstrap_light: "Bootstrap Claro",
       language_label: "Idioma",
       language_help: "Selecione o idioma de sua preferência para a aplicação.",
+      speech_test_label: "Teste de Áudio (Sintetizador)",
+      speech_test_placeholder: "Digite algo para testar a voz...",
+      speech_test_button: "Testar",
+      speech_test_help: "Digite um texto e clique no botão para testar a voz sintetizada no idioma selecionado.",
       save_button: "Salvar Preferências",
     },
     feedback: {

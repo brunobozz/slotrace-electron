@@ -27,20 +27,24 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const inputEl = this.querySelector('#input-main-color');
       const themeEl = this.querySelector('#select-theme');
       const langEl = this.querySelector('#select-language');
+      const speechTestEl = this.querySelector('#input-speech-test');
       
       const currentVal = inputEl ? inputEl.value : '#dc3545';
       const currentTheme = themeEl ? themeEl.value : 'dark';
       const currentLang = langEl ? langEl.value : 'pt';
+      const currentSpeechText = speechTestEl ? speechTestEl.value : '';
       
       this.render();
       
       const newInputEl = this.querySelector('#input-main-color');
       const newThemeEl = this.querySelector('#select-theme');
       const newLangEl = this.querySelector('#select-language');
+      const newSpeechTestEl = this.querySelector('#input-speech-test');
       
       if (newInputEl) newInputEl.value = currentVal;
       if (newThemeEl) newThemeEl.value = currentTheme;
       if (newLangEl) newLangEl.value = currentLang;
+      if (newSpeechTestEl) newSpeechTestEl.value = currentSpeechText;
     };
     window.addEventListener('languageChanged', this._langListener);
   }
@@ -56,6 +60,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       <slotrace-settings-header title="${window.t('settings.menu.preferences')}" icon="mdi-tune"></slotrace-settings-header>
       
       <form id="form-preferences" class="needs-validation fade-in" novalidate>
+        <!-- Language Select -->
         <div class="mb-4">
           <label for="select-language" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.language_label')}</label>
           <select class="form-select p-2.5" id="select-language" required>
@@ -64,6 +69,20 @@ class SlotRaceSettingsPreferences extends HTMLElement {
           <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.language_help')}</span>
         </div>
 
+        <!-- Speech Synthesis Audio Test -->
+        <div class="mb-4">
+          <label for="input-speech-test" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.speech_test_label')}</label>
+          <div class="input-group">
+            <input type="text" class="form-control p-2.5" id="input-speech-test" placeholder="${window.t('settings.preferences.speech_test_placeholder')}" value="Melhor Volta Fenda Amarela">
+            <button class="btn btn-primary d-flex align-items-center gap-2 px-3" type="button" id="btn-speech-test">
+              <i class="mdi mdi-volume-high"></i>
+              <span>${window.t('settings.preferences.speech_test_button')}</span>
+            </button>
+          </div>
+          <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.speech_test_help')}</span>
+        </div>
+
+        <!-- Theme Select -->
         <div class="mb-4">
           <label for="select-theme" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.theme_label')}</label>
           <select class="form-select p-2.5" id="select-theme" required>
@@ -73,6 +92,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
           <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.theme_help')}</span>
         </div>
 
+        <!-- Main Color Select -->
         <div class="mb-4">
           <label for="input-main-color" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.color_label')}</label>
           <div class="d-flex align-items-center gap-3">
@@ -93,6 +113,17 @@ class SlotRaceSettingsPreferences extends HTMLElement {
     const input = this.querySelector('#input-main-color');
     const themeSelect = this.querySelector('#select-theme');
     const langSelect = this.querySelector('#select-language');
+    const btnSpeechTest = this.querySelector('#btn-speech-test');
+    const inputSpeechTest = this.querySelector('#input-speech-test');
+
+    if (btnSpeechTest && inputSpeechTest) {
+      btnSpeechTest.addEventListener('click', () => {
+        const text = inputSpeechTest.value.trim();
+        if (text) {
+          window.speechService.speakText(text);
+        }
+      });
+    }
 
     if (form) {
       form.addEventListener('submit', (e) => {
@@ -131,7 +162,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
               btn.classList.remove('btn-primary');
               btn.classList.add('btn-success');
               btn.disabled = true;
-
+ 
               setTimeout(() => {
                 btn.innerHTML = originalHtml;
                 btn.classList.remove('btn-success');
