@@ -33,23 +33,6 @@ class SlotRaceSidebarMenu extends HTMLElement {
       name: "navbar.registrations",
       icon: "mdi mdi-clipboard-text-outline",
       route: "#registrations",
-      children: [
-        {
-          name: "registrations.drivers",
-          icon: "mdi mdi-account-outline",
-          route: "#registrations/drivers",
-        },
-        {
-          name: "registrations.cars",
-          icon: "mdi mdi-car-sports",
-          route: "#registrations/cars",
-        },
-        {
-          name: "registrations.tracks",
-          icon: "mdi mdi-go-kart-track",
-          route: "#registrations/tracks",
-        },
-      ],
     },
     {
       name: "navbar.settings",
