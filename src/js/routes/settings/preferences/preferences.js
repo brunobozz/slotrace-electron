@@ -31,6 +31,14 @@ class SlotRaceSettingsPreferences extends HTMLElement {
             rateInput.value = this._savedSpeechRate.toFixed(1);
           }
         }
+        const startBeepSwitch = this.querySelector('#switch-start-beep');
+        if (startBeepSwitch) {
+          startBeepSwitch.checked = settings.start_beep !== false;
+        }
+        const lapBeepSwitch = this.querySelector('#switch-lap-beep');
+        if (lapBeepSwitch) {
+          lapBeepSwitch.checked = settings.lap_beep !== false;
+        }
         
         // Populate voice options after loading settings
         this._populateVoices(this._savedVoiceName);
@@ -46,6 +54,8 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const speechTestEl = this.querySelector('#input-speech-test');
       const voiceSelect = this.querySelector('#select-speech-voice');
       const speechRateEl = this.querySelector('#input-speech-rate');
+      const startBeepEl = this.querySelector('#switch-start-beep');
+      const lapBeepEl = this.querySelector('#switch-lap-beep');
       
       const currentVal = inputEl ? inputEl.value : '#dc3545';
       const currentTheme = themeEl ? themeEl.value : 'dark';
@@ -53,6 +63,8 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const currentSpeechText = speechTestEl ? speechTestEl.value : '';
       const currentVoice = voiceSelect ? voiceSelect.value : '';
       const currentSpeechRate = speechRateEl ? speechRateEl.value : '1.0';
+      const currentStartBeep = startBeepEl ? startBeepEl.checked : true;
+      const currentLapBeep = lapBeepEl ? lapBeepEl.checked : true;
       
       this.render();
       
@@ -61,12 +73,16 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const newLangEl = this.querySelector('#select-language');
       const newSpeechTestEl = this.querySelector('#input-speech-test');
       const newSpeechRateEl = this.querySelector('#input-speech-rate');
+      const newStartBeepEl = this.querySelector('#switch-start-beep');
+      const newLapBeepEl = this.querySelector('#switch-lap-beep');
       
       if (newInputEl) newInputEl.value = currentVal;
       if (newThemeEl) newThemeEl.value = currentTheme;
       if (newLangEl) newLangEl.value = currentLang;
       if (newSpeechTestEl) newSpeechTestEl.value = currentSpeechText;
       if (newSpeechRateEl) newSpeechRateEl.value = currentSpeechRate;
+      if (newStartBeepEl) newStartBeepEl.checked = currentStartBeep;
+      if (newLapBeepEl) newLapBeepEl.checked = currentLapBeep;
       
       this._populateVoices(currentVoice || this._savedVoiceName);
     };
@@ -218,6 +234,32 @@ class SlotRaceSettingsPreferences extends HTMLElement {
             <input type="color" class="form-control form-control-color p-1" id="input-main-color" value="#dc3545" title="${window.t('settings.preferences.color_help')}" style="width: 60px; height: 45px; cursor: pointer;">
           </div>
         </div>
+
+        <!-- Start Beep Switch -->
+        <div class="mb-4 d-flex align-items-center justify-content-between">
+          <div>
+            <label for="switch-start-beep" class="form-label fw-semibold text-secondary small mb-0 d-flex align-items-center gap-1.5" style="cursor: pointer;">
+              <span>${window.t('settings.preferences.start_beep_label')}</span>
+              <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.start_beep_help')}"></i>
+            </label>
+          </div>
+          <div class="form-check form-switch fs-5">
+            <input class="form-check-input" type="checkbox" role="switch" id="switch-start-beep" style="cursor: pointer;">
+          </div>
+        </div>
+
+        <!-- Lap Beep Switch -->
+        <div class="mb-4 d-flex align-items-center justify-content-between">
+          <div>
+            <label for="switch-lap-beep" class="form-label fw-semibold text-secondary small mb-0 d-flex align-items-center gap-1.5" style="cursor: pointer;">
+              <span>${window.t('settings.preferences.lap_beep_label')}</span>
+              <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.lap_beep_help')}"></i>
+            </label>
+          </div>
+          <div class="form-check form-switch fs-5">
+            <input class="form-check-input" type="checkbox" role="switch" id="switch-lap-beep" style="cursor: pointer;">
+          </div>
+        </div>
         
         <button type="submit" id="btn-save-preferences" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">
           <i class="mdi mdi-content-save-outline fs-5"></i>
@@ -304,8 +346,12 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         const langValue = langSelect ? langSelect.value : 'pt';
         const voiceValue = voiceSelect ? voiceSelect.value : '';
         const rateValue = inputRate ? parseFloat(inputRate.value) : 1.0;
+        const startBeepSwitch = this.querySelector('#switch-start-beep');
+        const startBeepValue = startBeepSwitch ? startBeepSwitch.checked : true;
+        const lapBeepSwitch = this.querySelector('#switch-lap-beep');
+        const lapBeepValue = lapBeepSwitch ? lapBeepSwitch.checked : true;
         
-        // Load current settings, update color, theme, language, voice, and rate, then save
+        // Load current settings, update color, theme, language, voice, rate, start_beep, and lap_beep, then save
         window.electronAPI.db.get('settings').then(settings => {
           const updatedSettings = settings || {};
           updatedSettings.main_color = colorValue;
@@ -313,6 +359,8 @@ class SlotRaceSettingsPreferences extends HTMLElement {
           updatedSettings.language = langValue;
           updatedSettings.speech_voice = voiceValue;
           updatedSettings.speech_rate = rateValue;
+          updatedSettings.start_beep = startBeepValue;
+          updatedSettings.lap_beep = lapBeepValue;
           
           return window.electronAPI.db.set('settings', updatedSettings);
         }).then(success => {

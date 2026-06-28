@@ -487,6 +487,10 @@ class SlotRaceRealtimeRace extends HTMLElement {
     const lapTime = (now - this._sessionLapStartTime[pilotId]) / 1000;
     this._sessionLapStartTime[pilotId] = now;
 
+    if (this._lapBeepEnabled && window.speechService && typeof window.speechService.playLapBeep === "function") {
+      window.speechService.playLapBeep();
+    }
+
     // Record lap in current session laps
     if (this._sessionLaps[pilotId] === undefined) {
       this._sessionLaps[pilotId] = 0;
@@ -867,10 +871,13 @@ class SlotRaceRealtimeRace extends HTMLElement {
       this.drivers = (await window.electronAPI.db.get("drivers")) || [];
       this.cars = (await window.electronAPI.db.get("cars")) || [];
       tracks = (await window.electronAPI.db.get("tracks")) || [];
+      const settings = (await window.electronAPI.db.get("settings")) || {};
+      this._lapBeepEnabled = settings.lap_beep !== false;
     } catch (e) {
       this.drivers = [];
       this.cars = [];
       tracks = [];
+      this._lapBeepEnabled = true;
     }
 
     if (!this.querySelector("#modal-realtime-race")) {

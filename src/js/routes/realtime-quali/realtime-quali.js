@@ -134,9 +134,14 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     try {
       this.drivers = (await window.electronAPI.db.get("drivers")) || [];
       this.tracks = (await window.electronAPI.db.get("tracks")) || [];
+      const settings = (await window.electronAPI.db.get("settings")) || {};
+      this._startBeepEnabled = settings.start_beep !== false;
+      this._lapBeepEnabled = settings.lap_beep !== false;
     } catch (e) {
       this.drivers = [];
       this.tracks = [];
+      this._startBeepEnabled = true;
+      this._lapBeepEnabled = true;
     }
     this._resetSession();
     this.render();
@@ -329,6 +334,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     }
 
     this._state = "qualifying";
+    this._playStartBeepIfNeeded();
     this._lapStartTime = null;
     this._firstLapMarked = false;
 
@@ -553,6 +559,10 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const lapTime = (now - this._lapStartTime) / 1000; // seconds
     this._lapStartTime = now; // reset for next lap
 
+    if (this._lapBeepEnabled && window.speechService && typeof window.speechService.playLapBeep === "function") {
+      window.speechService.playLapBeep();
+    }
+
     // Add lap time to quali record
     const record = this._getQualiRecord(this._currentPilotId);
     if (record) {
@@ -605,6 +615,12 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       return { driver, bestTime };
     }
     return null;
+  }
+
+  _playStartBeepIfNeeded() {
+    if (this._startBeepEnabled && window.speechService && typeof window.speechService.playStartBeep === "function") {
+      window.speechService.playStartBeep();
+    }
   }
 
   async _handleFinish() {

@@ -281,6 +281,10 @@ window.localeStrings.pt = {
       speech_test_button: "Testar",
       speech_test_help: "Digite um texto e clique no botão para testar a voz sintetizada no idioma selecionado.",
       save_button: "Salvar Preferências",
+      start_beep_label: "Sinal Sonoro de Partida",
+      start_beep_help: "Emite um sinal sonoro de partida (beep sintetizado) quando a contagem regressiva do intervalo chega a zero e inicia o tempo do piloto.",
+      lap_beep_label: "Sinal Sonoro de Volta",
+      lap_beep_help: "Emite um sinal sonoro curto (beep sintetizado) toda vez que uma volta válida for marcada por qualquer piloto.",
     },
     feedback: {
       saved: "Salvo!",
