@@ -3,6 +3,7 @@ window.speechService = {
   // Configuração padrão
   _enabled: true,
   _voiceName: "",
+  _rate: 1.0,
 
   init() {
     // Carrega a preferência de áudio do banco de dados (se habilitado ou não nas configurações)
@@ -13,6 +14,9 @@ window.speechService = {
         }
         if (settings.speech_voice !== undefined) {
           this._voiceName = settings.speech_voice;
+        }
+        if (settings.speech_rate !== undefined) {
+          this._rate = parseFloat(settings.speech_rate) || 1.0;
         }
       }
     }).catch((err) => {
@@ -33,6 +37,10 @@ window.speechService = {
 
   setVoice(voiceName) {
     this._voiceName = voiceName;
+  },
+
+  setRate(rate) {
+    this._rate = parseFloat(rate) || 1.0;
   },
 
   isEnabled() {
@@ -66,8 +74,8 @@ window.speechService = {
       }
     }
 
-    // Ajustes premium de fala (padrões confortáveis)
-    utterance.rate = 1.05;  // Velocidade ligeiramente mais rápida para dinâmica de corrida
+    // Ajustes de fala
+    utterance.rate = this._rate;
     utterance.pitch = 1.0;  // Tom de voz normal
 
     window.speechSynthesis.speak(utterance);

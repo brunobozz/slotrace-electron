@@ -1,6 +1,7 @@
 class SlotRaceSettingsPreferences extends HTMLElement {
   connectedCallback() {
     this._savedVoiceName = ""; // Memory of selected voice
+    this._savedSpeechRate = 1.0; // Memory of speech rate
     this.render();
     
     // Fetch and initialize the preferences from the Node.js database on first load
@@ -9,6 +10,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         const input = this.querySelector('#input-main-color');
         const themeSelect = this.querySelector('#select-theme');
         const langSelect = this.querySelector('#select-language');
+        const rateInput = this.querySelector('#input-speech-rate');
         
         if (settings.main_color && input) {
           input.value = settings.main_color;
@@ -21,6 +23,12 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         }
         if (settings.speech_voice) {
           this._savedVoiceName = settings.speech_voice;
+        }
+        if (settings.speech_rate !== undefined) {
+          this._savedSpeechRate = parseFloat(settings.speech_rate) || 1.0;
+          if (rateInput) {
+            rateInput.value = this._savedSpeechRate.toFixed(1);
+          }
         }
         
         // Populate voice options after loading settings
@@ -36,12 +44,14 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const langEl = this.querySelector('#select-language');
       const speechTestEl = this.querySelector('#input-speech-test');
       const voiceSelect = this.querySelector('#select-speech-voice');
+      const speechRateEl = this.querySelector('#input-speech-rate');
       
       const currentVal = inputEl ? inputEl.value : '#dc3545';
       const currentTheme = themeEl ? themeEl.value : 'dark';
       const currentLang = langEl ? langEl.value : 'pt';
       const currentSpeechText = speechTestEl ? speechTestEl.value : '';
       const currentVoice = voiceSelect ? voiceSelect.value : '';
+      const currentSpeechRate = speechRateEl ? speechRateEl.value : '1.0';
       
       this.render();
       
@@ -49,11 +59,13 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const newThemeEl = this.querySelector('#select-theme');
       const newLangEl = this.querySelector('#select-language');
       const newSpeechTestEl = this.querySelector('#input-speech-test');
+      const newSpeechRateEl = this.querySelector('#input-speech-rate');
       
       if (newInputEl) newInputEl.value = currentVal;
       if (newThemeEl) newThemeEl.value = currentTheme;
       if (newLangEl) newLangEl.value = currentLang;
       if (newSpeechTestEl) newSpeechTestEl.value = currentSpeechText;
+      if (newSpeechRateEl) newSpeechRateEl.value = currentSpeechRate;
       
       this._populateVoices(currentVoice || this._savedVoiceName);
     };
@@ -119,13 +131,25 @@ class SlotRaceSettingsPreferences extends HTMLElement {
           <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.language_help')}</span>
         </div>
 
-        <!-- Synthesizer Voice Select -->
+        <!-- Synthesizer Voice Select & Speed -->
         <div class="mb-4">
           <label for="select-speech-voice" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.speech_voice_label')}</label>
           <div class="d-flex gap-2">
             <select class="form-select p-2.5" id="select-speech-voice">
               <option value="">${window.t('settings.preferences.speech_voice_default')}</option>
             </select>
+            
+            <!-- Speech Rate (Speed) Controls -->
+            <div class="input-group" style="max-width: 135px;" title="Velocidade da voz">
+              <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center px-2.5" type="button" id="btn-speech-rate-down">
+                <i class="mdi mdi-minus"></i>
+              </button>
+              <input type="text" class="form-control text-center p-2.5" id="input-speech-rate" value="${(this._savedSpeechRate || 1.0).toFixed(1)}" readonly style="cursor: default; font-weight: 500;">
+              <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center px-2.5" type="button" id="btn-speech-rate-up">
+                <i class="mdi mdi-plus"></i>
+              </button>
+            </div>
+
             ${isWindows ? `
               <button class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 text-nowrap" type="button" id="btn-open-windows-speech" title="Abrir Configurações do Windows para adicionar vozes">
                 <i class="mdi mdi-cog-outline"></i>
@@ -183,6 +207,9 @@ class SlotRaceSettingsPreferences extends HTMLElement {
     const voiceSelect = this.querySelector('#select-speech-voice');
     const btnSpeechTest = this.querySelector('#btn-speech-test');
     const inputSpeechTest = this.querySelector('#input-speech-test');
+    const btnRateDown = this.querySelector('#btn-speech-rate-down');
+    const btnRateUp = this.querySelector('#btn-speech-rate-up');
+    const inputRate = this.querySelector('#input-speech-rate');
 
     // Populate voice dropdown initially
     this._populateVoices(this._savedVoiceName);
@@ -191,6 +218,21 @@ class SlotRaceSettingsPreferences extends HTMLElement {
     if (langSelect) {
       langSelect.addEventListener('change', () => {
         this._populateVoices(voiceSelect ? voiceSelect.value : this._savedVoiceName);
+      });
+    }
+
+    // Bind rate controls
+    if (btnRateDown && btnRateUp && inputRate) {
+      btnRateDown.addEventListener('click', () => {
+        let val = parseFloat(inputRate.value) || 1.0;
+        val = Math.max(0.5, val - 0.1);
+        inputRate.value = val.toFixed(1);
+      });
+
+      btnRateUp.addEventListener('click', () => {
+        let val = parseFloat(inputRate.value) || 1.0;
+        val = Math.min(3.0, val + 0.1);
+        inputRate.value = val.toFixed(1);
       });
     }
 
@@ -207,12 +249,16 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       btnSpeechTest.addEventListener('click', () => {
         const text = inputSpeechTest.value.trim();
         const selectedVoice = voiceSelect ? voiceSelect.value : "";
+        const selectedRate = inputRate ? parseFloat(inputRate.value) : 1.0;
         if (text) {
-          // Temporarily set active voice on service for testing
+          // Temporarily set active voice and rate on service for testing
           const previousVoice = window.speechService._voiceName;
+          const previousRate = window.speechService._rate;
           window.speechService.setVoice(selectedVoice);
+          window.speechService.setRate(selectedRate);
           window.speechService.speakText(text);
           window.speechService.setVoice(previousVoice);
+          window.speechService.setRate(previousRate);
         }
       });
     }
@@ -224,14 +270,16 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         const themeValue = themeSelect ? themeSelect.value : 'dark';
         const langValue = langSelect ? langSelect.value : 'pt';
         const voiceValue = voiceSelect ? voiceSelect.value : '';
+        const rateValue = inputRate ? parseFloat(inputRate.value) : 1.0;
         
-        // Load current settings, update color, theme, language, and voice, then save
+        // Load current settings, update color, theme, language, voice, and rate, then save
         window.electronAPI.db.get('settings').then(settings => {
           const updatedSettings = settings || {};
           updatedSettings.main_color = colorValue;
           updatedSettings.theme = themeValue;
           updatedSettings.language = langValue;
           updatedSettings.speech_voice = voiceValue;
+          updatedSettings.speech_rate = rateValue;
           
           return window.electronAPI.db.set('settings', updatedSettings);
         }).then(success => {
@@ -247,7 +295,9 @@ class SlotRaceSettingsPreferences extends HTMLElement {
             // Set global currentLanguage and broadcast translation change
             window.currentLanguage = langValue;
             window.speechService.setVoice(voiceValue);
+            window.speechService.setRate(rateValue);
             this._savedVoiceName = voiceValue;
+            this._savedSpeechRate = rateValue;
             
             window.dispatchEvent(new CustomEvent('languageChanged', { detail: langValue }));
             
