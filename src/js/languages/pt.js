@@ -298,6 +298,12 @@ window.localeStrings.pt = {
       lap_beep_duration_help: "Ajuste o tempo de duração em segundos para o bipe curto de volta marcada.",
       lap_beep_frequency_label: "Frequência do Sinal de Volta",
       lap_beep_frequency_help: "Ajuste o tom (frequência em Hertz) para o sinal de volta. Valores menores são mais graves, maiores são mais agudos.",
+      end_beep_label: "Sinal Sonoro de Término",
+      end_beep_help: "Emite um sinal sonoro de término (beep sintetizado) quando o tempo de pilotagem ou da bateria chega ao fim.",
+      end_beep_duration_label: "Duração do Sinal de Término",
+      end_beep_duration_help: "Ajuste o tempo de duração em segundos para o sinal de término.",
+      end_beep_frequency_label: "Frequência do Sinal de Término",
+      end_beep_frequency_help: "Ajuste o tom (frequência em Hertz) para o sinal de término. Valores menores são mais graves, maiores são mais agudos.",
     },
     feedback: {
       saved: "Salvo!",

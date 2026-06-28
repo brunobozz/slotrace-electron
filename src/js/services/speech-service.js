@@ -153,6 +153,39 @@ window.speechService = {
     } catch (e) {
       console.error('Failed to play lap beep sound:', e);
     }
+  },
+
+  /**
+   * Plays a synthesized end beep sound using Web Audio API
+   */
+  playEndBeep(duration = 0.5, frequency = 500) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const context = new AudioCtx();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+      
+      const attack = Math.min(0.02, duration * 0.1);
+      const release = Math.min(0.05, duration * 0.1);
+      const holdTime = duration - release;
+      
+      gainNode.gain.setValueAtTime(0, context.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, context.currentTime + attack);
+      gainNode.gain.setValueAtTime(0.2, context.currentTime + holdTime);
+      gainNode.gain.linearRampToValueAtTime(0.0001, context.currentTime + duration);
+      
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + duration);
+    } catch (e) {
+      console.error('Failed to play end beep sound:', e);
+    }
   }
 };
 

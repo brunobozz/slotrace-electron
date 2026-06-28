@@ -547,8 +547,15 @@ class SlotRaceRealtimeRace extends HTMLElement {
     this.updateChildComponents();
   }
 
+  _playEndBeepIfNeeded() {
+    if (this._endBeepEnabled && window.speechService && typeof window.speechService.playEndBeep === "function") {
+      window.speechService.playEndBeep(this._endBeepDuration, this._endBeepFrequency);
+    }
+  }
+
   // Handle battery time expiration
   async handleSessionTimeUp() {
+    this._playEndBeepIfNeeded();
     this._state = "paused";
     this.updateHeaderState("paused");
 
@@ -873,15 +880,21 @@ class SlotRaceRealtimeRace extends HTMLElement {
       tracks = (await window.electronAPI.db.get("tracks")) || [];
       const settings = (await window.electronAPI.db.get("settings")) || {};
       this._lapBeepEnabled = settings.lap_beep !== false;
+      this._endBeepEnabled = settings.end_beep !== false;
       this._lapBeepDuration = settings.lap_beep_duration !== undefined ? parseFloat(settings.lap_beep_duration) : 0.50;
+      this._endBeepDuration = settings.end_beep_duration !== undefined ? parseFloat(settings.end_beep_duration) : 0.5;
       this._lapBeepFrequency = settings.lap_beep_frequency !== undefined ? parseInt(settings.lap_beep_frequency, 10) : 1300;
+      this._endBeepFrequency = settings.end_beep_frequency !== undefined ? parseInt(settings.end_beep_frequency, 10) : 500;
     } catch (e) {
       this.drivers = [];
       this.cars = [];
       tracks = [];
       this._lapBeepEnabled = true;
+      this._endBeepEnabled = true;
       this._lapBeepDuration = 0.50;
+      this._endBeepDuration = 0.5;
       this._lapBeepFrequency = 1300;
+      this._endBeepFrequency = 500;
     }
 
     if (!this.querySelector("#modal-realtime-race")) {

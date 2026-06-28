@@ -137,19 +137,25 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       const settings = (await window.electronAPI.db.get("settings")) || {};
       this._startBeepEnabled = settings.start_beep !== false;
       this._lapBeepEnabled = settings.lap_beep !== false;
+      this._endBeepEnabled = settings.end_beep !== false;
       this._startBeepDuration = settings.start_beep_duration !== undefined ? parseFloat(settings.start_beep_duration) : 0.5;
       this._lapBeepDuration = settings.lap_beep_duration !== undefined ? parseFloat(settings.lap_beep_duration) : 0.50;
+      this._endBeepDuration = settings.end_beep_duration !== undefined ? parseFloat(settings.end_beep_duration) : 0.5;
       this._startBeepFrequency = settings.start_beep_frequency !== undefined ? parseInt(settings.start_beep_frequency, 10) : 1000;
       this._lapBeepFrequency = settings.lap_beep_frequency !== undefined ? parseInt(settings.lap_beep_frequency, 10) : 1300;
+      this._endBeepFrequency = settings.end_beep_frequency !== undefined ? parseInt(settings.end_beep_frequency, 10) : 500;
     } catch (e) {
       this.drivers = [];
       this.tracks = [];
       this._startBeepEnabled = true;
       this._lapBeepEnabled = true;
+      this._endBeepEnabled = true;
       this._startBeepDuration = 0.5;
       this._lapBeepDuration = 0.50;
+      this._endBeepDuration = 0.5;
       this._startBeepFrequency = 1000;
       this._lapBeepFrequency = 1300;
+      this._endBeepFrequency = 500;
     }
     this._resetSession();
     this.render();
@@ -363,6 +369,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   _onPilotTimeUp() {
+    this._playEndBeepIfNeeded();
     const finishedPilotId = this._currentPilotId;
     const isLastPilot = this._pilotQueue.length === 0;
     
@@ -628,6 +635,12 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   _playStartBeepIfNeeded() {
     if (this._startBeepEnabled && window.speechService && typeof window.speechService.playStartBeep === "function") {
       window.speechService.playStartBeep(this._startBeepDuration, this._startBeepFrequency);
+    }
+  }
+
+  _playEndBeepIfNeeded() {
+    if (this._endBeepEnabled && window.speechService && typeof window.speechService.playEndBeep === "function") {
+      window.speechService.playEndBeep(this._endBeepDuration, this._endBeepFrequency);
     }
   }
 
