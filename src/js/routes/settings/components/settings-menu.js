@@ -23,9 +23,13 @@ class SlotRaceSettingsMenu extends HTMLElement {
           <i class="mdi mdi-tune fs-5"></i>
           <span>${window.t('settings.menu.preferences')}</span>
         </a>
-        <a class="nav-link d-flex align-items-center gap-2" id="subnav-language-audio" href="#settings/language-audio">
+        <a class="nav-link d-flex align-items-center gap-2" id="subnav-language-voice" href="#settings/language-voice">
+          <i class="mdi mdi-translate fs-5"></i>
+          <span>${window.t('settings.menu.language_voice')}</span>
+        </a>
+        <a class="nav-link d-flex align-items-center gap-2" id="subnav-sound-signals" href="#settings/sound-signals">
           <i class="mdi mdi-volume-high fs-5"></i>
-          <span>${window.t('settings.menu.language_audio')}</span>
+          <span>${window.t('settings.menu.sound_signals')}</span>
         </a>
         <a class="nav-link d-flex align-items-center gap-2" id="subnav-connections" href="#settings/connections">
           <i class="mdi mdi-lan-connect fs-5"></i>
@@ -41,19 +45,23 @@ class SlotRaceSettingsMenu extends HTMLElement {
     
     const subnavInfo = this.querySelector('#subnav-informations');
     const subnavPref = this.querySelector('#subnav-preferences');
-    const subnavLangAudio = this.querySelector('#subnav-language-audio');
+    const subnavLangVoice = this.querySelector('#subnav-language-voice');
+    const subnavSoundSigs = this.querySelector('#subnav-sound-signals');
     const subnavConn = this.querySelector('#subnav-connections');
     
-    if (subnavInfo && subnavPref && subnavLangAudio && subnavConn) {
+    if (subnavInfo && subnavPref && subnavLangVoice && subnavSoundSigs && subnavConn) {
       subnavInfo.classList.remove('active');
       subnavPref.classList.remove('active');
-      subnavLangAudio.classList.remove('active');
+      subnavLangVoice.classList.remove('active');
+      subnavSoundSigs.classList.remove('active');
       subnavConn.classList.remove('active');
       
       if (activeSubRoute === 'preferences') {
         subnavPref.classList.add('active');
-      } else if (activeSubRoute === 'language-audio') {
-        subnavLangAudio.classList.add('active');
+      } else if (activeSubRoute === 'language-voice') {
+        subnavLangVoice.classList.add('active');
+      } else if (activeSubRoute === 'sound-signals') {
+        subnavSoundSigs.classList.add('active');
       } else if (activeSubRoute === 'connections') {
         subnavConn.classList.add('active');
       } else {

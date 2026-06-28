@@ -252,7 +252,8 @@ window.localeStrings.pt = {
     menu: {
       informations: "Informações",
       preferences: "Preferências",
-      language_audio: "Idioma e Áudio",
+      language_voice: "Idioma e Voz",
+      sound_signals: "Sinais Sonoros",
       connections: "Conexões",
     },
     informations: {

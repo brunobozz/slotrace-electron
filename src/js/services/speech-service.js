@@ -95,7 +95,7 @@ window.speechService = {
   /**
    * Plays a synthesized start beep sound using Web Audio API
    */
-  playStartBeep(duration = 0.5, frequency = 800) {
+  playStartBeep(duration = 0.5, frequency = 1000) {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -128,7 +128,7 @@ window.speechService = {
   /**
    * Plays a synthesized short lap beep sound using Web Audio API
    */
-  playLapBeep(duration = 0.08, frequency = 1200) {
+  playLapBeep(duration = 0.5, frequency = 1300) {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
