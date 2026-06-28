@@ -507,6 +507,11 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const hasResults = !!(this.race && this.race.quali && this.race.quali.some(q => (q.laps && q.laps > 0) || (q.bestLapTime && q.bestLapTime > 0)));
 
     container.innerHTML = `
+      <!-- Mark Lap button -->
+      <button id="btn-quali-header-mark-lap" class="btn btn-lg btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Marcar Volta" style="width: 48px; height: 48px;" ${!isRunning ? "disabled" : ""}>
+        <i class="mdi mdi-flag-checkered fs-3"></i>
+      </button>
+
       <!-- Play button (Start / Resume) -->
       ${
         isIdle || isPaused
@@ -559,11 +564,18 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     `;
 
     // Re-bind events
+    const btnMarkLap = container.querySelector("#btn-quali-header-mark-lap");
     const btnHeaderStart = container.querySelector("#btn-quali-header-start");
     const btnHeaderPause = container.querySelector("#btn-quali-header-pause");
     const btnHeaderSave = container.querySelector("#btn-quali-header-save");
     const btnHeaderReset = container.querySelector("#btn-quali-header-reset");
     const btnConfig = container.querySelector("#btn-quali-config");
+
+    if (btnMarkLap) {
+      btnMarkLap.addEventListener("click", () => {
+        this._handleMarkLap();
+      });
+    }
 
     if (btnHeaderStart) {
       btnHeaderStart.addEventListener("click", () => {
