@@ -2,6 +2,7 @@ class SlotRaceSettingsPreferences extends HTMLElement {
   connectedCallback() {
     this._savedVoiceName = ""; // Memory of selected voice
     this._savedSpeechRate = 1.0; // Memory of speech rate
+    this._tooltips = []; // Active tooltips registry
     this.render();
     
     // Fetch and initialize the preferences from the Node.js database on first load
@@ -87,6 +88,18 @@ class SlotRaceSettingsPreferences extends HTMLElement {
     if (this._voicesChangedListener && window.speechSynthesis) {
       window.speechSynthesis.removeEventListener('voiceschanged', this._voicesChangedListener);
     }
+    this._clearTooltips();
+  }
+
+  _clearTooltips() {
+    if (this._tooltips) {
+      this._tooltips.forEach(t => {
+        try {
+          t.dispose();
+        } catch (_) {}
+      });
+    }
+    this._tooltips = [];
   }
 
   _populateVoices(savedVoiceName = "") {
@@ -118,22 +131,31 @@ class SlotRaceSettingsPreferences extends HTMLElement {
 
   render() {
     const isWindows = navigator.userAgent.toLowerCase().includes('win');
+    
+    // Clear any previous tooltips before rewriting innerHTML
+    this._clearTooltips();
+
     this.innerHTML = `
       <slotrace-settings-header title="${window.t('settings.menu.preferences')}" icon="mdi-tune"></slotrace-settings-header>
       
       <form id="form-preferences" class="needs-validation fade-in" novalidate>
         <!-- Language Select -->
         <div class="mb-4">
-          <label for="select-language" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.language_label')}</label>
+          <label for="select-language" class="form-label fw-semibold text-secondary small d-flex align-items-center gap-1.5">
+            <span>${window.t('settings.preferences.language_label')}</span>
+            <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.language_help')}"></i>
+          </label>
           <select class="form-select p-2.5" id="select-language" required>
             <option value="pt">Português</option>
           </select>
-          <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.language_help')}</span>
         </div>
 
         <!-- Synthesizer Voice Select & Speed -->
         <div class="mb-4">
-          <label for="select-speech-voice" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.speech_voice_label')}</label>
+          <label for="select-speech-voice" class="form-label fw-semibold text-secondary small d-flex align-items-center gap-1.5">
+            <span>${window.t('settings.preferences.speech_voice_label')}</span>
+            <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.speech_voice_help')}"></i>
+          </label>
           <div class="d-flex gap-2">
             <select class="form-select p-2.5" id="select-speech-voice">
               <option value="">${window.t('settings.preferences.speech_voice_default')}</option>
@@ -157,12 +179,14 @@ class SlotRaceSettingsPreferences extends HTMLElement {
               </button>
             ` : ''}
           </div>
-          <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.speech_voice_help')}</span>
         </div>
 
         <!-- Speech Synthesis Audio Test -->
         <div class="mb-4">
-          <label for="input-speech-test" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.speech_test_label')}</label>
+          <label for="input-speech-test" class="form-label fw-semibold text-secondary small d-flex align-items-center gap-1.5">
+            <span>${window.t('settings.preferences.speech_test_label')}</span>
+            <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.speech_test_help')}"></i>
+          </label>
           <div class="input-group">
             <input type="text" class="form-control p-2.5" id="input-speech-test" placeholder="${window.t('settings.preferences.speech_test_placeholder')}" value="Melhor Volta Fenda Amarela">
             <button class="btn btn-primary d-flex align-items-center gap-2 px-3" type="button" id="btn-speech-test">
@@ -170,25 +194,28 @@ class SlotRaceSettingsPreferences extends HTMLElement {
               <span>${window.t('settings.preferences.speech_test_button')}</span>
             </button>
           </div>
-          <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.speech_test_help')}</span>
         </div>
 
         <!-- Theme Select -->
         <div class="mb-4">
-          <label for="select-theme" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.theme_label')}</label>
+          <label for="select-theme" class="form-label fw-semibold text-secondary small d-flex align-items-center gap-1.5">
+            <span>${window.t('settings.preferences.theme_label')}</span>
+            <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.theme_help')}"></i>
+          </label>
           <select class="form-select p-2.5" id="select-theme" required>
             <option value="dark">${window.t('settings.preferences.theme_bootstrap_dark') || 'Bootstrap Dark'}</option>
             <option value="light">${window.t('settings.preferences.theme_bootstrap_light') || 'Bootstrap Light'}</option>
           </select>
-          <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.theme_help')}</span>
         </div>
 
         <!-- Main Color Select -->
         <div class="mb-4">
-          <label for="input-main-color" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.color_label')}</label>
+          <label for="input-main-color" class="form-label fw-semibold text-secondary small d-flex align-items-center gap-1.5">
+            <span>${window.t('settings.preferences.color_label')}</span>
+            <i class="mdi mdi-information-outline text-secondary opacity-75 fs-6 ms-1" style="cursor: help;" data-bs-toggle="tooltip" data-bs-placement="top" title="${window.t('settings.preferences.color_help')}"></i>
+          </label>
           <div class="d-flex align-items-center gap-3">
             <input type="color" class="form-control form-control-color p-1" id="input-main-color" value="#dc3545" title="${window.t('settings.preferences.color_help')}" style="width: 60px; height: 45px; cursor: pointer;">
-            <span class="text-secondary small">${window.t('settings.preferences.color_help')}</span>
           </div>
         </div>
         
@@ -213,6 +240,12 @@ class SlotRaceSettingsPreferences extends HTMLElement {
 
     // Populate voice dropdown initially
     this._populateVoices(this._savedVoiceName);
+
+    // Initialize Bootstrap Tooltips for all the info icons rendered
+    const tooltipTriggerList = this.querySelectorAll('[data-bs-toggle="tooltip"]');
+    if (window.bootstrap && window.bootstrap.Tooltip) {
+      this._tooltips = Array.from(tooltipTriggerList).map(el => new window.bootstrap.Tooltip(el));
+    }
 
     // Refresh voice list when language is changed in select
     if (langSelect) {
