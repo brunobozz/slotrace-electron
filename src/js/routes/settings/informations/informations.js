@@ -8,8 +8,8 @@ class SlotRaceSettingsInformations extends HTMLElement {
     window.electronAPI.db.get('settings').then(settings => {
       if (settings) {
         const nameInput = this.querySelector("#input-local-name");
-        if (nameInput && settings.local_name) {
-          nameInput.value = settings.local_name;
+        if (nameInput) {
+          nameInput.value = settings.local_name || "";
         }
         if (settings.local_logo) {
           this._localLogo = settings.local_logo;
@@ -92,8 +92,7 @@ class SlotRaceSettingsInformations extends HTMLElement {
         <!-- Local Name Field -->
         <div class="mb-4">
           <label for="input-local-name" class="form-label fw-semibold text-secondary small">${window.t('settings.informations.local_name_label')}</label>
-          <input type="text" class="form-control p-2.5" id="input-local-name" placeholder="${window.t('settings.informations.local_name_placeholder')}" required>
-          <div class="invalid-feedback">${window.t('settings.informations.validation_error')}</div>
+          <input type="text" class="form-control p-2.5" id="input-local-name" placeholder="${window.t('settings.informations.local_name_placeholder')}">
         </div>
         
         <button type="submit" id="btn-save-location" class="btn btn-primary px-3 fw-semibold d-flex align-items-center gap-2">

@@ -258,7 +258,7 @@ window.localeStrings.pt = {
       local_name_label: "Nome do Local",
       local_name_placeholder: "ex: Monza Slot Club, Garage Autorama",
       validation_error: "Por favor, insira um nome de local válido.",
-      save_button: "Salvar Localização",
+      save_button: "Salvar Informações",
     },
     preferences: {
       color_label: "Cor Principal",
