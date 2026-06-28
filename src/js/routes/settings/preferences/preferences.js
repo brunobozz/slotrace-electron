@@ -1,5 +1,6 @@
 class SlotRaceSettingsPreferences extends HTMLElement {
   connectedCallback() {
+    this._savedVoiceName = ""; // Memory of selected voice
     this.render();
     
     // Fetch and initialize the preferences from the Node.js database on first load
@@ -18,6 +19,12 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         if (settings.language && langSelect) {
           langSelect.value = settings.language;
         }
+        if (settings.speech_voice) {
+          this._savedVoiceName = settings.speech_voice;
+        }
+        
+        // Populate voice options after loading settings
+        this._populateVoices(this._savedVoiceName);
       }
     }).catch(err => {
       console.error('Failed to load preferences from database:', err);
@@ -28,11 +35,13 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       const themeEl = this.querySelector('#select-theme');
       const langEl = this.querySelector('#select-language');
       const speechTestEl = this.querySelector('#input-speech-test');
+      const voiceSelect = this.querySelector('#select-speech-voice');
       
       const currentVal = inputEl ? inputEl.value : '#dc3545';
       const currentTheme = themeEl ? themeEl.value : 'dark';
       const currentLang = langEl ? langEl.value : 'pt';
       const currentSpeechText = speechTestEl ? speechTestEl.value : '';
+      const currentVoice = voiceSelect ? voiceSelect.value : '';
       
       this.render();
       
@@ -45,17 +54,58 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       if (newThemeEl) newThemeEl.value = currentTheme;
       if (newLangEl) newLangEl.value = currentLang;
       if (newSpeechTestEl) newSpeechTestEl.value = currentSpeechText;
+      
+      this._populateVoices(currentVoice || this._savedVoiceName);
     };
     window.addEventListener('languageChanged', this._langListener);
+
+    // Listen to OS voice loading events (Web Speech API voices are async)
+    this._voicesChangedListener = () => {
+      this._populateVoices(this._savedVoiceName);
+    };
+    if (window.speechSynthesis) {
+      window.speechSynthesis.addEventListener('voiceschanged', this._voicesChangedListener);
+    }
   }
 
   disconnectedCallback() {
     if (this._langListener) {
       window.removeEventListener('languageChanged', this._langListener);
     }
+    if (this._voicesChangedListener && window.speechSynthesis) {
+      window.speechSynthesis.removeEventListener('voiceschanged', this._voicesChangedListener);
+    }
+  }
+
+  _populateVoices(savedVoiceName = "") {
+    const voiceSelect = this.querySelector('#select-speech-voice');
+    if (!voiceSelect) return;
+
+    // Keep the default option and clear others
+    voiceSelect.innerHTML = `<option value="">${window.t('settings.preferences.speech_voice_default')}</option>`;
+
+    // Filter voices matching current language selection
+    const langSelect = this.querySelector('#select-language');
+    const currentLang = langSelect ? langSelect.value : (window.currentLanguage || 'pt');
+
+    if (window.speechSynthesis) {
+      const voices = window.speechSynthesis.getVoices();
+      const filteredVoices = voices.filter(v => v.lang.startsWith(currentLang));
+
+      filteredVoices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        if (voice.name === savedVoiceName) {
+          option.selected = true;
+        }
+        voiceSelect.appendChild(option);
+      });
+    }
   }
 
   render() {
+    const isWindows = navigator.userAgent.toLowerCase().includes('win');
     this.innerHTML = `
       <slotrace-settings-header title="${window.t('settings.menu.preferences')}" icon="mdi-tune"></slotrace-settings-header>
       
@@ -67,6 +117,23 @@ class SlotRaceSettingsPreferences extends HTMLElement {
             <option value="pt">Português</option>
           </select>
           <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.language_help')}</span>
+        </div>
+
+        <!-- Synthesizer Voice Select -->
+        <div class="mb-4">
+          <label for="select-speech-voice" class="form-label fw-semibold text-secondary small">${window.t('settings.preferences.speech_voice_label')}</label>
+          <div class="d-flex gap-2">
+            <select class="form-select p-2.5" id="select-speech-voice">
+              <option value="">${window.t('settings.preferences.speech_voice_default')}</option>
+            </select>
+            ${isWindows ? `
+              <button class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 text-nowrap" type="button" id="btn-open-windows-speech" title="Abrir Configurações do Windows para adicionar vozes">
+                <i class="mdi mdi-cog-outline"></i>
+                <span>${window.t('settings.preferences.speech_add_voices_button')}</span>
+              </button>
+            ` : ''}
+          </div>
+          <span class="text-secondary small d-block mt-1">${window.t('settings.preferences.speech_voice_help')}</span>
         </div>
 
         <!-- Speech Synthesis Audio Test -->
@@ -108,19 +175,44 @@ class SlotRaceSettingsPreferences extends HTMLElement {
       </form>
     `;
 
-    // Re-bind form submission
+    // Re-bind form elements and events
     const form = this.querySelector('#form-preferences');
     const input = this.querySelector('#input-main-color');
     const themeSelect = this.querySelector('#select-theme');
     const langSelect = this.querySelector('#select-language');
+    const voiceSelect = this.querySelector('#select-speech-voice');
     const btnSpeechTest = this.querySelector('#btn-speech-test');
     const inputSpeechTest = this.querySelector('#input-speech-test');
+
+    // Populate voice dropdown initially
+    this._populateVoices(this._savedVoiceName);
+
+    // Refresh voice list when language is changed in select
+    if (langSelect) {
+      langSelect.addEventListener('change', () => {
+        this._populateVoices(voiceSelect ? voiceSelect.value : this._savedVoiceName);
+      });
+    }
+
+    const btnOpenWindowsSpeech = this.querySelector('#btn-open-windows-speech');
+    if (btnOpenWindowsSpeech) {
+      btnOpenWindowsSpeech.addEventListener('click', () => {
+        if (window.electronAPI && typeof window.electronAPI.openExternal === 'function') {
+          window.electronAPI.openExternal('ms-settings:speech');
+        }
+      });
+    }
 
     if (btnSpeechTest && inputSpeechTest) {
       btnSpeechTest.addEventListener('click', () => {
         const text = inputSpeechTest.value.trim();
+        const selectedVoice = voiceSelect ? voiceSelect.value : "";
         if (text) {
+          // Temporarily set active voice on service for testing
+          const previousVoice = window.speechService._voiceName;
+          window.speechService.setVoice(selectedVoice);
           window.speechService.speakText(text);
+          window.speechService.setVoice(previousVoice);
         }
       });
     }
@@ -131,13 +223,15 @@ class SlotRaceSettingsPreferences extends HTMLElement {
         const colorValue = input ? input.value : '#dc3545';
         const themeValue = themeSelect ? themeSelect.value : 'dark';
         const langValue = langSelect ? langSelect.value : 'pt';
+        const voiceValue = voiceSelect ? voiceSelect.value : '';
         
-        // Load current settings, update main_color, theme, and language, and save
+        // Load current settings, update color, theme, language, and voice, then save
         window.electronAPI.db.get('settings').then(settings => {
           const updatedSettings = settings || {};
           updatedSettings.main_color = colorValue;
           updatedSettings.theme = themeValue;
           updatedSettings.language = langValue;
+          updatedSettings.speech_voice = voiceValue;
           
           return window.electronAPI.db.set('settings', updatedSettings);
         }).then(success => {
@@ -152,6 +246,9 @@ class SlotRaceSettingsPreferences extends HTMLElement {
             
             // Set global currentLanguage and broadcast translation change
             window.currentLanguage = langValue;
+            window.speechService.setVoice(voiceValue);
+            this._savedVoiceName = voiceValue;
+            
             window.dispatchEvent(new CustomEvent('languageChanged', { detail: langValue }));
             
             // Premium visual feedback directly on the save button

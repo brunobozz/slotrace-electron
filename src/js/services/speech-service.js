@@ -2,12 +2,18 @@
 window.speechService = {
   // Configuração padrão
   _enabled: true,
+  _voiceName: "",
 
   init() {
     // Carrega a preferência de áudio do banco de dados (se habilitado ou não nas configurações)
     window.electronAPI.db.get('settings').then(settings => {
-      if (settings && settings.speech_enabled !== undefined) {
-        this._enabled = settings.speech_enabled;
+      if (settings) {
+        if (settings.speech_enabled !== undefined) {
+          this._enabled = settings.speech_enabled;
+        }
+        if (settings.speech_voice !== undefined) {
+          this._voiceName = settings.speech_voice;
+        }
       }
     }).catch((err) => {
       console.error('Failed to load speech settings from database:', err);
@@ -23,6 +29,10 @@ window.speechService = {
       updated.speech_enabled = status;
       return window.electronAPI.db.set('settings', updated);
     });
+  },
+
+  setVoice(voiceName) {
+    this._voiceName = voiceName;
   },
 
   isEnabled() {
@@ -46,6 +56,15 @@ window.speechService = {
     
     // Define o idioma com base no idioma atual do app
     utterance.lang = window.currentLanguage || 'pt';
+
+    // Procura e define a voz selecionada se houver
+    if (this._voiceName) {
+      const vozes = window.speechSynthesis.getVoices();
+      const vozSelecionada = vozes.find(v => v.name === this._voiceName);
+      if (vozSelecionada) {
+        utterance.voice = vozSelecionada;
+      }
+    }
 
     // Ajustes premium de fala (padrões confortáveis)
     utterance.rate = 1.05;  // Velocidade ligeiramente mais rápida para dinâmica de corrida

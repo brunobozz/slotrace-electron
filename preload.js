@@ -9,6 +9,7 @@ try {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   appVersion: appVersion,
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
   db: {
     get: (key) => ipcRenderer.invoke('db-get', key),
     set: (key, value) => ipcRenderer.invoke('db-set', key, value)

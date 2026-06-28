@@ -159,6 +159,18 @@ app.whenReady().then(async () => {
   await initDatabase();
   createWindow();
 
+  // Register shell/external link open handler
+  ipcMain.handle('open-external', async (event, url) => {
+    const { shell } = require('electron');
+    try {
+      await shell.openExternal(url);
+      return true;
+    } catch (err) {
+      console.error('Failed to open external URL:', url, err);
+      return false;
+    }
+  });
+
   // Database operation serialization queue to prevent race conditions on concurrent reads/writes
   let dbQueue = Promise.resolve();
 
