@@ -31,9 +31,8 @@ class SlotRaceFastestLaps extends HTMLElement {
       racePilots.map((p) => String(p && typeof p === "object" ? p.id : p)),
     );
 
-    // Find overall fastest lap in raceSession or quali
+    // Find overall fastest lap in raceSession
     let bestRecord = null;
-    let isQuali = false;
 
     if (this.race.raceSession && this.race.raceSession.length > 0) {
       // Filter raceSession to only include active pilots in the race
@@ -51,28 +50,6 @@ class SlotRaceFastestLaps extends HTMLElement {
               bestLapIndex: r.bestLapIndex,
               bestLapLane: r.bestLapLane,
             };
-          }
-        }
-      });
-    }
-
-    // If no best lap in race session, check qualifying
-    if (!bestRecord && this.race.quali && this.race.quali.length > 0) {
-      const filteredQuali = this.race.quali.filter((q) =>
-        activePilotIds.has(String(q.pilotId)),
-      );
-
-      filteredQuali.forEach((q) => {
-        const bestTime = parseFloat(q.bestLapTime) || 0;
-        if (bestTime > 0) {
-          if (!bestRecord || bestTime < bestRecord.bestLapTime) {
-            bestRecord = {
-              pilotId: q.pilotId,
-              bestLapTime: bestTime,
-              bestLapIndex: q.bestLapIndex,
-              bestLapLane: q.bestLapLane,
-            };
-            isQuali = true;
           }
         }
       });
@@ -108,14 +85,7 @@ class SlotRaceFastestLaps extends HTMLElement {
     const carName = carObj ? carObj.name : "-";
 
     // Resolve Lane (Fenda)
-    let laneNum = bestRecord.bestLapLane;
-    if (!laneNum) {
-      if (isQuali) {
-        laneNum = this.race.lane || 1;
-      } else {
-        laneNum = 1; // GP fallback
-      }
-    }
+    const laneNum = bestRecord.bestLapLane || 1;
 
     // Resolve Lane Color
     const trackObj = this.tracks.find(
@@ -150,16 +120,7 @@ class SlotRaceFastestLaps extends HTMLElement {
         }
       }
 
-      if (time === 0 && this.race.quali && this.race.quali.length > 0) {
-        pilotRecord = this.race.quali.find(
-          (q) => String(q.pilotId) === String(pilotId),
-        );
-        if (pilotRecord) {
-          time = parseFloat(pilotRecord.bestLapTime) || 0;
-          index = pilotRecord.bestLapIndex || 0;
-          lane = pilotRecord.bestLapLane || this.race.lane || 1;
-        }
-      }
+
 
       const driverObj = this.drivers.find(
         (d) => String(d.id) === String(pilotId),
