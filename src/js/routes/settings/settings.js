@@ -46,6 +46,11 @@ class SlotRaceSettings extends HTMLElement {
             <div id="subview-preferences" class="subview-section d-none fade-in">
               <slotrace-settings-preferences></slotrace-settings-preferences>
             </div>
+
+            <!-- Language and Audio Sub-view -->
+            <div id="subview-language-audio" class="subview-section d-none fade-in">
+              <slotrace-settings-language-audio></slotrace-settings-language-audio>
+            </div>
             
             <!-- Connections Sub-view -->
             <div id="subview-connections" class="subview-section d-none fade-in">

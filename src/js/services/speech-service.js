@@ -95,7 +95,7 @@ window.speechService = {
   /**
    * Plays a synthesized start beep sound using Web Audio API
    */
-  playStartBeep() {
+  playStartBeep(duration = 0.5, frequency = 800) {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -107,15 +107,19 @@ window.speechService = {
       gainNode.connect(context.destination);
       
       oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(800, context.currentTime);
+      oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+      
+      const attack = Math.min(0.02, duration * 0.1);
+      const release = Math.min(0.05, duration * 0.1);
+      const holdTime = duration - release;
       
       gainNode.gain.setValueAtTime(0, context.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.2, context.currentTime + 0.02);
-      gainNode.gain.setValueAtTime(0.2, context.currentTime + 0.45);
-      gainNode.gain.linearRampToValueAtTime(0.0001, context.currentTime + 0.5);
+      gainNode.gain.linearRampToValueAtTime(0.2, context.currentTime + attack);
+      gainNode.gain.setValueAtTime(0.2, context.currentTime + holdTime);
+      gainNode.gain.linearRampToValueAtTime(0.0001, context.currentTime + duration);
       
       oscillator.start(context.currentTime);
-      oscillator.stop(context.currentTime + 0.5);
+      oscillator.stop(context.currentTime + duration);
     } catch (e) {
       console.error('Failed to play beep sound:', e);
     }
@@ -124,7 +128,7 @@ window.speechService = {
   /**
    * Plays a synthesized short lap beep sound using Web Audio API
    */
-  playLapBeep() {
+  playLapBeep(duration = 0.08, frequency = 1200) {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -136,14 +140,16 @@ window.speechService = {
       gainNode.connect(context.destination);
       
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(1200, context.currentTime);
+      oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+      
+      const attack = Math.min(0.01, duration * 0.1);
       
       gainNode.gain.setValueAtTime(0, context.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.15, context.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.08);
+      gainNode.gain.linearRampToValueAtTime(0.15, context.currentTime + attack);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
       
       oscillator.start(context.currentTime);
-      oscillator.stop(context.currentTime + 0.08);
+      oscillator.stop(context.currentTime + duration);
     } catch (e) {
       console.error('Failed to play lap beep sound:', e);
     }

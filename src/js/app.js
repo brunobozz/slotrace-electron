@@ -46,6 +46,23 @@ window.applyMainColor = function (hexColor) {
       --bs-btn-disabled-bg: var(--bs-primary) !important;
       --bs-btn-disabled-border-color: var(--bs-primary) !important;
     }
+
+    .btn-outline-primary {
+      --bs-btn-color: var(--bs-primary) !important;
+      --bs-btn-border-color: var(--bs-primary) !important;
+      --bs-btn-hover-color: #fff !important;
+      --bs-btn-hover-bg: var(--bs-primary) !important;
+      --bs-btn-hover-border-color: var(--bs-primary) !important;
+      --bs-btn-focus-shadow-rgb: ${r}, ${g}, ${b} !important;
+      --bs-btn-active-color: #fff !important;
+      --bs-btn-active-bg: var(--bs-primary-active) !important;
+      --bs-btn-active-border-color: var(--bs-primary-active) !important;
+    }
+
+    .form-check-input:checked {
+      background-color: var(--bs-primary) !important;
+      border-color: var(--bs-primary) !important;
+    }
   `;
 };
 

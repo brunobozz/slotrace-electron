@@ -23,6 +23,10 @@ class SlotRaceSettingsMenu extends HTMLElement {
           <i class="mdi mdi-tune fs-5"></i>
           <span>${window.t('settings.menu.preferences')}</span>
         </a>
+        <a class="nav-link d-flex align-items-center gap-2" id="subnav-language-audio" href="#settings/language-audio">
+          <i class="mdi mdi-volume-high fs-5"></i>
+          <span>${window.t('settings.menu.language_audio')}</span>
+        </a>
         <a class="nav-link d-flex align-items-center gap-2" id="subnav-connections" href="#settings/connections">
           <i class="mdi mdi-lan-connect fs-5"></i>
           <span>${window.t('settings.menu.connections')}</span>
@@ -37,15 +41,19 @@ class SlotRaceSettingsMenu extends HTMLElement {
     
     const subnavInfo = this.querySelector('#subnav-informations');
     const subnavPref = this.querySelector('#subnav-preferences');
+    const subnavLangAudio = this.querySelector('#subnav-language-audio');
     const subnavConn = this.querySelector('#subnav-connections');
     
-    if (subnavInfo && subnavPref && subnavConn) {
+    if (subnavInfo && subnavPref && subnavLangAudio && subnavConn) {
       subnavInfo.classList.remove('active');
       subnavPref.classList.remove('active');
+      subnavLangAudio.classList.remove('active');
       subnavConn.classList.remove('active');
       
       if (activeSubRoute === 'preferences') {
         subnavPref.classList.add('active');
+      } else if (activeSubRoute === 'language-audio') {
+        subnavLangAudio.classList.add('active');
       } else if (activeSubRoute === 'connections') {
         subnavConn.classList.add('active');
       } else {
