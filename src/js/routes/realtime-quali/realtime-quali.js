@@ -231,12 +231,70 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       }
     });
 
-    // Shift current pilot from the queue now because they are starting!
-    if (this._pilotQueue.length > 0 && this._pilotQueue[0] === this._currentPilotId) {
-      this._pilotQueue.shift();
-    }
+    const intervalTime = this._sessionConfig.interval;
 
-    this._startNextPilot(true); // isFirst = true, don't shift queue since we just did it
+    if (intervalTime > 0 && this._pilotQueue.length > 0) {
+      // Shift first pilot from queue and set as current
+      this._currentPilotId = this._pilotQueue.shift();
+      this._viewedPilotId = this._currentPilotId;
+
+      this._state = "interval";
+      this._updateToolbarState();
+      this._updateDriverPanel();
+      this._updateLaps();
+      this._updateQueue();
+
+      // Trigger TTS voices for the first pilot's preparation
+      if (window.speechService && typeof window.speechService.speakText === "function") {
+        const nextDriver = this._getDriver(this._currentPilotId);
+        if (nextDriver) {
+          const prepareText = window.t("voice.realtime_quali.prepare_pilot").replace("{name}", nextDriver.name);
+          const prepareUtterance = window.speechService.speakText(prepareText);
+
+          if (prepareUtterance && this._pilotQueue.length > 0) {
+            this._activeUtterance = prepareUtterance;
+            prepareUtterance.onend = () => {
+              this._activeUtterance = null;
+              setTimeout(() => {
+                if (this._state !== "interval") return;
+                
+                const afterThatDriver = this._getDriver(this._pilotQueue[0]);
+                if (afterThatDriver) {
+                  const nextText = window.t("voice.realtime_quali.next_pilot").replace("{name}", afterThatDriver.name);
+                  window.speechService.speakText(nextText);
+                }
+              }, 1000);
+            };
+          }
+        }
+      }
+
+      const timer = this.querySelector("slotrace-timer");
+      if (timer) {
+        timer.setColor("#ffc107"); // yellow timer for interval
+        timer._onTick = (secs) => {
+          if (this._state !== "interval") return;
+          if (secs === 5) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_prepare"));
+          } else if (secs === 3) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_3"));
+          } else if (secs === 2) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_2"));
+          } else if (secs === 1) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_1"));
+          }
+        };
+        timer.startCountdown(intervalTime, () => {
+          timer._onTick = null;
+          this._startNextPilot(true); // isFirst = true, start qualification
+        });
+      }
+    } else {
+      if (this._pilotQueue.length > 0 && this._pilotQueue[0] === this._currentPilotId) {
+        this._pilotQueue.shift();
+      }
+      this._startNextPilot(true);
+    }
   }
 
   _startNextPilot(isFirst = false) {
@@ -291,6 +349,9 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   _onPilotTimeUp() {
+    const finishedPilotId = this._currentPilotId;
+    const isLastPilot = this._pilotQueue.length === 0;
+    
     // Pilot's time is up — recalculate their metrics
     this._recalcQuali(this._currentPilotId);
     this._updateStandings();
@@ -308,16 +369,132 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       this._updateLaps();
       this._updateQueue();
 
+      // Trigger TTS voices for the interval
+      if (window.speechService && typeof window.speechService.speakText === "function") {
+        const finishedDriver = finishedPilotId ? this._getDriver(finishedPilotId) : null;
+        const nextDriver = this._getDriver(this._currentPilotId);
+        
+        if (finishedDriver) {
+          const finishedRecord = this._getQualiRecord(finishedPilotId);
+          const bestLapVal = finishedRecord ? finishedRecord.bestLapTime : 0;
+          const bestLapText = bestLapVal > 0 ? bestLapVal.toFixed(3).replace(".", ",") : window.t("voice.realtime_quali.no_time");
+          const finishedText = window.t("voice.realtime_quali.finished_pilot")
+            .replace("{name}", finishedDriver.name)
+            .replace("{time}", bestLapText);
+
+          const finishedUtterance = window.speechService.speakText(finishedText);
+          
+          if (finishedUtterance) {
+            this._activeUtterance = finishedUtterance;
+            finishedUtterance.onend = () => {
+              this._activeUtterance = null;
+              setTimeout(() => {
+                if (this._state !== "interval") return;
+                
+                if (nextDriver) {
+                  const prepareText = window.t("voice.realtime_quali.prepare_pilot").replace("{name}", nextDriver.name);
+                  const prepareUtterance = window.speechService.speakText(prepareText);
+                  
+                  if (prepareUtterance) {
+                    this._activeUtterance = prepareUtterance;
+                    prepareUtterance.onend = () => {
+                      this._activeUtterance = null;
+                      setTimeout(() => {
+                        if (this._state !== "interval") return;
+                        
+                        if (this._pilotQueue.length > 0) {
+                          const afterThatDriver = this._getDriver(this._pilotQueue[0]);
+                          if (afterThatDriver) {
+                            const nextText = window.t("voice.realtime_quali.next_pilot").replace("{name}", afterThatDriver.name);
+                            window.speechService.speakText(nextText);
+                          }
+                        }
+                      }, 1000);
+                    };
+                  }
+                }
+              }, 1000);
+            };
+          }
+        } else if (nextDriver) {
+          const prepareText = window.t("voice.realtime_quali.prepare_pilot").replace("{name}", nextDriver.name);
+          const prepareUtterance = window.speechService.speakText(prepareText);
+          
+          if (prepareUtterance) {
+            this._activeUtterance = prepareUtterance;
+            prepareUtterance.onend = () => {
+              this._activeUtterance = null;
+              setTimeout(() => {
+                if (this._state !== "interval") return;
+                
+                if (this._pilotQueue.length > 0) {
+                  const afterThatDriver = this._getDriver(this._pilotQueue[0]);
+                  if (afterThatDriver) {
+                    const nextText = window.t("voice.realtime_quali.next_pilot").replace("{name}", afterThatDriver.name);
+                    window.speechService.speakText(nextText);
+                  }
+                }
+              }, 1000);
+            };
+          }
+        }
+      }
+
       const timer = this.querySelector("slotrace-timer");
       if (timer) {
         timer.setColor("#ffc107"); // yellow timer for interval
+        timer._onTick = (secs) => {
+          if (this._state !== "interval") return;
+          if (secs === 5) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_prepare"));
+          } else if (secs === 3) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_3"));
+          } else if (secs === 2) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_2"));
+          } else if (secs === 1) {
+            window.speechService.speakText(window.t("voice.realtime_quali.countdown_1"));
+          }
+        };
         timer.startCountdown(intervalTime, () => {
+          timer._onTick = null;
           this._startNextPilot(true); // isFirst = true, don't shift queue again
         });
       }
     } else {
       // No interval or no more pilots — go directly to next
       this._startNextPilot(false);
+
+      if (isLastPilot) {
+        if (window.speechService && typeof window.speechService.speakText === "function") {
+          const finishedDriver = finishedPilotId ? this._getDriver(finishedPilotId) : null;
+          if (finishedDriver) {
+            const finishedRecord = this._getQualiRecord(finishedPilotId);
+            const bestLapVal = finishedRecord ? finishedRecord.bestLapTime : 0;
+            const bestLapText = bestLapVal > 0 ? bestLapVal.toFixed(3).replace(".", ",") : window.t("voice.realtime_quali.no_time");
+            const finishedText = window.t("voice.realtime_quali.finished_pilot")
+              .replace("{name}", finishedDriver.name)
+              .replace("{time}", bestLapText);
+
+            const finishedUtterance = window.speechService.speakText(finishedText);
+            if (finishedUtterance) {
+              this._activeUtterance = finishedUtterance;
+              finishedUtterance.onend = () => {
+                this._activeUtterance = null;
+                setTimeout(() => {
+                  const poleData = this._getPolePosition();
+                  if (poleData && poleData.driver) {
+                    const poleTimeText = poleData.bestTime.toFixed(3).replace(".", ",");
+                    const poleText = window.t("voice.realtime_quali.pole_position")
+                      .replace("{name}", poleData.driver.name)
+                      .replace("{time}", poleTimeText);
+                    window.speechService.speakText(poleText);
+                  }
+                }, 1000);
+              };
+            }
+          }
+        }
+      }
     }
   }
 
@@ -379,9 +556,22 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     // Add lap time to quali record
     const record = this._getQualiRecord(this._currentPilotId);
     if (record) {
+      const previousBest = record.bestLapTime || 0;
       record.lapTimes.push(parseFloat(lapTime.toFixed(4)));
       record.laps = record.lapTimes.length;
       this._recalcQuali(this._currentPilotId);
+
+      // Check for a new best lap and speak it
+      if (
+        window.speechService &&
+        typeof window.speechService.speakText === "function" &&
+        record.bestLapTime > 0 &&
+        (previousBest === 0 || record.bestLapTime < previousBest)
+      ) {
+        const timeText = record.bestLapTime.toFixed(3).replace(".", ",");
+        const voiceText = `${window.t("voice.realtime_quali.best_lap")} ${timeText}`;
+        window.speechService.speakText(voiceText);
+      }
     }
 
     this._updateDriverPanel();
@@ -397,6 +587,24 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       if (t > 0 && (best === 0 || t < best)) best = t;
     });
     return best;
+  }
+
+  _getPolePosition() {
+    if (!this.race || !this.race.quali) return null;
+    let bestTime = 0;
+    let polePilotId = null;
+    this.race.quali.forEach((q) => {
+      const t = parseFloat(q.bestLapTime) || 0;
+      if (t > 0 && (bestTime === 0 || t < bestTime)) {
+        bestTime = t;
+        polePilotId = q.pilotId;
+      }
+    });
+    if (polePilotId) {
+      const driver = this._getDriver(polePilotId);
+      return { driver, bestTime };
+    }
+    return null;
   }
 
   async _handleFinish() {
@@ -900,6 +1108,15 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         modalInstance = new bootstrap.Modal(modalEl);
       }
       modalInstance.show();
+
+      if (
+        window.speechService &&
+        typeof window.speechService.speakText === "function"
+      ) {
+        window.speechService.speakText(
+          window.t("voice.realtime_quali.attention_pilots")
+        );
+      }
     }
   }
 

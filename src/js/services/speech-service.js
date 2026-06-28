@@ -53,7 +53,7 @@ window.speechService = {
    * @param {boolean} interrupt - Se true, cancela qualquer fala anterior imediatamente
    */
   speakText(text, interrupt = true) {
-    if (!this.isEnabled() || !text) return;
+    if (!this.isEnabled() || !text) return null;
 
     // Cancela falas anteriores imediatamente se solicitado (evita acumular áudios atrasados)
     if (interrupt) {
@@ -79,6 +79,7 @@ window.speechService = {
     utterance.pitch = 1.0;  // Tom de voz normal
 
     window.speechSynthesis.speak(utterance);
+    return utterance;
   },
 
   /**

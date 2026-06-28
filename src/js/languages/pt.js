@@ -289,4 +289,20 @@ window.localeStrings.pt = {
   footer: {
     developed_by: "Desenvolvido por",
   },
+  voice: {
+    realtime_quali: {
+      best_lap: "Melhor",
+      attention_pilots: "Atenção pilotos, a qualificação vai começar.",
+      prepare_pilot: "Atenção {name} preparar para qualificação.",
+      next_pilot: "Próximo {name}",
+      finished_pilot: "Piloto {name} terminou a classificação, melhor volta {time}",
+      no_time: "não registrada",
+      pole_position: "O Pole Position foi {name} com o tempo {time}",
+      countdown_prepare: "Preparar",
+      countdown_3: "Três",
+      countdown_2: "Dois",
+      countdown_1: "Um",
+    },
+  },
 };
+
