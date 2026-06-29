@@ -199,6 +199,12 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       this._currentPilotId = null;
     }
     this._viewedPilotId = this._currentPilotId;
+
+    const timer = this.querySelector("slotrace-timer");
+    if (timer) {
+      timer.reset();
+      timer.setColor("#007aff");
+    }
   }
 
   getTrackForRace() {
@@ -660,11 +666,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     }
 
     // Close modal
-    const modalEl = this.querySelector("#modal-realtime-quali");
-    if (modalEl) {
-      const modalInstance = bootstrap.Modal.getInstance(modalEl);
-      if (modalInstance) modalInstance.hide();
-    }
+    this._closeMainModal();
 
     // Notify race list and edit modal to refresh
     window.dispatchEvent(
@@ -672,6 +674,50 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     );
     window.dispatchEvent(new CustomEvent("raceListChanged"));
     this._resetSession();
+  }
+
+  _handleBackClick() {
+    if (this._state === "idle") {
+      this._closeMainModal();
+      return;
+    }
+
+    window.confirmModal({
+      title: "Salvar resultados?",
+      message: "Você deseja salvar os resultados obtidos nesta sessão de qualificação antes de sair ou prefere descartá-los? (Para continuar nesta tela, feche este aviso clicando no 'X')",
+      theme: "success",
+      icon: "mdi-help-circle-outline",
+      cancelBtnText: "Descartar",
+      confirmBtnText: "Salvar",
+      confirmBtnIcon: "mdi-check"
+    }).then((result) => {
+      if (result === true) {
+        this._handleSaveAndExit();
+      } else if (result === false) {
+        this._handleDiscard();
+      }
+    });
+  }
+
+  _handleDiscard() {
+    this._resetSession();
+    this._closeMainModal();
+  }
+
+  async _handleSaveAndExit() {
+    if (this._state === "qualifying" || this._state === "interval") {
+      this._state = "paused";
+      this._updateToolbarState();
+    }
+    await this._handleFinish();
+  }
+
+  _closeMainModal() {
+    const modalEl = this.querySelector("#modal-realtime-quali");
+    if (modalEl) {
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+    }
   }
 
   _handleReset() {
@@ -693,13 +739,11 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   async _handleResetConfirmed() {
     if (this.race) {
       this.race.quali = [];
-      this.race.qualiOrder = null;
       try {
         const races = (await window.electronAPI.db.get("races")) || [];
         const idx = races.findIndex((r) => r.id === this.race.id);
         if (idx !== -1) {
           races[idx].quali = [];
-          races[idx].qualiOrder = null;
           await window.electronAPI.db.set("races", races);
           console.log(`[Database] Cleared quali results for reset ID: ${this.race.id}`);
         }
@@ -779,20 +823,9 @@ class SlotRaceRealtimeQuali extends HTMLElement {
           : ""
       }
 
-      <!-- Save button (Disquete) -->
-      ${
-        isPaused || isFinished
-          ? `
-        <button id="btn-quali-header-save" class="btn btn-lg btn-info rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Salvar e Finalizar" style="width: 48px; height: 48px;">
-          <i class="mdi mdi-content-save fs-3"></i>
-        </button>
-      `
-          : ""
-      }
-
       <!-- Reset button -->
       ${
-        isPaused || isFinished || hasResults
+        (isPaused || isFinished || hasResults) && !isRunning && !isInterval
           ? `
         <button id="btn-quali-header-reset" class="btn btn-sm btn-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Reiniciar" style="width: 32px; height: 32px;">
           <i class="mdi mdi-refresh fs-5"></i>
@@ -805,14 +838,12 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       <button id="btn-quali-config" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Configurações da Qualificação" style="width: 32px; height: 32px;">
         <i class="mdi mdi-cog fs-5"></i>
       </button>
-      <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close" style="outline: none; box-shadow: none;"></button>
     `;
 
     // Re-bind events
     const btnMarkLap = container.querySelector("#btn-quali-header-mark-lap");
     const btnHeaderStart = container.querySelector("#btn-quali-header-start");
     const btnHeaderPause = container.querySelector("#btn-quali-header-pause");
-    const btnHeaderSave = container.querySelector("#btn-quali-header-save");
     const btnHeaderReset = container.querySelector("#btn-quali-header-reset");
     const btnConfig = container.querySelector("#btn-quali-config");
 
@@ -845,11 +876,6 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       });
     }
 
-    if (btnHeaderSave) {
-      btnHeaderSave.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("qualiSessionFinish"));
-      });
-    }
 
     if (btnHeaderReset) {
       btnHeaderReset.addEventListener("click", () => {
@@ -1166,6 +1192,25 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const raceName = this.race.name || "";
 
     this.innerHTML = `
+      <style>
+        @keyframes pulse-save-btn {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+          }
+          70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 8px rgba(25, 135, 84, 0);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+          }
+        }
+        .pulse-save {
+          animation: pulse-save-btn 1.8s infinite;
+        }
+      </style>
       <div class="modal fade" id="modal-realtime-quali" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content border-0 text-white d-flex flex-column h-100">
@@ -1174,12 +1219,17 @@ class SlotRaceRealtimeQuali extends HTMLElement {
             <div class="modal-header border-bottom border-secondary-subtle px-4 py-0 d-flex align-items-center justify-content-between">
               
               <!-- Left: Race Name & QUALIFICAÇÃO -->
-              <div class="text-start" style="width: 350px;">
-                <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-3 text-truncate" style="letter-spacing: 0.05em;" title="${raceName}">
-                  ${raceName}
-                </h2>
-                <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 0.8rem; letter-spacing: 0.25em;">
-                  QUALIFICAÇÃO
+              <div class="d-flex align-items-center text-start" style="width: 350px;">
+                <button type="button" id="btn-quali-back" class="btn btn-link text-body-secondary p-0 me-3 shadow-none" aria-label="Voltar" style="outline: none; box-shadow: none; text-decoration: none;">
+                  <i class="mdi mdi-arrow-left fs-2"></i>
+                </button>
+                <div class="text-truncate flex-grow-1">
+                  <h2 class="fw-bold mb-0 text-uppercase text-body-secondary tracking-wider fs-3 text-truncate" style="letter-spacing: 0.05em;" title="${raceName}">
+                    ${raceName}
+                  </h2>
+                  <div class="text-primary fw-semibold tracking-widest mt-0.5" style="font-size: 0.8rem; letter-spacing: 0.25em;">
+                    QUALIFICAÇÃO
+                  </div>
                 </div>
               </div>
 
@@ -1229,6 +1279,14 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         interval: this._sessionConfig.interval,
         lane: this._sessionConfig.lane,
         track: this.getTrackForRace(),
+      });
+    }
+
+    // Bind back button
+    const btnBack = this.querySelector("#btn-quali-back");
+    if (btnBack) {
+      btnBack.addEventListener("click", () => {
+        this._handleBackClick();
       });
     }
   }

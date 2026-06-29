@@ -24,15 +24,27 @@ class SlotRaceConfirmModal extends HTMLElement {
       }
     });
 
-    const modalCloseButtons = this.querySelectorAll('[data-bs-dismiss="modal"]');
-    modalCloseButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
+    const cancelBtn = this.querySelector(".btn-cancel");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => {
+        this.bsModal.hide();
         if (this.resolvePromise) {
           this.resolvePromise(false);
           this.resolvePromise = null;
         }
       });
-    });
+    }
+
+    const headerCloseBtn = this.querySelector(".btn-close");
+    if (headerCloseBtn) {
+      headerCloseBtn.addEventListener("click", () => {
+        this.bsModal.hide();
+        if (this.resolvePromise) {
+          this.resolvePromise(null);
+          this.resolvePromise = null;
+        }
+      });
+    }
   }
 
   show({
