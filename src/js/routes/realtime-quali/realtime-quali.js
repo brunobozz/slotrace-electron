@@ -78,6 +78,19 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.addEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
     window.addEventListener("serial-sensor-triggered", this._onSensorTriggered);
 
+    // Keydown for Spacebar (Play/Pause)
+    this._onKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.isContentEditable)) {
+        return;
+      }
+      if (e.code === "Space") {
+        e.preventDefault();
+        this._handleSpacebarPress();
+      }
+    };
+    window.addEventListener("keydown", this._onKeyDown);
+
     // Running lap timer loop
     this._runningLoopActive = true;
     this._startRunningLoop();
@@ -85,6 +98,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
   disconnectedCallback() {
     this._runningLoopActive = false;
+    this._clearPrepTimeouts();
     if (this._goQualifyListener) {
       window.removeEventListener("requestGoQualify", this._goQualifyListener);
     }
@@ -100,6 +114,9 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     window.removeEventListener("requestShuffleOrder", this._onShuffleOrder);
     window.removeEventListener("requestSelectTelemetryPilot", this._onSelectTelemetryPilot);
     window.removeEventListener("serial-sensor-triggered", this._onSensorTriggered);
+    if (this._onKeyDown) {
+      window.removeEventListener("keydown", this._onKeyDown);
+    }
     if (this._autoSaveTimeout) {
       clearTimeout(this._autoSaveTimeout);
     }
@@ -164,6 +181,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   _resetSession() {
+    this._clearPrepTimeouts();
     this._state = "idle";
     this._lapStartTime = null;
     this._pausedState = null;
@@ -282,7 +300,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
               this._activeUtterance = null;
               setTimeout(() => {
                 if (this._state !== "interval") return;
-                
+
                 const afterThatDriver = this._getDriver(this._pilotQueue[0]);
                 if (afterThatDriver) {
                   const nextText = window.t("voice.realtime_quali.next_pilot").replace("{name}", afterThatDriver.name);
@@ -297,20 +315,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       const timer = this.querySelector("slotrace-timer");
       if (timer) {
         timer.setColor("#ffc107"); // yellow timer for interval
-        timer._onTick = (secs) => {
-          if (this._state !== "interval") return;
-          if (secs === 5) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_prepare"));
-          } else if (secs === 3) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_3"));
-          } else if (secs === 2) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_2"));
-          } else if (secs === 1) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_1"));
-          }
-        };
         timer.startCountdown(intervalTime, () => {
-          timer._onTick = null;
           this._startNextPilot(true); // isFirst = true, start qualification
         });
       }
@@ -322,7 +327,46 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     }
   }
 
+  _speakWithCallback(text, callback, maxDelayMs = 2500) {
+    if (window.speechService && typeof window.speechService.speakText === "function") {
+      const utterance = window.speechService.speakText(text);
+      if (utterance) {
+        let called = false;
+        const trigger = () => {
+          if (called) return;
+          called = true;
+          clearTimeout(fallback);
+          callback();
+        };
+        const fallback = setTimeout(trigger, maxDelayMs);
+        utterance.onend = trigger;
+        utterance.onerror = trigger;
+      } else {
+        callback();
+      }
+    } else {
+      callback();
+    }
+  }
+
+  _clearPrepTimeouts() {
+    if (this._prepTimeout1) {
+      clearTimeout(this._prepTimeout1);
+      this._prepTimeout1 = null;
+    }
+    if (this._prepTimeout2) {
+      clearTimeout(this._prepTimeout2);
+      this._prepTimeout2 = null;
+    }
+    if (this._prepTimeout3) {
+      clearTimeout(this._prepTimeout3);
+      this._prepTimeout3 = null;
+    }
+  }
+
   _startNextPilot(isFirst = false) {
+    this._clearPrepTimeouts();
+
     if (!isFirst) {
       if (this._pilotQueue.length === 0) {
         this._state = "finished";
@@ -353,7 +397,57 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       this._viewedPilotId = this._currentPilotId;
     }
 
-    this._state = "qualifying";
+    this._state = "preparing";
+    this._updateToolbarState();
+    this._updateDriverPanel();
+    this._updateLaps();
+    this._updateStandings();
+    this._updateQueue();
+
+    // Set timer to initial qualification time and set qualifying color
+    const timer = this.querySelector("slotrace-timer");
+    if (timer) {
+      timer.stop();
+      timer.seconds = this._sessionConfig.timePerPilot;
+      timer.updateDisplay();
+      timer.setColor("#adff2f");
+    }
+
+    this._startPrepCountdown();
+  }
+
+  _startPrepCountdown() {
+    this._clearPrepTimeouts();
+
+    const textThree = window.t("voice.realtime_quali.countdown_3") || "Três";
+    const textTwo = window.t("voice.realtime_quali.countdown_2") || "Dois";
+    const textOne = window.t("voice.realtime_quali.countdown_1") || "Um";
+
+    if (window.speechService && typeof window.speechService.speakText === "function") {
+      window.speechService.speakText(textThree);
+
+      this._prepTimeout1 = setTimeout(() => {
+        if (this._state !== "preparing") return;
+        window.speechService.speakText(textTwo);
+
+        this._prepTimeout2 = setTimeout(() => {
+          if (this._state !== "preparing") return;
+          window.speechService.speakText(textOne);
+
+          this._prepTimeout3 = setTimeout(() => {
+            if (this._state !== "preparing") return;
+            this._state = "qualifying";
+            this._actuallyStartPilotQualifying();
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    } else {
+      this._state = "qualifying";
+      this._actuallyStartPilotQualifying();
+    }
+  }
+
+  _actuallyStartPilotQualifying() {
     this._playStartBeepIfNeeded();
     this._lapStartTime = null;
     this._firstLapMarked = false;
@@ -378,7 +472,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     this._playEndBeepIfNeeded();
     const finishedPilotId = this._currentPilotId;
     const isLastPilot = this._pilotQueue.length === 0;
-    
+
     // Pilot's time is up — recalculate their metrics
     this._recalcQuali(this._currentPilotId);
     this._updateStandings();
@@ -400,7 +494,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       if (window.speechService && typeof window.speechService.speakText === "function") {
         const finishedDriver = finishedPilotId ? this._getDriver(finishedPilotId) : null;
         const nextDriver = this._getDriver(this._currentPilotId);
-        
+
         if (finishedDriver) {
           const finishedRecord = this._getQualiRecord(finishedPilotId);
           const bestLapVal = finishedRecord ? finishedRecord.bestLapTime : 0;
@@ -410,25 +504,25 @@ class SlotRaceRealtimeQuali extends HTMLElement {
             .replace("{time}", bestLapText);
 
           const finishedUtterance = window.speechService.speakText(finishedText);
-          
+
           if (finishedUtterance) {
             this._activeUtterance = finishedUtterance;
             finishedUtterance.onend = () => {
               this._activeUtterance = null;
               setTimeout(() => {
                 if (this._state !== "interval") return;
-                
+
                 if (nextDriver) {
                   const prepareText = window.t("voice.realtime_quali.prepare_pilot").replace("{name}", nextDriver.name);
                   const prepareUtterance = window.speechService.speakText(prepareText);
-                  
+
                   if (prepareUtterance) {
                     this._activeUtterance = prepareUtterance;
                     prepareUtterance.onend = () => {
                       this._activeUtterance = null;
                       setTimeout(() => {
                         if (this._state !== "interval") return;
-                        
+
                         if (this._pilotQueue.length > 0) {
                           const afterThatDriver = this._getDriver(this._pilotQueue[0]);
                           if (afterThatDriver) {
@@ -446,14 +540,14 @@ class SlotRaceRealtimeQuali extends HTMLElement {
         } else if (nextDriver) {
           const prepareText = window.t("voice.realtime_quali.prepare_pilot").replace("{name}", nextDriver.name);
           const prepareUtterance = window.speechService.speakText(prepareText);
-          
+
           if (prepareUtterance) {
             this._activeUtterance = prepareUtterance;
             prepareUtterance.onend = () => {
               this._activeUtterance = null;
               setTimeout(() => {
                 if (this._state !== "interval") return;
-                
+
                 if (this._pilotQueue.length > 0) {
                   const afterThatDriver = this._getDriver(this._pilotQueue[0]);
                   if (afterThatDriver) {
@@ -470,20 +564,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       const timer = this.querySelector("slotrace-timer");
       if (timer) {
         timer.setColor("#ffc107"); // yellow timer for interval
-        timer._onTick = (secs) => {
-          if (this._state !== "interval") return;
-          if (secs === 5) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_prepare"));
-          } else if (secs === 3) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_3"));
-          } else if (secs === 2) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_2"));
-          } else if (secs === 1) {
-            window.speechService.speakText(window.t("voice.realtime_quali.countdown_1"));
-          }
-        };
         timer.startCountdown(intervalTime, () => {
-          timer._onTick = null;
           this._startNextPilot(true); // isFirst = true, don't shift queue again
         });
       }
@@ -526,14 +607,28 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   }
 
   _handlePause() {
-    if (this._state !== "qualifying" && this._state !== "interval") return;
+    if (this._state !== "qualifying" && this._state !== "interval" && this._state !== "preparing" && this._state !== "resuming") return;
 
-    this._pausedState = this._state;
+    this._clearPrepTimeouts();
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
+    this._pausedState = this._state === "resuming" ? "qualifying" : this._state;
     this._state = "paused";
     this._pauseTimeStart = performance.now();
 
     const timer = this.querySelector("slotrace-timer");
-    if (timer) timer.pause();
+    if (timer && this._pausedState !== "preparing") {
+      timer.pause();
+    }
+
+    if (this._pausedState === "qualifying") {
+      if (window.speechService && typeof window.speechService.speakText === "function") {
+        window.speechService.speakText(window.t("voice.realtime_quali.session_paused") || "Sessão interrompida");
+      }
+    }
 
     this._updateToolbarState();
   }
@@ -541,10 +636,49 @@ class SlotRaceRealtimeQuali extends HTMLElement {
   _handleResume() {
     if (this._state !== "paused") return;
 
-    this._state = this._pausedState || "qualifying";
+    const previousState = this._pausedState || "qualifying";
     this._pausedState = null;
 
-    // Adjust lap start time by paused duration to prevent drift
+    if (previousState === "preparing") {
+      this._state = "preparing";
+      this._updateToolbarState();
+      this._startPrepCountdown();
+      return;
+    }
+
+    if (previousState === "qualifying") {
+      this._state = "resuming";
+      this._updateToolbarState();
+
+      const resumeText = window.t("voice.realtime_quali.session_resumed") || "A Sessão vai recomeçar";
+      this._speakWithCallback(resumeText, () => {
+        if (this._state !== "resuming") return;
+
+        this._state = "qualifying";
+
+        // Adjust lap start time by paused duration (including the speaking time) to prevent drift
+        if (this._pauseTimeStart && this._lapStartTime) {
+          const pausedDuration = performance.now() - this._pauseTimeStart;
+          this._lapStartTime += pausedDuration;
+        }
+        this._pauseTimeStart = null;
+
+        // Play start beep
+        this._playStartBeepIfNeeded();
+
+        const timer = this.querySelector("slotrace-timer");
+        if (timer) {
+          timer.setColor("#adff2f");
+          timer.resume();
+        }
+
+        this._updateToolbarState();
+      }, 2500);
+      return;
+    }
+
+    // Normal resume for interval state
+    this._state = "interval";
     if (this._pauseTimeStart && this._lapStartTime) {
       const pausedDuration = performance.now() - this._pauseTimeStart;
       this._lapStartTime += pausedDuration;
@@ -553,15 +687,55 @@ class SlotRaceRealtimeQuali extends HTMLElement {
 
     const timer = this.querySelector("slotrace-timer");
     if (timer) {
-      if (this._state === "qualifying") {
-        timer.setColor("#adff2f");
-      } else {
-        timer.setColor("#ffc107");
-      }
+      timer.setColor("#ffc107");
       timer.resume();
     }
 
     this._updateToolbarState();
+  }
+
+  _handleAdvance() {
+    const currentState = this._state === "paused" ? (this._pausedState || "qualifying") : this._state;
+
+    // Reset paused state if any
+    this._pausedState = null;
+    this._pauseTimeStart = null;
+
+    // Interrupt any current spoken utterances
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
+    const timer = this.querySelector("slotrace-timer");
+    if (timer) {
+      timer.pause();
+    }
+    this._clearPrepTimeouts();
+
+    if (currentState === "qualifying" || currentState === "preparing") {
+      // Pass from qualifying/preparing to interval (or finish if last pilot)
+      this._onPilotTimeUp();
+    } else if (currentState === "interval") {
+      // Pass from interval to qualifying of next pilot (preparing)
+      this._startNextPilot(true);
+    }
+  }
+
+  _handleSpacebarPress() {
+    if (this._state === "idle") {
+      const timePerPilot = this._sessionConfig.timePerPilot;
+      const lane = this._sessionConfig.lane;
+      const interval = this._sessionConfig.interval;
+      window.dispatchEvent(
+        new CustomEvent("qualiSessionStart", {
+          detail: { timePerPilot, lane, interval },
+        }),
+      );
+    } else if (this._state === "paused") {
+      window.dispatchEvent(new CustomEvent("qualiSessionResume"));
+    } else if (this._state === "qualifying" || this._state === "interval" || this._state === "preparing") {
+      window.dispatchEvent(new CustomEvent("qualiSessionPause"));
+    }
   }
 
   _handleMarkLap() {
@@ -802,36 +976,43 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       </button>
 
       <!-- Play button (Start / Resume) -->
-      ${
-        isIdle || isPaused
-          ? `
+      ${isIdle || isPaused
+        ? `
         <button id="btn-quali-header-start" class="btn btn-lg btn-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="${isPaused ? "Retomar" : "Iniciar"}" style="width: 48px; height: 48px;">
           <i class="mdi mdi-play fs-3" style="margin-left: 2px;"></i>
         </button>
       `
-          : ""
+        : ""
       }
 
       <!-- Pause button -->
-      ${
-        isRunning || isInterval
-          ? `
+      ${isRunning || isInterval || this._state === "preparing" || this._state === "resuming"
+        ? `
         <button id="btn-quali-header-pause" class="btn btn-lg btn-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Pausar" style="width: 48px; height: 48px;">
           <i class="mdi mdi-pause fs-3"></i>
         </button>
       `
-          : ""
+        : ""
+      }
+
+      <!-- Avançar button -->
+      ${!isIdle && !isFinished
+        ? `
+        <button id="btn-quali-header-advance" class="btn btn-sm btn-info text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Avançar" style="width: 32px; height: 32px;">
+          <i class="mdi mdi-skip-next fs-5"></i>
+        </button>
+      `
+        : ""
       }
 
       <!-- Reset button -->
-      ${
-        (isPaused || isFinished || hasResults) && !isRunning && !isInterval
-          ? `
+      ${(isPaused || isFinished || hasResults) && !isRunning && !isInterval && this._state !== "preparing"
+        ? `
         <button id="btn-quali-header-reset" class="btn btn-sm btn-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Reiniciar" style="width: 32px; height: 32px;">
           <i class="mdi mdi-refresh fs-5"></i>
         </button>
       `
-          : ""
+        : ""
       }
 
       <!-- Gear Config Button -->
@@ -845,6 +1026,7 @@ class SlotRaceRealtimeQuali extends HTMLElement {
     const btnHeaderStart = container.querySelector("#btn-quali-header-start");
     const btnHeaderPause = container.querySelector("#btn-quali-header-pause");
     const btnHeaderReset = container.querySelector("#btn-quali-header-reset");
+    const btnHeaderAdvance = container.querySelector("#btn-quali-header-advance");
     const btnConfig = container.querySelector("#btn-quali-config");
 
     if (btnMarkLap) {
@@ -876,6 +1058,11 @@ class SlotRaceRealtimeQuali extends HTMLElement {
       });
     }
 
+    if (btnHeaderAdvance) {
+      btnHeaderAdvance.addEventListener("click", () => {
+        this._handleAdvance();
+      });
+    }
 
     if (btnHeaderReset) {
       btnHeaderReset.addEventListener("click", () => {
